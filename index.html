@@ -1,427 +1,169 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-  body { font-family: Arial, sans-serif; margin: 0; background: #fff5f8; color: #333; }
-  
-  /* LAYOUT - Responsive Grid */
-  .section-container {display: flex;flex-wrap: wrap;gap: 15px;padding: 15px;justify-content: center;}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; background: #fff5f8; color: #333; text-shadow: 0 1px 2px rgba(255,255,255,0.6);}
+        .section-container {display: flex;flex-wrap: wrap;gap: 15px;padding: 15px;justify-content: center;}
+        .card {flex: 0 1 180px;background: white;border-radius: 12px;padding: 12px;text-align: center;box-shadow: 0 2px 8px rgba(0,0,0,0.06);transition: transform 0.2s;}
+        .card:hover { transform: translateY(-3px); }
+        .card img {width: 100%;height: 140px;object-fit: cover;border-radius: 10px;background: #eee;}
+        .gallery-controls { display: flex; justify-content: center; gap: 8px; margin: 10px 0; }
+        .gallery-controls button { background: #f0f0f0; color: #333; width: 40px; border: 1px solid #ddd; }
+        select { width: 100%; padding: 5px; border-radius: 5px; margin: 5px 0; border: 1px solid #ddd; }
+        .selected-items { display: flex; flex-wrap: wrap; gap: 10px; padding: 15px; justify-content: center; min-height: 50px; }
+        .selected-item { width: 110px; background: white; border-radius: 8px; padding: 8px; text-align: center; font-size: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .selected-item img { width: 60px; height: 60px; object-fit: cover; border-radius: 5px; }
+        .qty-controls { display: flex; justify-content: center; align-items: center; gap: 8px; margin: 8px 0; }
+        .total-box {position: sticky;bottom: 0;background: rgba(255, 255, 255, 0.9);padding: 10px 15px;text-align: center;box-shadow: 0 -3px 10px rgba(0,0,0,0.08);z-index: 1000;border-top: 1px solid rgba(231,84,128,0.3);backdrop-filter: blur(6px);}
+        .total-box h2 {font-size: 1.4em;margin: 5px 0;color: #e75480;}
+        .total-box button {margin-top: 6px;}
+        button {background: #e75480;color: white;border: none;padding: 8px 12px;border-radius: 8px;cursor: pointer;font-weight: bold;}
+        button:hover { opacity: 0.9; }
+        .btn-remove { background: #cc0000; width: 100%; margin-top: 5px; font-size: 10px; }
+        .btn-clear { background: #888; margin-bottom: 10px; }
+        .btn-checkout { font-size: 1.2em; padding: 12px 30px; margin-top: 10px; }
+        h3 { text-align: center; margin-top: 30px; color: #e75480; }
+        .mothersday-header {text-align: center;padding: 45px 20px;background: linear-gradient(rgba(255, 240, 245, 0.88), rgba(255, 240, 245, 0.88)), url("https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/backgrounds/metallic_shimmer_flowers.jpg");background-size: cover;background-position: center;border-bottom: 4px solid #e75480;box-shadow: 0 4px 14px rgba(0,0,0,0.12);border-radius: 0 0 18px 18px;}
+        .mothersday-header h1 {font-size: 2.4em;color: #e75480;margin: 0;font-weight: 800;letter-spacing: 1px;}
+        .mothersday-header p {font-size: 1.15em;color: #555;margin-top: 10px;}
+        body {background: url("https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/images/website%20background.png");background-size: cover;background-attachment: fixed;background-position: center;}
+        body::before {content: "";position: fixed;top: 0;left: 0;width: 100%;height: 100%;backdrop-filter: blur(3px) brightness(0.95);background-color: rgba(255, 255, 255, 0.25);z-index: -1;}
+        .total-box {transition: opacity 0.35s ease;}
+        .total-box.hidden-footer {opacity: 0.35;}
+        .step-nav {display: flex;justify-content: center;gap: 10px;margin: 20px 0;flex-wrap: wrap;}
+        .step-nav button {background: #f8d7e2;color: #333;border: 1px solid #e75480;padding: 10px 16px;border-radius: 8px;font-weight: bold;cursor: pointer;}
+        .active-step {background: #e75480;color: white;}
+        .step-section {animation: fadeIn 0.4s ease;}
+        .desc {font-size: 0.8em;color: #666;margin: 5px 0;min-height: 30px;}
+        .notice-banner{color: #e75480;font-weight: bold;margin-left: 5px;text-align: center;padding: 12px;}
+        .sparkle-text {background: linear-gradient(90deg,#e75480 0%,#fff 40%,#e75480 80%);background-size: 200% auto;color: transparent;-webkit-background-clip: text;background-clip: text;animation: shimmer 3s linear infinite;}
+        .petals {position: fixed;top: 0;left: 0;width: 100%;height: 100%;pointer-events: none;overflow: hidden;z-index: 0;}
+        .petal {position: absolute;top: -50px;font-size: 18px;opacity: 1;animation: fall linear infinite;}
+        @keyframes fall {0% {transform: translateY(-50px) translateX(0) rotate(0deg);opacity: 0;}20% {opacity: 1;}100% {transform: translateY(110vh) translateX(var(--drift)) rotate(360deg);opacity: 0;}}
+        @keyframes shimmer {to {background-position: 200% center;}}
+        @keyframes fadeIn {from { opacity: 0; transform: translateY(10px); }to { opacity: 1; transform: translateY(0); }}
+        @media (max-width: 600px) {
+            .step-nav button {flex: 1 1 100%;text-align: center;}
+            body {padding-bottom: 120px;}
+            .section-container {padding: 8px;gap: 10px;justify-content: center;}
+            select {font-size: 0.9em;padding: 6px;}
+            .selected-items {gap: 12px;}
+            .selected-item {width: 46%;min-width: 140px;padding: 10px;}
+            .selected-item img {width: 60px;height: 60px;}
+            .qty-controls button {width: 26px;height: 26px;font-size: 1em;}
+            .mothersday-header {padding: 30px 15px;}
+            .mothersday-header h1 {font-size: 1.9em;}
+            .mothersday-header p {font-size: 1em;}
+            .total-box {padding: 10px 12px;font-size: 0.9em;}
+            .total-box h2 {font-size: 1.3em;margin: 6px 0;}
+            .btn-checkout {font-size: 1em;padding: 10px 22px;}
+            button {padding: 8px 12px;font-size: 0.9em;}
+            .btn-remove {font-size: 0.75em;}
+            .card {flex: 0 1 48%;max-width: 48%;padding: 10px;border-radius: 10px;}
+            .card img {height: 100px;border-radius: 8px;}
+            .gallery-controls button {width: 28px;height: 28px;font-size: 0.9em;}
+            .card strong {font-size: 0.9em;}
+            .card p {font-size: 0.85em;margin: 4px 0;}
+            .card button {font-size: 0.85em;padding: 6px 10px;}
+        }
 
-  /* CARDS */
-  .card {flex: 0 1 180px;background: white;border-radius: 12px;padding: 12px;text-align: center;box-shadow: 0 2px 8px rgba(0,0,0,0.06);transition: transform 0.2s;}
-  .card:hover { transform: translateY(-3px); }
-
-  /* IMAGES */
-  .card img {width: 100%;height: 140px;object-fit: cover;border-radius: 10px;background: #eee;}
-
-  /* CONTROLS */
-  .gallery-controls { display: flex; justify-content: center; gap: 8px; margin: 10px 0; }
-  .gallery-controls button { background: #f0f0f0; color: #333; width: 40px; border: 1px solid #ddd; }
-  
-  select { width: 100%; padding: 5px; border-radius: 5px; margin: 5px 0; border: 1px solid #ddd; }
-
-  /* CART / SELECTED ITEMS */
-  .selected-items { display: flex; flex-wrap: wrap; gap: 10px; padding: 15px; justify-content: center; min-height: 50px; }
-  .selected-item { width: 110px; background: white; border-radius: 8px; padding: 8px; text-align: center; font-size: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-  .selected-item img { width: 60px; height: 60px; object-fit: cover; border-radius: 5px; }
-
-  .qty-controls { display: flex; justify-content: center; align-items: center; gap: 8px; margin: 8px 0; }
-
-  /* FOOTER STICKY BAR */
-/* FOOTER STICKY BAR – COMPACT VERSION */
-.total-box {
-    position: sticky;
-    bottom: 0;
-    background: rgba(255, 255, 255, 0.9);
-    padding: 10px 15px;
-    text-align: center;
-    box-shadow: 0 -3px 10px rgba(0,0,0,0.08);
-    z-index: 1000;
-    border-top: 1px solid rgba(231,84,128,0.3);
-    backdrop-filter: blur(6px);
-}
-
-.total-box h2 {
-    font-size: 1.4em;
-    margin: 5px 0;
-    color: #e75480;
-}
-
-.total-box button {
-    margin-top: 6px;
-}
-
-  /* BUTTONS */
-  button {background: #e75480;color: white;border: none;padding: 8px 12px;border-radius: 8px;cursor: pointer;font-weight: bold;}
-  button:hover { opacity: 0.9; }
-  .btn-remove { background: #cc0000; width: 100%; margin-top: 5px; font-size: 10px; }
-  .btn-clear { background: #888; margin-bottom: 10px; }
-  .btn-checkout { font-size: 1.2em; padding: 12px 30px; margin-top: 10px; }
-
-  h3 { text-align: center; margin-top: 30px; color: #e75480; }
-  /* MOTHER'S DAY HEADER */
-.mothersday-header {text-align: center;padding: 45px 20px;background: linear-gradient(rgba(255, 240, 245, 0.88), rgba(255, 240, 245, 0.88)), url("https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/backgrounds/metallic_shimmer_flowers.jpg");background-size: cover;background-position: center;border-bottom: 4px solid #e75480;box-shadow: 0 4px 14px rgba(0,0,0,0.12);border-radius: 0 0 18px 18px;}
-
-.mothersday-header h1 {font-size: 2.4em;color: #e75480;margin: 0;font-weight: 800;letter-spacing: 1px;}
-
-.mothersday-header p {font-size: 1.15em;color: #555;margin-top: 10px;}
-
-/* PAGE BACKGROUND – METALLIC SHIMMER FLOWERS */
-body {background: url("https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/images/website%20background.png");background-size: cover;background-attachment: fixed;background-position: center;}
-/* READABILITY OVERLAY EFFECT */
-body::before {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    backdrop-filter: blur(3px) brightness(0.95);
-    background-color: rgba(255, 255, 255, 0.25);
-    z-index: -1;
-}
-
-/* Optional: slightly lift text contrast */
-body {
-    color: #333;
-    text-shadow: 0 1px 2px rgba(255,255,255,0.6);
-}
-/* FOOTER FADE EFFECT */
-.total-box {
-    transition: opacity 0.35s ease;
-}
-.total-box.hidden-footer {
-    opacity: 0.35;
-}
-/* STEP NAVIGATION */
-.step-nav {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin: 20px 0;
-    flex-wrap: wrap;
-}
-
-.step-nav button {
-    background: #f8d7e2;
-    color: #333;
-    border: 1px solid #e75480;
-    padding: 10px 16px;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.active-step {
-    background: #e75480;
-    color: white;
-}
-
-/* STEP SECTIONS */
-.step-section {
-    animation: fadeIn 0.4s ease;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* MOBILE */
-@media (max-width: 600px) {
-    .step-nav button {
-        flex: 1 1 100%;
-        text-align: center;
-    }
-}
-
-/* MOBILE RESPONSIVE FIXES */
-@media (max-width: 600px) {
-
-    /* Reduce padding around sections */
-    .section-container {
-        padding: 8px;
-        gap: 10px;
-    }
-
-    /* Make cards full-width on small screens */
-    .card {
-        flex: 0 1 100%;
-        max-width: 330px;
-        margin: 0 auto;
-    }
-
-    .card img {
-        height: 120px;
-    }
-
-    /* Selected items layout */
-    .selected-item {
-        width: 45%;
-        min-width: 140px;
-    }
-
-    .selected-item img {
-        width: 55px;
-        height: 55px;
-    }
-
-    /* Footer compact on mobile */
-    .total-box {
-        padding: 8px 10px;
-        font-size: 0.9em;
-    }
-
-    .total-box h2 {
-        font-size: 1.2em;
-    }
-
-    .btn-checkout {
-        font-size: 1em;
-        padding: 10px 20px;
-    }
-
-    /* Header text scaling */
-    .mothersday-header h1 {
-        font-size: 1.8em;
-    }
-
-    .mothersday-header p {
-        font-size: 1em;
-    }
-}
-/* FULL MOBILE RESPONSIVE OPTIMIZATION */
-@media (max-width: 600px) {
-
-    /* GENERAL LAYOUT */
-    body {
-        padding-bottom: 120px; /* ensures footer doesn't overlap content */
-    }
-
-    .section-container {
-        padding: 8px;
-        gap: 10px;
-        justify-content: center;
-    }
-
-    /* PRODUCT + BUNDLE CARDS */
-    .card {
-        flex: 0 1 100%;
-        max-width: 340px;
-        margin: 0 auto;
-        padding: 12px;
-    }
-
-    .card img {
-        height: 130px;
-        border-radius: 10px;
-    }
-
-    .gallery-controls button {
-        width: 32px;
-        height: 32px;
-        font-size: 1.1em;
-    }
-
-    select {
-        font-size: 0.9em;
-        padding: 6px;
-    }
-
-    /* SELECTED ITEMS */
-    .selected-items {
-        gap: 12px;
-    }
-
-    .selected-item {
-        width: 46%;
-        min-width: 140px;
-        padding: 10px;
-    }
-
-    .selected-item img {
-        width: 60px;
-        height: 60px;
-    }
-
-    .qty-controls button {
-        width: 26px;
-        height: 26px;
-        font-size: 1em;
-    }
-
-    /* HEADER */
-    .mothersday-header {
-        padding: 30px 15px;
-    }
-
-    .mothersday-header h1 {
-        font-size: 1.9em;
-    }
-
-    .mothersday-header p {
-        font-size: 1em;
-    }
-
-    /* FOOTER */
-    .total-box {
-        padding: 10px 12px;
-        font-size: 0.9em;
-    }
-
-    .total-box h2 {
-        font-size: 1.3em;
-        margin: 6px 0;
-    }
-
-    .btn-checkout {
-        font-size: 1em;
-        padding: 10px 22px;
-    }
-
-    /* BUTTONS */
-    button {
-        padding: 8px 12px;
-        font-size: 0.9em;
-    }
-
-    .btn-remove {
-        font-size: 0.75em;
-    }
-}
-/* SMALLER CARDS FOR MOBILE */
-@media (max-width: 600px) {
-
-    .card {
-        flex: 0 1 48%;       /* two cards per row */
-        max-width: 48%;
-        padding: 10px;
-        border-radius: 10px;
-    }
-
-    .card img {
-        height: 100px;       /* smaller image */
-        border-radius: 8px;
-    }
-
-    .gallery-controls button {
-        width: 28px;
-        height: 28px;
-        font-size: 0.9em;
-    }
-
-    .card strong {
-        font-size: 0.9em;
-    }
-
-    .card p {
-        font-size: 0.85em;
-        margin: 4px 0;
-    }
-
-    .card button {
-        font-size: 0.85em;
-        padding: 6px 10px;
-    }
-}
-
-
-</style>
+    </style>
 </head>
+
 <body>
-  <div class="mothersday-header">
-    <h1>🌸 Happy Mother’s Day 🌸</h1>
-    <p>Choose one of our Premade Bundles or build the perfect gift bundle with love and sparkle</p>
-</div>
+    <div class="petals"></div>
+    <div class="mothersday-header">
+    <h1 class="sparkle-text">🌸 Happy Mother’s Day 🌸</h1>
+        <p>Choose one of our Premade Bundles or Build Your Own with love and sparkle</p>
+        <div class="notice-banner a">Don’t see what you want? Visit our full bundles & gifts page for more options!</a></div>
+    </div>
 
 
-  <h3>Premade Bundles</h3>
-  <div id="bundle-container" class="section-container"></div>
-  <h3>Build Your Bundle</h3>
+    <h3>Premade Bundles</h3>
+    <div id="bundle-container" class="section-container"></div>
+    <h3>Build Your Bundle</h3>
 
-  <div class="step-nav">
-      <button onclick="goToStep(1)" id="stepBtn1" class="active-step">Step 1: Pick Items</button>
-      <button onclick="goToStep(2)" id="stepBtn2">Step 2: Pick Packaging</button>
-      <button onclick="goToStep(3)" id="stepBtn3">Step 3: Pick Your Card</button>
-  </div>
+    <div class="step-nav">
+        <button onclick="goToStep(1)" id="stepBtn1" class="active-step">Step 1: Pick Items</button>
+        <button onclick="goToStep(2)" id="stepBtn2">Step 2: Pick Packaging</button>
+        <button onclick="goToStep(3)" id="stepBtn3">Step 3: Pick Your Card</button>
+    </div>
 
-  <!-- STEP 1 -->
-  <div id="step1" class="step-section">
-      <h3>Step 1: Pick Your Items</h3>
-      <div id="product-container" class="section-container"></div>
-  </div>
+    <!-- STEP 1 -->
+    <div id="step1" class="step-section">
+        <h3>Step 1: Pick Your Items</h3>
+        <div id="product-container" class="section-container"></div>
+    </div>
 
-  <!-- STEP 2 -->
-  <div id="step2" class="step-section" style="display:none;">
-      <h3>Step 2: Choose Packaging</h3>
-      <div class="section-container">
+    <!-- STEP 2 -->
+    <div id="step2" class="step-section" style="display:none;">
+        <h3>Step 2: Choose Packaging</h3>
+        <div class="section-container">
 
-          <!-- PLACEHOLDER PACKAGING OPTIONS -->
-          <div class="card" onclick="selectPackaging('White Gift Box')">
-              <img src="https://via.placeholder.com/200x150?text=White+Gift+Box">
-              <strong>White Gift Box</strong>
-          </div>
+            <!-- PLACEHOLDER PACKAGING OPTIONS -->
+            <div class="card" onclick="selectPackaging('White Gift Box')">
+                <img src="https://via.placeholder.com/200x150?text=White+Gift+Box">
+                <strong>White Gift Box</strong>
+            </div>
 
-          <div class="card" onclick="selectPackaging('Pink Shimmer Box')">
-              <img src="https://via.placeholder.com/200x150?text=Pink+Shimmer+Box">
-              <strong>Pink Shimmer Box</strong>
-          </div>
+            <div class="card" onclick="selectPackaging('Pink Shimmer Box')">
+                <img src="https://via.placeholder.com/200x150?text=Pink+Shimmer+Box">
+                <strong>Pink Shimmer Box</strong>
+            </div>
 
-          <div class="card" onclick="selectPackaging('Kraft Box + Paper')">
-              <img src="https://via.placeholder.com/200x150?text=Kraft+Box">
-              <strong>Kraft Box + Crinkle Paper</strong>
-          </div>
+            <div class="card" onclick="selectPackaging('Kraft Box + Paper')">
+                <img src="https://via.placeholder.com/200x150?text=Kraft+Box">
+                <strong>Kraft Box + Crinkle Paper</strong>
+            </div>
 
-      </div>
-  </div>
+        </div>
+    </div>
 
-  <!-- STEP 3 -->
-  <div id="step3" class="step-section" style="display:none;">
-      <h3>Step 3: Choose Your Card</h3>
-      <div class="section-container">
+    <!-- STEP 3 -->
+    <div id="step3" class="step-section" style="display:none;">
+        <h3>Step 3: Choose Your Card</h3>
+        <div class="section-container">
 
-          <!-- PLACEHOLDER CARD OPTIONS -->
-          <div class="card" onclick="selectCard('Floral Mother’s Day Card')">
-              <img src="https://via.placeholder.com/200x150?text=Floral+Card">
-              <strong>Floral Mother’s Day Card</strong>
-          </div>
+            <!-- PLACEHOLDER CARD OPTIONS -->
+            <div class="card" onclick="selectCard('Floral Mother’s Day Card')">
+                <img src="https://via.placeholder.com/200x150?text=Floral+Card">
+                <strong>Floral Mother’s Day Card</strong>
+            </div>
 
-          <div class="card" onclick="selectCard('Minimalist Blush Card')">
-              <img src="https://via.placeholder.com/200x150?text=Blush+Card">
-              <strong>Minimalist Blush Card</strong>
-          </div>
+            <div class="card" onclick="selectCard('Minimalist Blush Card')">
+                <img src="https://via.placeholder.com/200x150?text=Blush+Card">
+                <strong>Minimalist Blush Card</strong>
+            </div>
 
-          <div class="card" onclick="selectCard('Gold Foil Heart Card')">
-              <img src="https://via.placeholder.com/200x150?text=Gold+Foil+Card">
-              <strong>Gold Foil Heart Card</strong>
-          </div>
+            <div class="card" onclick="selectCard('Gold Foil Heart Card')">
+                <img src="https://via.placeholder.com/200x150?text=Gold+Foil+Card">
+                <strong>Gold Foil Heart Card</strong>
+            </div>
 
-      </div>
-  </div>
+        </div>
+    </div>
 
-  <h3>Build Your Own</h3>
-  <div id="product-container" class="section-container"></div>
+    <h3>Build Your Own</h3>
+    <div id="product-container" class="section-container"></div>
 
-  <h3>Your Selection</h3>
-  <div id="selectedItems" class="selected-items"></div>
+    <h3>Your Selection</h3>
+    <div id="selectedItems" class="selected-items"></div>
 
-  <div class="total-box">
-    <div id="items-count">Items: 0</div>
-    <div id="discount-amt">Discount: $0.00</div>
-    <h2 id="total-price">$0.00</h2>
-    <p id="savings-msg" style="color: green; font-weight: bold;"></p>
-    
-    <button onclick="clearBundle()" class="btn-clear">Clear Selection</button>
-
-    <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank">
-      <input type="hidden" name="business" value="YOUR_EMAIL_HERE">
-      <input type="hidden" name="cmd" value="_xclick">
-      <input type="hidden" name="item_name" value="Mother's Day Bundle Selection">
-      <input type="hidden" name="amount" id="paypal-amount">
-      <button type="submit" class="btn-checkout">Checkout with PayPal</button>
-    </form>
-  </div>
+    <div class="total-box">
+        <div id="items-count">Items: 0</div>
+        <div id="discount-amt">Discount: $0.00</div>
+        <h2 id="total-price">$0.00</h2>
+        <p id="savings-msg" style="color: green; font-weight: bold;"></p>
+        <button onclick="clearBundle()" class="btn-clear">Clear Selection</button>
+        <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank">
+        <input type="hidden" name="business" value="attestedfs@gmail.com">
+        <input type="hidden" name="cmd" value="_xclick">
+        <input type="hidden" name="item_name" value="Mother's Day Bundle Selection">
+        <input type="hidden" name="amount" id="paypal-amount">
+        <button type="submit" class="btn-checkout">Checkout with PayPal</button>
+        </form>
+    </div>
 
 <script>
 /**
@@ -430,16 +172,23 @@ body {
  * Use 'type: bundle' for the top section and 'type: product' for the bottom.
  */
 const catalog = {
-  // BUNDLES
+  //************************ BUNDLES
   'BasicBundle1': { 
-    type: 'bundle', price: 30, 
-    variants: { 'default': ["https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/images/ceramic%20mug%20heat%20changing.png", "https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/images/Big%20Swig%20ombre%2040%204.png"] }
-  },
+    type: 'bundle', 
+    price: 30,
+    description: "Includes a heat-changing mug and 40oz ombre tumbler. Perfect starter gift set.",
+    variants: { 
+        'default': [
+        "https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/images/ceramic%20mug%20heat%20changing.png", 
+        "https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/images/Big%20Swig%20ombre%2040%204.png"
+        ] 
+    }
+},
   'BasicBundle2': { 
     type: 'bundle', price: 30, 
     variants: { 'default': ["https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/images/ceramic%20mug%20heat%20changing.png"] }
   },
-  // PRODUCTS
+  //************************ PRODUCTS
   'Keychain': { 
     type: 'product', price: 15, 
     variants: { 
@@ -533,6 +282,7 @@ function init() {
           <button onclick="changeImage('${id}', 1)">&#10095;</button>
         </div>
         <strong>${id.replace(/([A-Z])/g, ' $1').trim()}</strong>
+        ${item.description ? `<p class="desc">${item.description}</p>` : ''}
         
         ${variants.length > 1 || variants[0] !== 'default' ? `
           <select onchange="changeVariant('${id}', this.value)">
@@ -706,6 +456,57 @@ function selectCard(name) {
     selectedCard = name;
     renderCart();
 }
+function createPetal() {
+    const petal = document.createElement("div");
+    petal.classList.add("petal");
+    const flowers = ["🌸","🌺","💮","💐","🪷","🌼","🌻","🪻"];
+    petal.innerText = flowers[Math.floor(Math.random() * flowers.length)];
+
+    // Random position
+    const edgeBias = Math.random();
+
+        let leftPos;
+
+        // 70% chance petals appear on sides
+        if (edgeBias < 0.9) {
+            // Left side (0–20%) OR Right side (80–100%)
+            leftPos = Math.random() < 0.5
+                ? Math.random() * 20
+                : 80 + Math.random() * 20;
+        } else {
+            // Only 30% appear in middle (20–80%)
+            leftPos = 20 + Math.random() * 60;
+        }
+        let drift = (Math.random() * 100) + 50; // 50–150px drift
+
+        // If petal starts on left → drift left
+        if (leftPos < 50) {
+            petal.style.setProperty('--drift', `-${drift}px`);
+        } else {
+            // If on right → drift right
+            petal.style.setProperty('--drift', `${drift}px`);
+        }
+        petal.style.left = leftPos + "vw";
+    // Random size
+    petal.style.fontSize = (12 + Math.random() * 18) + "px";
+
+    // Random speed
+    const duration = 5 + Math.random() * 5;
+    petal.style.animationDuration = duration + "s";
+
+    // Random horizontal drift
+    petal.style.animationTimingFunction = "linear";
+
+    document.querySelector(".petals").appendChild(petal);
+
+    // Remove after animation
+    setTimeout(() => {
+        petal.remove();
+    }, duration * 1000);
+}
+
+// Continuous petals
+setInterval(createPetal, 400);
 
 
 </script>
