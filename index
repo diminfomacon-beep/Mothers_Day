@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+  font-family: Arial;
+  margin: 0;
+  background: #fff5f8;
+}
+
+/* SECTIONS */
+.bundle-row, .products, .selected-items {
+  display: flex;
+  gap: 15px;
+  padding: 15px;
+  overflow-x: auto;
+}
+
+/* CARDS */
+.bundle, .product {
+  flex: 0 0 auto;
+  width: 180px;
+  background: white;
+  border-radius: 12px;
+  padding: 10px;
+  text-align: center;
+}
+
+.bundle:hover, .product:hover {
+  transform: translateY(-3px);
+}
+
+/* IMAGES */
+.product img, .bundle img {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+/* GALLERY BUTTONS */
+.gallery-controls {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.gallery-controls button {
+  width: 18%;
+}
+
+/* SELECTED ITEMS */
+.selected-item {
+  flex: 0 0 auto;
+  width: 100px;
+  background: white;
+  border-radius: 8px;
+  padding: 5px;
+  text-align: center;
+}
+
+.selected-item img {
+  width: 70px;
+}
+
+/* QTY BUTTONS */
+.qty-controls {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  margin-top: 5px;
+}
+
+.qty-controls button {
+  padding: 2px 6px;
+}
+
+/* TOTAL */
+.total-box {
+  position: sticky;
+  bottom: 0;
+  background: white;
+  padding: 15px;
+  text-align: center;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+}
+
+button {
+  background: #e75480;
+  color: white;
+  border: none;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<!-- 🔥 PREMADE BUNDLES -->
+<div class="bundle-row">
+  <div class="bundle">
+    <img src="bundle1.jpg">
+    <div class="gallery-controls">
+      <button onclick="changeImage('Tumbler',-1)"><<</button>
+      <button onclick="changeImage('Tumbler',1)">>></button>
+    </div>
+    <h4>Basic Bundle</h4>
+    <p>$30</p>
+
+    <form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+      <input type="hidden" name="business" value="YOUR_EMAIL_HERE">
+      <input type="hidden" name="cmd" value="_cart">
+      <input type="hidden" name="add" value="1">
+      <input type="hidden" name="item_name" value="Basic Bundle">
+      <input type="hidden" name="amount" value="30">
+      <button type="submit">Add to Cart</button>
+    </form>
+  </div>
+  <div class="bundle">
+    <img src="bundle1.jpg">
+    <div class="gallery-controls">
+      <button onclick="changeImage('Tumbler',-1)"><<</button>
+      <button onclick="changeImage('Tumbler',1)">>></button>
+    </div>
+    <h4>Basic Bundle</h4>
+    <p>$30</p>
+
+    <form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+      <input type="hidden" name="business" value="YOUR_EMAIL_HERE">
+      <input type="hidden" name="cmd" value="_cart">
+      <input type="hidden" name="add" value="1">
+      <input type="hidden" name="item_name" value="Basic Bundle">
+      <input type="hidden" name="amount" value="30">
+      <button type="submit">Add to Cart</button>
+    </form>
+  </div>
+  <div class="bundle">
+    <img src="bundle1.jpg">
+    <div class="gallery-controls">
+      <button onclick="changeImage('Tumbler',-1)"><<</button>
+      <button onclick="changeImage('Tumbler',1)">>></button>
+    </div>
+    <h4>Basic Bundle</h4>
+    <p>$30</p>
+
+    <form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+      <input type="hidden" name="business" value="YOUR_EMAIL_HERE">
+      <input type="hidden" name="cmd" value="_cart">
+      <input type="hidden" name="add" value="1">
+      <input type="hidden" name="item_name" value="Basic Bundle">
+      <input type="hidden" name="amount" value="30">
+      <button type="submit">Add to Cart</button>
+    </form>
+  </div>
+  <div class="bundle">
+    <img src="bundle1.jpg">
+    <div class="gallery-controls">
+      <button onclick="changeImage('Tumbler',-1)"><<</button>
+      <button onclick="changeImage('Tumbler',1)">>></button>
+    </div>
+    <h4>Basic Bundle</h4>
+    <p>$30</p>
+
+    <form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+      <input type="hidden" name="business" value="YOUR_EMAIL_HERE">
+      <input type="hidden" name="cmd" value="_cart">
+      <input type="hidden" name="add" value="1">
+      <input type="hidden" name="item_name" value="Basic Bundle">
+      <input type="hidden" name="amount" value="30">
+      <button type="submit">Add to Cart</button>
+    </form>
+  </div>
+  <div class="bundle">
+    <img src="bundle1.jpg">
+    <div class="gallery-controls">
+      <button onclick="changeImage('Tumbler',-1)"><<</button>
+      <button onclick="changeImage('Tumbler',1)">>></button>
+    </div>
+    <h4>Basic Bundle</h4>
+    <p>$30</p>
+
+    <form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+      <input type="hidden" name="business" value="YOUR_EMAIL_HERE">
+      <input type="hidden" name="cmd" value="_cart">
+      <input type="hidden" name="add" value="1">
+      <input type="hidden" name="item_name" value="Basic Bundle">
+      <input type="hidden" name="amount" value="30">
+      <button type="submit">Add to Cart</button>
+    </form>
+  </div>
+</div>
+
+<!-- 🛍 PRODUCTS -->
+<div class="products">
+
+  <div class="product">
+  <img id="img-Tumbler" src="https://raw.githubusercontent.com/.../t1.jpg">
+
+  <div class="gallery-controls">
+    <button onclick="changeImage('Tumbler', -1)">«</button>
+    <button onclick="changeImage('Tumbler', 1)">»</button>
+  </div>
+
+  <h4>Custom Tumbler</h4>
+
+  <select onchange="changeVariant('Tumbler', this.value)">
+    <option value="pink">Pink</option>
+    <option value="blue">Blue</option>
+  </select>
+
+  <p>$15</p>
+  <button onclick="addItem('Tumbler')">Add to Bundle</button>
+</div>
+
+<div class="product">
+  <img id="img-Keychain" src="https://raw.githubusercontent.com/.../k1.jpg">
+
+  <div class="gallery-controls">
+    <button onclick="changeImage('Keychain', -1)">«</button>
+    <button onclick="changeImage('Keychain', 1)">»</button>
+  </div>
+
+  <h4>Custom Keychain</h4>
+
+  <select onchange="changeVariant('Keychain', this.value)">
+    <option value="gold">Gold</option>
+    <option value="silver">Silver</option>
+  </select>
+
+  <p>$5</p>
+  <button onclick="addItem('Keychain')">Add to Bundle</button>
+</div>
+
+</div>
+
+<h3 style="padding-left:15px;">Your Bundle</h3>
+
+<!-- 🧺 SELECTED -->
+<div class="selected-items" id="selectedItems"></div>
+
+<!-- 💰 TOTAL -->
+<div class="total-box">
+  <div id="items">Items: 0</div>
+  <div id="discount">Discount: $0</div>
+  <h2 id="total">$0</h2>
+  <p id="savings"></p>
+
+  <button onclick="clearBundle()">Clear Bundle</button>
+
+  <form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+    <input type="hidden" name="business" value="YOUR_EMAIL_HERE">
+    <input type="hidden" name="cmd" value="_xclick">
+    <input type="hidden" name="item_name" value="Custom Bundle">
+    <input type="hidden" name="amount" id="paypal-amount">
+    <button type="submit">Checkout</button>
+  </form>
+</div>
+
+<script>
+// IMAGE D// 1. DATA CONFIGURATION
+// Replace these URLs with your actual GitHub raw links
+const productData = {
+  'Tumbler': {
+    price: 15,
+    variants: {
+      'pink': ["https://raw.githubusercontent.com/user/repo/main/p1.jpg", "https://raw.githubusercontent.com/user/repo/main/p2.jpg"],
+      'blue': ["https://raw.githubusercontent.com/user/repo/main/b1.jpg", "https://raw.githubusercontent.com/user/repo/main/b2.jpg"]
+    }
+  },
+  'Keychain': {
+    price: 5,
+    variants: {
+      'gold': ["https://raw.githubusercontent.com/user/repo/main/g1.jpg"],
+      'silver': ["https://raw.githubusercontent.com/user/repo/main/s1.jpg"]
+    }
+  }
+};
+
+// State tracking
+let currentSelections = {}; // Tracks { productName: { variant: 'pink', index: 0 } }
+let selected = [];
+
+// Initialize state for all products
+function init() {
+  for (let key in productData) {
+    currentSelections[key] = {
+      variant: Object.keys(productData[key].variants)[0],
+      index: 0
+    };
+  }
+}
+init();
+
+// 2. UI CONTROLS
+function changeVariant(productName, variantName) {
+  currentSelections[productName].variant = variantName;
+  currentSelections[productName].index = 0; // Reset gallery to first image of new variant
+  updateUI(productName);
+}
+
+function changeImage(productName, direction) {
+  const p = currentSelections[productName];
+  const images = productData[productName].variants[p.variant];
+  
+  p.index = (p.index + direction + images.length) % images.length;
+  updateUI(productName);
+}
+
+function updateUI(productName) {
+  const p = currentSelections[productName];
+  const imgElement = document.getElementById(`img-${productName}`);
+  if (imgElement) {
+    imgElement.src = productData[productName].variants[p.variant][p.index];
+  }
+}
+
+// 3. BUNDLE LOGIC
+function addItem(name) {
+  const state = currentSelections[name];
+  const data = productData[name];
+  const img = data.variants[state.variant][state.index];
+
+  let existing = selected.find(i => i.name === name && i.variant === state.variant);
+
+  if (existing) {
+    existing.qty++;
+  } else {
+    selected.push({ name, variant: state.variant, price: data.price, img, qty: 1 });
+  }
+  render();
+}
+
+// ... Keep your render(), changeQty(), and updateTotal() functions from your original code ...ATA
+
+function render() {
+  let container = document.getElementById("selectedItems");
+  container.innerHTML = "";
+
+  selected.forEach((item, index) => {
+    container.innerHTML += `
+      <div class="selected-item">
+        <img src="${item.img}">
+        <small>${item.name} (${item.variant})</small>
+
+        <div class="qty-controls">
+          <button onclick="changeQty(${index},-1)">-</button>
+          <span>${item.qty}</span>
+          <button onclick="changeQty(${index},1)">+</button>
+        </div>
+
+        <button onclick="removeItem(${index})">Remove</button>
+      </div>
+    `;
+  });
+
+  updateTotal();
+}
+
+function changeQty(i, change) {
+  selected[i].qty += change;
+  if (selected[i].qty <= 0) selected.splice(i,1);
+  render();
+}
+
+function removeItem(i) {
+  selected.splice(i,1);
+  render();
+}
+
+function clearBundle() {
+  selected = [];
+  render();
+}
+
+function updateTotal() {
+  let total = selected.reduce((sum,i)=>sum + i.price*i.qty,0);
+  let count = selected.reduce((sum,i)=>sum + i.qty,0);
+
+  let discount = 0;
+  if (count >= 3) discount = total * 0.10;
+  if (count >= 5) discount = total * 0.20;
+
+  let final = total - discount;
+
+  document.getElementById("items").innerText = "Items: " + count;
+  document.getElementById("discount").innerText = "Discount: $" + discount.toFixed(2);
+  document.getElementById("total").innerText = "$" + final.toFixed(2);
+  document.getElementById("paypal-amount").value = final.toFixed(2);
+  document.getElementById("savings").innerText =
+    discount > 0 ? "🎉 You saved $" + discount.toFixed(2) : "";
+}
+</script>
+
+</body>
+</html>
