@@ -94,6 +94,48 @@ body {
 .total-box.hidden-footer {
     opacity: 0.35;
 }
+/* STEP NAVIGATION */
+.step-nav {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 20px 0;
+    flex-wrap: wrap;
+}
+
+.step-nav button {
+    background: #f8d7e2;
+    color: #333;
+    border: 1px solid #e75480;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.active-step {
+    background: #e75480;
+    color: white;
+}
+
+/* STEP SECTIONS */
+.step-section {
+    animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* MOBILE */
+@media (max-width: 600px) {
+    .step-nav button {
+        flex: 1 1 100%;
+        text-align: center;
+    }
+}
+
 /* MOBILE RESPONSIVE FIXES */
 @media (max-width: 600px) {
 
@@ -248,6 +290,41 @@ body {
         font-size: 0.75em;
     }
 }
+/* SMALLER CARDS FOR MOBILE */
+@media (max-width: 600px) {
+
+    .card {
+        flex: 0 1 48%;       /* two cards per row */
+        max-width: 48%;
+        padding: 10px;
+        border-radius: 10px;
+    }
+
+    .card img {
+        height: 100px;       /* smaller image */
+        border-radius: 8px;
+    }
+
+    .gallery-controls button {
+        width: 28px;
+        height: 28px;
+        font-size: 0.9em;
+    }
+
+    .card strong {
+        font-size: 0.9em;
+    }
+
+    .card p {
+        font-size: 0.85em;
+        margin: 4px 0;
+    }
+
+    .card button {
+        font-size: 0.85em;
+        padding: 6px 10px;
+    }
+}
 
 
 </style>
@@ -261,6 +338,67 @@ body {
 
   <h3>Premade Bundles</h3>
   <div id="bundle-container" class="section-container"></div>
+  <h3>Build Your Bundle</h3>
+
+  <div class="step-nav">
+      <button onclick="goToStep(1)" id="stepBtn1" class="active-step">Step 1: Pick Items</button>
+      <button onclick="goToStep(2)" id="stepBtn2">Step 2: Pick Packaging</button>
+      <button onclick="goToStep(3)" id="stepBtn3">Step 3: Pick Your Card</button>
+  </div>
+
+  <!-- STEP 1 -->
+  <div id="step1" class="step-section">
+      <h3>Step 1: Pick Your Items</h3>
+      <div id="product-container" class="section-container"></div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div id="step2" class="step-section" style="display:none;">
+      <h3>Step 2: Choose Packaging</h3>
+      <div class="section-container">
+
+          <!-- PLACEHOLDER PACKAGING OPTIONS -->
+          <div class="card" onclick="selectPackaging('White Gift Box')">
+              <img src="https://via.placeholder.com/200x150?text=White+Gift+Box">
+              <strong>White Gift Box</strong>
+          </div>
+
+          <div class="card" onclick="selectPackaging('Pink Shimmer Box')">
+              <img src="https://via.placeholder.com/200x150?text=Pink+Shimmer+Box">
+              <strong>Pink Shimmer Box</strong>
+          </div>
+
+          <div class="card" onclick="selectPackaging('Kraft Box + Paper')">
+              <img src="https://via.placeholder.com/200x150?text=Kraft+Box">
+              <strong>Kraft Box + Crinkle Paper</strong>
+          </div>
+
+      </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div id="step3" class="step-section" style="display:none;">
+      <h3>Step 3: Choose Your Card</h3>
+      <div class="section-container">
+
+          <!-- PLACEHOLDER CARD OPTIONS -->
+          <div class="card" onclick="selectCard('Floral Mother’s Day Card')">
+              <img src="https://via.placeholder.com/200x150?text=Floral+Card">
+              <strong>Floral Mother’s Day Card</strong>
+          </div>
+
+          <div class="card" onclick="selectCard('Minimalist Blush Card')">
+              <img src="https://via.placeholder.com/200x150?text=Blush+Card">
+              <strong>Minimalist Blush Card</strong>
+          </div>
+
+          <div class="card" onclick="selectCard('Gold Foil Heart Card')">
+              <img src="https://via.placeholder.com/200x150?text=Gold+Foil+Card">
+              <strong>Gold Foil Heart Card</strong>
+          </div>
+
+      </div>
+  </div>
 
   <h3>Build Your Own</h3>
   <div id="product-container" class="section-container"></div>
@@ -302,7 +440,52 @@ const catalog = {
     variants: { 'default': ["https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/images/ceramic%20mug%20heat%20changing.png"] }
   },
   // PRODUCTS
-  'Tumbler': { 
+  'Keychain': { 
+    type: 'product', price: 15, 
+    variants: { 
+      'Heart Shaped': ["https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/images/Big%20Swig%20ombre%2040%204.png", "https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/images/candle%20white.png"], 
+      'Circle': ["https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/images/Glass%20coffee%20mug%20matte.png"],
+      'Diamond': ["https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/images/Big%20Swig%20ombre%2040%204.png", "https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/images/candle%20white.png"], 
+      'Rectangle': ["https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/images/Big%20Swig%20ombre%2040%204.png", "https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/images/candle%20white.png"], 
+      'Dog Bone': ["https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/images/Big%20Swig%20ombre%2040%204.png", "https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/images/candle%20white.png"], 
+      'pink': ["https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/images/Big%20Swig%20ombre%2040%204.png", "https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/images/candle%20white.png"]
+
+    }
+  },
+  'Car Window Sign - 5.5"': { 
+    type: 'product', price: 5, 
+    variants: { 
+      'Magnetic': ["https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/images/candle%20white.png"], 
+      'silver': ["https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/images/ceramic%20mug%20heat%20changing.png"] 
+    }
+  },
+  'Mini Tote': { 
+    type: 'product', price: 15, 
+    variants: { 
+      'pink': ["https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/images/Big%20Swig%20ombre%2040%204.png", "https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/images/candle%20white.png"], 
+      'blue': ["https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/images/Glass%20coffee%20mug%20matte.png"] 
+    }
+  },
+  'Keychain': { 
+    type: 'product', price: 5, 
+    variants: { 
+      'gold': ["https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/images/candle%20white.png"], 
+      'silver': ["https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/images/ceramic%20mug%20heat%20changing.png"] 
+    }
+  },'Tumbler': { 
+    type: 'product', price: 15, 
+    variants: { 
+      'pink': ["https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/images/Big%20Swig%20ombre%2040%204.png", "https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/images/candle%20white.png"], 
+      'blue': ["https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/images/Glass%20coffee%20mug%20matte.png"] 
+    }
+  },
+  'Keychain': { 
+    type: 'product', price: 5, 
+    variants: { 
+      'gold': ["https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/images/candle%20white.png"], 
+      'silver': ["https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/images/ceramic%20mug%20heat%20changing.png"] 
+    }
+  },'Tumbler': { 
     type: 'product', price: 15, 
     variants: { 
       'pink': ["https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/images/Big%20Swig%20ombre%2040%204.png", "https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/images/candle%20white.png"], 
@@ -324,6 +507,9 @@ const catalog = {
 
 let currentSelections = {};
 let cart = [];
+let selectedPackaging = null;
+let selectedCard = null;
+
 
 /**
  * 2. ENGINE - Builds the UI automatically
@@ -392,24 +578,49 @@ window.addItem = function(id) {
 };
 
 function renderCart() {
-  const container = document.getElementById("selectedItems");
-  container.innerHTML = "";
-  
-  cart.forEach((item, index) => {
-    container.innerHTML += `
-      <div class="selected-item">
-        <img src="${item.img}">
-        <div><strong>${item.id}</strong></div>
-        <div class="qty-controls">
-          <button onclick="changeQty(${index},-1)">-</button>
-          <span>${item.qty}</span>
-          <button onclick="changeQty(${index},1)">+</button>
-        </div>
-        <button class="btn-remove" onclick="removeItem(${index})">Remove</button>
-      </div>`;
-  });
-  updateTotals();
+    const container = document.getElementById("selectedItems");
+    container.innerHTML = "";
+
+    // Render normal cart items
+    cart.forEach((item, index) => {
+        container.innerHTML += `
+            <div class="selected-item">
+                <img src="${item.img}">
+                <div><strong>${item.id}</strong></div>
+                <div class="qty-controls">
+                    <button onclick="changeQty(${index},-1)">-</button>
+                    <span>${item.qty}</span>
+                    <button onclick="changeQty(${index},1)">+</button>
+                </div>
+                <button class="btn-remove" onclick="removeItem(${index})">Remove</button>
+            </div>`;
+    });
+
+    // Packaging
+    if (selectedPackaging) {
+        container.innerHTML += `
+            <div class="selected-item">
+                <img src="https://via.placeholder.com/60?text=Box">
+                <div><strong>Packaging</strong></div>
+                <div>${selectedPackaging}</div>
+                <button class="btn-remove" onclick="removePackaging()">Remove</button>
+            </div>`;
+    }
+
+    // Card
+    if (selectedCard) {
+        container.innerHTML += `
+            <div class="selected-item">
+                <img src="https://via.placeholder.com/60?text=Card">
+                <div><strong>Card</strong></div>
+                <div>${selectedCard}</div>
+                <button class="btn-remove" onclick="removeCard()">Remove</button>
+            </div>`;
+    }
+
+    updateTotals();
 }
+
 
 window.changeQty = function(i, n) {
   cart[i].qty += n;
@@ -426,6 +637,15 @@ window.clearBundle = function() {
   cart = [];
   renderCart();
 };
+function removePackaging() {
+    selectedPackaging = null;
+    renderCart();
+}
+
+function removeCard() {
+    selectedCard = null;
+    renderCart();
+}
 
 function updateTotals() {
   let subtotal = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
@@ -463,6 +683,30 @@ window.addEventListener("scroll", () => {
 
     lastScroll = currentScroll;
 });
+
+
+
+function goToStep(step) {
+    document.getElementById("step1").style.display = step === 1 ? "block" : "none";
+    document.getElementById("step2").style.display = step === 2 ? "block" : "none";
+    document.getElementById("step3").style.display = step === 3 ? "block" : "none";
+
+    document.getElementById("stepBtn1").classList.toggle("active-step", step === 1);
+    document.getElementById("stepBtn2").classList.toggle("active-step", step === 2);
+    document.getElementById("stepBtn3").classList.toggle("active-step", step === 3);
+}
+
+function selectPackaging(name) {
+    selectedPackaging = name;
+    renderCart();
+    goToStep(3);
+}
+
+function selectCard(name) {
+    selectedCard = name;
+    renderCart();
+}
+
 
 </script>
 </body>
