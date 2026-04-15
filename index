@@ -149,6 +149,105 @@ body {
         font-size: 1em;
     }
 }
+/* FULL MOBILE RESPONSIVE OPTIMIZATION */
+@media (max-width: 600px) {
+
+    /* GENERAL LAYOUT */
+    body {
+        padding-bottom: 120px; /* ensures footer doesn't overlap content */
+    }
+
+    .section-container {
+        padding: 8px;
+        gap: 10px;
+        justify-content: center;
+    }
+
+    /* PRODUCT + BUNDLE CARDS */
+    .card {
+        flex: 0 1 100%;
+        max-width: 340px;
+        margin: 0 auto;
+        padding: 12px;
+    }
+
+    .card img {
+        height: 130px;
+        border-radius: 10px;
+    }
+
+    .gallery-controls button {
+        width: 32px;
+        height: 32px;
+        font-size: 1.1em;
+    }
+
+    select {
+        font-size: 0.9em;
+        padding: 6px;
+    }
+
+    /* SELECTED ITEMS */
+    .selected-items {
+        gap: 12px;
+    }
+
+    .selected-item {
+        width: 46%;
+        min-width: 140px;
+        padding: 10px;
+    }
+
+    .selected-item img {
+        width: 60px;
+        height: 60px;
+    }
+
+    .qty-controls button {
+        width: 26px;
+        height: 26px;
+        font-size: 1em;
+    }
+
+    /* HEADER */
+    .mothersday-header {
+        padding: 30px 15px;
+    }
+
+    .mothersday-header h1 {
+        font-size: 1.9em;
+    }
+
+    .mothersday-header p {
+        font-size: 1em;
+    }
+
+    /* FOOTER */
+    .total-box {
+        padding: 10px 12px;
+        font-size: 0.9em;
+    }
+
+    .total-box h2 {
+        font-size: 1.3em;
+        margin: 6px 0;
+    }
+
+    .btn-checkout {
+        font-size: 1em;
+        padding: 10px 22px;
+    }
+
+    /* BUTTONS */
+    button {
+        padding: 8px 12px;
+        font-size: 0.9em;
+    }
+
+    .btn-remove {
+        font-size: 0.75em;
+    }
+}
 
 
 </style>
