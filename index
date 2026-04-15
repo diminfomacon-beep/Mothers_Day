@@ -2,398 +2,312 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <style>
+  body { font-family: Arial, sans-serif; margin: 0; background: #fff5f8; color: #333; }
+  
+  /* LAYOUT - Responsive Grid */
+  .section-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    padding: 15px;
+    justify-content: center;
+  }
+
+  /* CARDS */
+  .card {
+    flex: 0 1 180px;
+    background: white;
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    transition: transform 0.2s;
+  }
+  .card:hover { transform: translateY(-3px); }
+
+  /* IMAGES */
+  .card img {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 10px;
+    background: #eee;
+  }
+
+  /* CONTROLS */
+  .gallery-controls { display: flex; justify-content: center; gap: 8px; margin: 10px 0; }
+  .gallery-controls button { background: #f0f0f0; color: #333; width: 40px; border: 1px solid #ddd; }
+  
+  select { width: 100%; padding: 5px; border-radius: 5px; margin: 5px 0; border: 1px solid #ddd; }
+
+  /* CART / SELECTED ITEMS */
+  .selected-items { display: flex; flex-wrap: wrap; gap: 10px; padding: 15px; justify-content: center; min-height: 50px; }
+  .selected-item { width: 110px; background: white; border-radius: 8px; padding: 8px; text-align: center; font-size: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+  .selected-item img { width: 60px; height: 60px; object-fit: cover; border-radius: 5px; }
+
+  .qty-controls { display: flex; justify-content: center; align-items: center; gap: 8px; margin: 8px 0; }
+
+  /* FOOTER STICKY BAR */
+  .total-box {
+    position: sticky;
+    bottom: 0;
+    background: white;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
+    z-index: 1000;
+  }
+
+  /* BUTTONS */
+  button {
+    background: #e75480;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  button:hover { opacity: 0.9; }
+  .btn-remove { background: #cc0000; width: 100%; margin-top: 5px; font-size: 10px; }
+  .btn-clear { background: #888; margin-bottom: 10px; }
+  .btn-checkout { font-size: 1.2em; padding: 12px 30px; margin-top: 10px; }
+
+  h3 { text-align: center; margin-top: 30px; color: #e75480; }
+  /* MOTHER'S DAY HEADER */
+.mothersday-header {
+    text-align: center;
+    padding: 45px 20px;
+    background: 
+        linear-gradient(rgba(255, 240, 245, 0.88), rgba(255, 240, 245, 0.88)),
+        url("https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/backgrounds/metallic_shimmer_flowers.jpg");
+    background-size: cover;
+    background-position: center;
+    border-bottom: 4px solid #e75480;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+    border-radius: 0 0 18px 18px;
+
+}
+
+.mothersday-header h1 {
+    font-size: 2.4em;
+    color: #e75480;
+    margin: 0;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.mothersday-header p {
+    font-size: 1.15em;
+    color: #555;
+    margin-top: 10px;
+}
+
+/* PAGE BACKGROUND – METALLIC SHIMMER FLOWERS */
 body {
-  font-family: Arial;
-  margin: 0;
-  background: #fff5f8;
+    background: url("https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/backgrounds/metallic_shimmer_flowers.jpg");
+    background-size: cover;
+    background-attachment: fixed;
+    background-position: center;
 }
 
-/* SECTIONS */
-.bundle-row, .products, .selected-items {
-  display: flex;
-  gap: 15px;
-  padding: 15px;
-  overflow-x: auto;
-}
-
-/* CARDS */
-.bundle, .product {
-  flex: 0 0 auto;
-  width: 180px;
-  background: white;
-  border-radius: 12px;
-  padding: 10px;
-  text-align: center;
-}
-
-.bundle:hover, .product:hover {
-  transform: translateY(-3px);
-}
-
-/* IMAGES */
-.product img, .bundle img {
-  width: 100%;
-  height: 140px;
-  object-fit: cover;
-  border-radius: 10px;
-}
-
-/* GALLERY BUTTONS */
-.gallery-controls {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-}
-
-.gallery-controls button {
-  width: 18%;
-}
-
-/* SELECTED ITEMS */
-.selected-item {
-  flex: 0 0 auto;
-  width: 100px;
-  background: white;
-  border-radius: 8px;
-  padding: 5px;
-  text-align: center;
-}
-
-.selected-item img {
-  width: 70px;
-}
-
-/* QTY BUTTONS */
-.qty-controls {
-  display: flex;
-  justify-content: center;
-  gap: 5px;
-  margin-top: 5px;
-}
-
-.qty-controls button {
-  padding: 2px 6px;
-}
-
-/* TOTAL */
-.total-box {
-  position: sticky;
-  bottom: 0;
-  background: white;
-  padding: 15px;
-  text-align: center;
-  box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-}
-
-button {
-  background: #e75480;
-  color: white;
-  border: none;
-  padding: 8px;
-  border-radius: 8px;
-  cursor: pointer;
-}
 </style>
 </head>
-
 <body>
-
-<!-- 🔥 PREMADE BUNDLES -->
-<div class="bundle-row">
-  <div class="bundle">
-    <img src="bundle1.jpg">
-    <div class="gallery-controls">
-      <button onclick="changeImage('Tumbler',-1)"><<</button>
-      <button onclick="changeImage('Tumbler',1)">>></button>
-    </div>
-    <h4>Basic Bundle</h4>
-    <p>$30</p>
-
-    <form action="https://www.paypal.com/cgi-bin/webscr" method="post">
-      <input type="hidden" name="business" value="YOUR_EMAIL_HERE">
-      <input type="hidden" name="cmd" value="_cart">
-      <input type="hidden" name="add" value="1">
-      <input type="hidden" name="item_name" value="Basic Bundle">
-      <input type="hidden" name="amount" value="30">
-      <button type="submit">Add to Cart</button>
-    </form>
-  </div>
-  <div class="bundle">
-    <img src="bundle1.jpg">
-    <div class="gallery-controls">
-      <button onclick="changeImage('Tumbler',-1)"><<</button>
-      <button onclick="changeImage('Tumbler',1)">>></button>
-    </div>
-    <h4>Basic Bundle</h4>
-    <p>$30</p>
-
-    <form action="https://www.paypal.com/cgi-bin/webscr" method="post">
-      <input type="hidden" name="business" value="YOUR_EMAIL_HERE">
-      <input type="hidden" name="cmd" value="_cart">
-      <input type="hidden" name="add" value="1">
-      <input type="hidden" name="item_name" value="Basic Bundle">
-      <input type="hidden" name="amount" value="30">
-      <button type="submit">Add to Cart</button>
-    </form>
-  </div>
-  <div class="bundle">
-    <img src="bundle1.jpg">
-    <div class="gallery-controls">
-      <button onclick="changeImage('Tumbler',-1)"><<</button>
-      <button onclick="changeImage('Tumbler',1)">>></button>
-    </div>
-    <h4>Basic Bundle</h4>
-    <p>$30</p>
-
-    <form action="https://www.paypal.com/cgi-bin/webscr" method="post">
-      <input type="hidden" name="business" value="YOUR_EMAIL_HERE">
-      <input type="hidden" name="cmd" value="_cart">
-      <input type="hidden" name="add" value="1">
-      <input type="hidden" name="item_name" value="Basic Bundle">
-      <input type="hidden" name="amount" value="30">
-      <button type="submit">Add to Cart</button>
-    </form>
-  </div>
-  <div class="bundle">
-    <img src="bundle1.jpg">
-    <div class="gallery-controls">
-      <button onclick="changeImage('Tumbler',-1)"><<</button>
-      <button onclick="changeImage('Tumbler',1)">>></button>
-    </div>
-    <h4>Basic Bundle</h4>
-    <p>$30</p>
-
-    <form action="https://www.paypal.com/cgi-bin/webscr" method="post">
-      <input type="hidden" name="business" value="YOUR_EMAIL_HERE">
-      <input type="hidden" name="cmd" value="_cart">
-      <input type="hidden" name="add" value="1">
-      <input type="hidden" name="item_name" value="Basic Bundle">
-      <input type="hidden" name="amount" value="30">
-      <button type="submit">Add to Cart</button>
-    </form>
-  </div>
-  <div class="bundle">
-    <img src="bundle1.jpg">
-    <div class="gallery-controls">
-      <button onclick="changeImage('Tumbler',-1)"><<</button>
-      <button onclick="changeImage('Tumbler',1)">>></button>
-    </div>
-    <h4>Basic Bundle</h4>
-    <p>$30</p>
-
-    <form action="https://www.paypal.com/cgi-bin/webscr" method="post">
-      <input type="hidden" name="business" value="YOUR_EMAIL_HERE">
-      <input type="hidden" name="cmd" value="_cart">
-      <input type="hidden" name="add" value="1">
-      <input type="hidden" name="item_name" value="Basic Bundle">
-      <input type="hidden" name="amount" value="30">
-      <button type="submit">Add to Cart</button>
-    </form>
-  </div>
+  <div class="mothersday-header">
+    <h1>🌸 Happy Mother’s Day 🌸</h1>
+    <p>Choose one of our Premade Bundles or build the perfect gift bundle with love and sparkle</p>
 </div>
 
-<!-- 🛍 PRODUCTS -->
-<div class="products">
 
-  <div class="product">
-  <img id="img-Tumbler" src="https://raw.githubusercontent.com/.../t1.jpg">
+  <h3>Premade Bundles</h3>
+  <div id="bundle-container" class="section-container"></div>
 
-  <div class="gallery-controls">
-    <button onclick="changeImage('Tumbler', -1)">«</button>
-    <button onclick="changeImage('Tumbler', 1)">»</button>
+  <h3>Build Your Own</h3>
+  <div id="product-container" class="section-container"></div>
+
+  <h3>Your Selection</h3>
+  <div id="selectedItems" class="selected-items"></div>
+
+  <div class="total-box">
+    <div id="items-count">Items: 0</div>
+    <div id="discount-amt">Discount: $0.00</div>
+    <h2 id="total-price">$0.00</h2>
+    <p id="savings-msg" style="color: green; font-weight: bold;"></p>
+    
+    <button onclick="clearBundle()" class="btn-clear">Clear Selection</button>
+
+    <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank">
+      <input type="hidden" name="business" value="YOUR_EMAIL_HERE">
+      <input type="hidden" name="cmd" value="_xclick">
+      <input type="hidden" name="item_name" value="Mother's Day Bundle Selection">
+      <input type="hidden" name="amount" id="paypal-amount">
+      <button type="submit" class="btn-checkout">Checkout with PayPal</button>
+    </form>
   </div>
-
-  <h4>Custom Tumbler</h4>
-
-  <select onchange="changeVariant('Tumbler', this.value)">
-    <option value="pink">Pink</option>
-    <option value="blue">Blue</option>
-  </select>
-
-  <p>$15</p>
-  <button onclick="addItem('Tumbler')">Add to Bundle</button>
-</div>
-
-<div class="product">
-  <img id="img-Keychain" src="https://raw.githubusercontent.com/.../k1.jpg">
-
-  <div class="gallery-controls">
-    <button onclick="changeImage('Keychain', -1)">«</button>
-    <button onclick="changeImage('Keychain', 1)">»</button>
-  </div>
-
-  <h4>Custom Keychain</h4>
-
-  <select onchange="changeVariant('Keychain', this.value)">
-    <option value="gold">Gold</option>
-    <option value="silver">Silver</option>
-  </select>
-
-  <p>$5</p>
-  <button onclick="addItem('Keychain')">Add to Bundle</button>
-</div>
-
-</div>
-
-<h3 style="padding-left:15px;">Your Bundle</h3>
-
-<!-- 🧺 SELECTED -->
-<div class="selected-items" id="selectedItems"></div>
-
-<!-- 💰 TOTAL -->
-<div class="total-box">
-  <div id="items">Items: 0</div>
-  <div id="discount">Discount: $0</div>
-  <h2 id="total">$0</h2>
-  <p id="savings"></p>
-
-  <button onclick="clearBundle()">Clear Bundle</button>
-
-  <form action="https://www.paypal.com/cgi-bin/webscr" method="post">
-    <input type="hidden" name="business" value="YOUR_EMAIL_HERE">
-    <input type="hidden" name="cmd" value="_xclick">
-    <input type="hidden" name="item_name" value="Custom Bundle">
-    <input type="hidden" name="amount" id="paypal-amount">
-    <button type="submit">Checkout</button>
-  </form>
-</div>
 
 <script>
-// IMAGE D// 1. DATA CONFIGURATION
-// Replace these URLs with your actual GitHub raw links
-const productData = {
-  'Tumbler': {
-    price: 15,
-    variants: {
-      'pink': ["https://raw.githubusercontent.com/user/repo/main/p1.jpg", "https://raw.githubusercontent.com/user/repo/main/p2.jpg"],
-      'blue': ["https://raw.githubusercontent.com/user/repo/main/b1.jpg", "https://raw.githubusercontent.com/user/repo/main/b2.jpg"]
+/**
+ * 1. CONFIGURATION 
+ * Add new items or bundles here. 
+ * Use 'type: bundle' for the top section and 'type: product' for the bottom.
+ */
+const catalog = {
+  // BUNDLES
+  'BasicBundle1': { 
+    type: 'bundle', price: 30, 
+    variants: { 'default': ["https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/images/ceramic%20mug%20heat%20changing.png", "https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/images/Big%20Swig%20ombre%2040%204.png"] }
+  },
+  'BasicBundle2': { 
+    type: 'bundle', price: 30, 
+    variants: { 'default': ["https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/images/ceramic%20mug%20heat%20changing.png"] }
+  },
+  // PRODUCTS
+  'Tumbler': { 
+    type: 'product', price: 15, 
+    variants: { 
+      'pink': ["https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/images/Big%20Swig%20ombre%2040%204.png", "https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/images/candle%20white.png"], 
+      'blue': ["https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/images/Glass%20coffee%20mug%20matte.png"] 
     }
   },
-  'Keychain': {
-    price: 5,
-    variants: {
-      'gold': ["https://raw.githubusercontent.com/user/repo/main/g1.jpg"],
-      'silver': ["https://raw.githubusercontent.com/user/repo/main/s1.jpg"]
+  'Keychain': { 
+    type: 'product', price: 5, 
+    variants: { 
+      'gold': ["https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/images/candle%20white.png"], 
+      'silver': ["https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/images/ceramic%20mug%20heat%20changing.png"] 
     }
+  },
+  'Candle': { 
+    type: 'product', price: 12, 
+    variants: { 'default': ["https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/images/candle%20white.png"] }
   }
 };
 
-// State tracking
-let currentSelections = {}; // Tracks { productName: { variant: 'pink', index: 0 } }
-let selected = [];
+let currentSelections = {};
+let cart = [];
 
-// Initialize state for all products
+/**
+ * 2. ENGINE - Builds the UI automatically
+ */
 function init() {
-  for (let key in productData) {
-    currentSelections[key] = {
-      variant: Object.keys(productData[key].variants)[0],
-      index: 0
-    };
-  }
-}
-init();
-
-// 2. UI CONTROLS
-function changeVariant(productName, variantName) {
-  currentSelections[productName].variant = variantName;
-  currentSelections[productName].index = 0; // Reset gallery to first image of new variant
-  updateUI(productName);
-}
-
-function changeImage(productName, direction) {
-  const p = currentSelections[productName];
-  const images = productData[productName].variants[p.variant];
+  const bundleWrap = document.getElementById('bundle-container');
+  const productWrap = document.getElementById('product-container');
   
-  p.index = (p.index + direction + images.length) % images.length;
-  updateUI(productName);
-}
+  for (let id in catalog) {
+    const item = catalog[id];
+    const variants = Object.keys(item.variants);
+    
+    // Set initial state
+    currentSelections[id] = { variant: variants[0], index: 0 };
 
-function updateUI(productName) {
-  const p = currentSelections[productName];
-  const imgElement = document.getElementById(`img-${productName}`);
-  if (imgElement) {
-    imgElement.src = productData[productName].variants[p.variant][p.index];
+    const cardHtml = `
+      <div class="card">
+        <img id="img-${id}" src="${item.variants[variants[0]][0]}">
+        <div class="gallery-controls">
+          <button onclick="changeImage('${id}', -1)">&#10094;</button>
+          <button onclick="changeImage('${id}', 1)">&#10095;</button>
+        </div>
+        <strong>${id.replace(/([A-Z])/g, ' $1').trim()}</strong>
+        
+        ${variants.length > 1 || variants[0] !== 'default' ? `
+          <select onchange="changeVariant('${id}', this.value)">
+            ${variants.map(v => `<option value="${v}">${v}</option>`).join('')}
+          </select>
+        ` : '<div style="height:32px"></div>'}
+
+        <p>$${item.price}</p>
+        <button onclick="addItem('${id}')">${item.type === 'bundle' ? 'Add Bundle' : 'Add to Selection'}</button>
+      </div>
+    `;
+
+    if (item.type === 'bundle') bundleWrap.innerHTML += cardHtml;
+    else productWrap.innerHTML += cardHtml;
   }
 }
 
-// 3. BUNDLE LOGIC
-function addItem(name) {
-  const state = currentSelections[name];
-  const data = productData[name];
-  const img = data.variants[state.variant][state.index];
+// Gallery Logic
+window.changeImage = function(id, dir) {
+  const state = currentSelections[id];
+  const imgs = catalog[id].variants[state.variant];
+  state.index = (state.index + dir + imgs.length) % imgs.length;
+  document.getElementById(`img-${id}`).src = imgs[state.index];
+};
 
-  let existing = selected.find(i => i.name === name && i.variant === state.variant);
+window.changeVariant = function(id, val) {
+  currentSelections[id].variant = val;
+  currentSelections[id].index = 0;
+  document.getElementById(`img-${id}`).src = catalog[id].variants[val][0];
+};
 
-  if (existing) {
-    existing.qty++;
-  } else {
-    selected.push({ name, variant: state.variant, price: data.price, img, qty: 1 });
-  }
-  render();
-}
+// Cart Logic
+window.addItem = function(id) {
+  const state = currentSelections[id];
+  const itemData = catalog[id];
+  const img = itemData.variants[state.variant][state.index];
 
-// ... Keep your render(), changeQty(), and updateTotal() functions from your original code ...ATA
+  let existing = cart.find(i => i.id === id && i.variant === state.variant);
+  if (existing) existing.qty++;
+  else cart.push({ id, variant: state.variant, price: itemData.price, img, qty: 1 });
+  
+  renderCart();
+};
 
-function render() {
-  let container = document.getElementById("selectedItems");
+function renderCart() {
+  const container = document.getElementById("selectedItems");
   container.innerHTML = "";
-
-  selected.forEach((item, index) => {
+  
+  cart.forEach((item, index) => {
     container.innerHTML += `
       <div class="selected-item">
         <img src="${item.img}">
-        <small>${item.name} (${item.variant})</small>
-
+        <div><strong>${item.id}</strong></div>
         <div class="qty-controls">
           <button onclick="changeQty(${index},-1)">-</button>
           <span>${item.qty}</span>
           <button onclick="changeQty(${index},1)">+</button>
         </div>
-
-        <button onclick="removeItem(${index})">Remove</button>
-      </div>
-    `;
+        <button class="btn-remove" onclick="removeItem(${index})">Remove</button>
+      </div>`;
   });
-
-  updateTotal();
+  updateTotals();
 }
 
-function changeQty(i, change) {
-  selected[i].qty += change;
-  if (selected[i].qty <= 0) selected.splice(i,1);
-  render();
-}
+window.changeQty = function(i, n) {
+  cart[i].qty += n;
+  if (cart[i].qty <= 0) cart.splice(i, 1);
+  renderCart();
+};
 
-function removeItem(i) {
-  selected.splice(i,1);
-  render();
-}
+window.removeItem = function(i) {
+  cart.splice(i, 1);
+  renderCart();
+};
 
-function clearBundle() {
-  selected = [];
-  render();
-}
+window.clearBundle = function() {
+  cart = [];
+  renderCart();
+};
 
-function updateTotal() {
-  let total = selected.reduce((sum,i)=>sum + i.price*i.qty,0);
-  let count = selected.reduce((sum,i)=>sum + i.qty,0);
-
+function updateTotals() {
+  let subtotal = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+  let count = cart.reduce((sum, i) => sum + i.qty, 0);
+  
   let discount = 0;
-  if (count >= 3) discount = total * 0.10;
-  if (count >= 5) discount = total * 0.20;
+  if (count >= 5) discount = subtotal * 0.20;
+  else if (count >= 3) discount = subtotal * 0.10;
+  
+  let total = subtotal - discount;
 
-  let final = total - discount;
-
-  document.getElementById("items").innerText = "Items: " + count;
-  document.getElementById("discount").innerText = "Discount: $" + discount.toFixed(2);
-  document.getElementById("total").innerText = "$" + final.toFixed(2);
-  document.getElementById("paypal-amount").value = final.toFixed(2);
-  document.getElementById("savings").innerText =
-    discount > 0 ? "🎉 You saved $" + discount.toFixed(2) : "";
+  document.getElementById("items-count").innerText = "Items: " + count;
+  document.getElementById("discount-amt").innerText = "Discount: $" + discount.toFixed(2);
+  document.getElementById("total-price").innerText = "$" + total.toFixed(2);
+  document.getElementById("paypal-amount").value = total.toFixed(2);
+  document.getElementById("savings-msg").innerText = discount > 0 ? "You're saving $" + discount.toFixed(2) + "!" : "";
 }
-</script>
 
+// Start the app
+init();
+</script>
 </body>
 </html>
