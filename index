@@ -6,34 +6,14 @@
   body { font-family: Arial, sans-serif; margin: 0; background: #fff5f8; color: #333; }
   
   /* LAYOUT - Responsive Grid */
-  .section-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    padding: 15px;
-    justify-content: center;
-  }
+  .section-container {display: flex;flex-wrap: wrap;gap: 15px;padding: 15px;justify-content: center;}
 
   /* CARDS */
-  .card {
-    flex: 0 1 180px;
-    background: white;
-    border-radius: 12px;
-    padding: 12px;
-    text-align: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    transition: transform 0.2s;
-  }
+  .card {flex: 0 1 180px;background: white;border-radius: 12px;padding: 12px;text-align: center;box-shadow: 0 2px 8px rgba(0,0,0,0.06);transition: transform 0.2s;}
   .card:hover { transform: translateY(-3px); }
 
   /* IMAGES */
-  .card img {
-    width: 100%;
-    height: 140px;
-    object-fit: cover;
-    border-radius: 10px;
-    background: #eee;
-  }
+  .card img {width: 100%;height: 140px;object-fit: cover;border-radius: 10px;background: #eee;}
 
   /* CONTROLS */
   .gallery-controls { display: flex; justify-content: center; gap: 8px; margin: 10px 0; }
@@ -49,26 +29,31 @@
   .qty-controls { display: flex; justify-content: center; align-items: center; gap: 8px; margin: 8px 0; }
 
   /* FOOTER STICKY BAR */
-  .total-box {
+/* FOOTER STICKY BAR – COMPACT VERSION */
+.total-box {
     position: sticky;
     bottom: 0;
-    background: white;
-    padding: 20px;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 10px 15px;
     text-align: center;
-    box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
+    box-shadow: 0 -3px 10px rgba(0,0,0,0.08);
     z-index: 1000;
-  }
+    border-top: 1px solid rgba(231,84,128,0.3);
+    backdrop-filter: blur(6px);
+}
+
+.total-box h2 {
+    font-size: 1.4em;
+    margin: 5px 0;
+    color: #e75480;
+}
+
+.total-box button {
+    margin-top: 6px;
+}
 
   /* BUTTONS */
-  button {
-    background: #e75480;
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-  }
+  button {background: #e75480;color: white;border: none;padding: 8px 12px;border-radius: 8px;cursor: pointer;font-weight: bold;}
   button:hover { opacity: 0.9; }
   .btn-remove { background: #cc0000; width: 100%; margin-top: 5px; font-size: 10px; }
   .btn-clear { background: #888; margin-bottom: 10px; }
@@ -76,41 +61,95 @@
 
   h3 { text-align: center; margin-top: 30px; color: #e75480; }
   /* MOTHER'S DAY HEADER */
-.mothersday-header {
-    text-align: center;
-    padding: 45px 20px;
-    background: 
-        linear-gradient(rgba(255, 240, 245, 0.88), rgba(255, 240, 245, 0.88)),
-        url("https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/backgrounds/metallic_shimmer_flowers.jpg");
-    background-size: cover;
-    background-position: center;
-    border-bottom: 4px solid #e75480;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.12);
-    border-radius: 0 0 18px 18px;
+.mothersday-header {text-align: center;padding: 45px 20px;background: linear-gradient(rgba(255, 240, 245, 0.88), rgba(255, 240, 245, 0.88)), url("https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/backgrounds/metallic_shimmer_flowers.jpg");background-size: cover;background-position: center;border-bottom: 4px solid #e75480;box-shadow: 0 4px 14px rgba(0,0,0,0.12);border-radius: 0 0 18px 18px;}
 
-}
+.mothersday-header h1 {font-size: 2.4em;color: #e75480;margin: 0;font-weight: 800;letter-spacing: 1px;}
 
-.mothersday-header h1 {
-    font-size: 2.4em;
-    color: #e75480;
-    margin: 0;
-    font-weight: 800;
-    letter-spacing: 1px;
-}
-
-.mothersday-header p {
-    font-size: 1.15em;
-    color: #555;
-    margin-top: 10px;
-}
+.mothersday-header p {font-size: 1.15em;color: #555;margin-top: 10px;}
 
 /* PAGE BACKGROUND – METALLIC SHIMMER FLOWERS */
-body {
-    background: url("https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/backgrounds/metallic_shimmer_flowers.jpg");
-    background-size: cover;
-    background-attachment: fixed;
-    background-position: center;
+body {background: url("https://raw.githubusercontent.com/diminfomacon-beep/Mothers_Day/main/images/website%20background.png");background-size: cover;background-attachment: fixed;background-position: center;}
+/* READABILITY OVERLAY EFFECT */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    backdrop-filter: blur(3px) brightness(0.95);
+    background-color: rgba(255, 255, 255, 0.25);
+    z-index: -1;
 }
+
+/* Optional: slightly lift text contrast */
+body {
+    color: #333;
+    text-shadow: 0 1px 2px rgba(255,255,255,0.6);
+}
+/* FOOTER FADE EFFECT */
+.total-box {
+    transition: opacity 0.35s ease;
+}
+.total-box.hidden-footer {
+    opacity: 0.35;
+}
+/* MOBILE RESPONSIVE FIXES */
+@media (max-width: 600px) {
+
+    /* Reduce padding around sections */
+    .section-container {
+        padding: 8px;
+        gap: 10px;
+    }
+
+    /* Make cards full-width on small screens */
+    .card {
+        flex: 0 1 100%;
+        max-width: 330px;
+        margin: 0 auto;
+    }
+
+    .card img {
+        height: 120px;
+    }
+
+    /* Selected items layout */
+    .selected-item {
+        width: 45%;
+        min-width: 140px;
+    }
+
+    .selected-item img {
+        width: 55px;
+        height: 55px;
+    }
+
+    /* Footer compact on mobile */
+    .total-box {
+        padding: 8px 10px;
+        font-size: 0.9em;
+    }
+
+    .total-box h2 {
+        font-size: 1.2em;
+    }
+
+    .btn-checkout {
+        font-size: 1em;
+        padding: 10px 20px;
+    }
+
+    /* Header text scaling */
+    .mothersday-header h1 {
+        font-size: 1.8em;
+    }
+
+    .mothersday-header p {
+        font-size: 1em;
+    }
+}
+
 
 </style>
 </head>
@@ -308,6 +347,24 @@ function updateTotals() {
 
 // Start the app
 init();
+
+let lastScroll = 0;
+
+window.addEventListener("scroll", () => {
+    const footer = document.querySelector(".total-box");
+    const currentScroll = window.scrollY;
+
+    if (currentScroll > lastScroll) {
+        // scrolling down → fade footer
+        footer.classList.add("hidden-footer");
+    } else {
+        // scrolling up → show footer
+        footer.classList.remove("hidden-footer");
+    }
+
+    lastScroll = currentScroll;
+});
+
 </script>
 </body>
 </html>
