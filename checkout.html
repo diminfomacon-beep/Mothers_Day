@@ -47,8 +47,31 @@
 
     <script src="https://www.paypal.com/sdk/js?client-id=AWHpVW_dn2CYWVWbV5HGD2v3NpGs5atS90DuDMGrNZzFT--Anx1Ec80q7bwOAQ2lqfc4Gpd0NbBkYWRd"></script>
     <script>
-        function renderMasterCart() {
-    // 1. Setup & Data Retrieval
+        // --- QUANTITY & REMOVAL HANDLERS ---
+function updateQty(index, change) {
+    let finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
+    if (!finalCart[index].qty) finalCart[index].qty = 1;
+    
+    finalCart[index].qty += change;
+    
+    // If qty drops to 0, remove it
+    if (finalCart[index].qty <= 0) {
+        removeItem(index);
+    } else {
+        localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
+        renderMasterCart(); // Re-runs all math (Tax, Shipping, Promo)
+    }
+}
+
+function removeItem(index) {
+    let finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
+    finalCart.splice(index, 1);
+    localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
+    renderMasterCart(); // Re-runs all math
+}
+
+// --- MASTER RENDER FUNCTION ---
+function renderMasterCart() {
     const finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
     const container = document.getElementById('master-list');
     const promoInput = document.getElementById('promo-input').value.trim().toUpperCase();
@@ -56,55 +79,62 @@
     const discountRow = document.getElementById('discount-row');
     
     let baseTotal = 0;
+    let totalUnits = 0;
 
-   // 2. Define your Promo Codes here (Percentage or Flat Amount)
+    // 1. Promo Code Dictionary
     const validPromos = {
-        "MOTHERSDAY": { type: "percent", value: 0.10 }, // 10% off
-        "SAVE10": { type: "flat", value: 10.00 },       // $10.00 off
-        "VIP20": { type: "percent", value: 0.20 },      // 20% off
-        "GIFT5": { type: "flat", value: 5.00 }          // $5.00 off
+        "MOTHERSDAY": { type: "percent", value: 0.10 },
+        "VIP20": { type: "percent", value: 0.20 },
+        "SAVE10": { type: "flat", value: 10.00 },
+        "GIFT5": { type: "flat", value: 5.00 }
     };
-    // 3. Render the Cart Items
+
+    // 2. Render Items with +/- and X Buttons
     if (finalCart.length === 0) {
-        container.innerHTML = "<p style='text-align:center;'>Your cart is empty.</p>";
+        container.innerHTML = "<p style='text-align:center; padding:20px;'>Your cart is empty.</p>";
     } else {
         container.innerHTML = finalCart.map((item, index) => {
             const qty = item.qty || 1;
+            const unitsPerItem = parseInt(item.units) || 1; // For bundles/sets
             const lineTotal = item.price * qty;
+            
             baseTotal += lineTotal;
+            totalUnits += (unitsPerItem * qty);
+
             return `
-                <div class="cart-item">
-                    <div>
+                <div class="cart-item" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding: 10px 0;">
+                    <div style="flex: 2;">
                         <b style="color:#e75480;">${item.name}</b><br>
-                        <small style="color:#666;">${item.details || ''}</small>
+                        <small style="color:#666; font-size: 11px;">${item.details || ''}</small>
+                        <br><button onclick="removeItem(${index})" style="background:none; border:none; color:red; cursor:pointer; font-size:10px; padding:0; margin-top:5px;">[ REMOVE X ]</button>
                     </div>
-                    <div style="text-align:right;">
-                        ${qty} x $${item.price.toFixed(2)}<br>
+                    <div style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                        <button onclick="updateQty(${index}, -1)" style="width:25px; cursor:pointer;">-</button>
+                        <span>${qty}</span>
+                        <button onclick="updateQty(${index}, 1)" style="width:25px; cursor:pointer;">+</button>
+                    </div>
+                    <div style="flex: 1; text-align: right;">
                         <b>$${lineTotal.toFixed(2)}</b>
                     </div>
                 </div>`;
         }).join('');
     }
 
-   // 4. Calculate Discount (Only 1 code at a time)
+    // 3. Discount Logic (Auto-refreshes if baseTotal changes)
     let promoDiscount = 0;
     if (promoInput === "") {
         promoMsg.textContent = "";
         discountRow.style.display = "none";
     } else if (validPromos.hasOwnProperty(promoInput)) {
         const promo = validPromos[promoInput];
-        
         if (promo.type === "percent") {
             promoDiscount = baseTotal * promo.value;
-            promoMsg.textContent = `Success! ${(promo.value * 100)}% off applied.`;
-        } else if (promo.type === "flat") {
+            promoMsg.textContent = `✓ ${(promo.value * 100)}% Off Applied!`;
+        } else {
             promoDiscount = promo.value;
-            promoMsg.textContent = `Success! $${promo.value.toFixed(2)} off applied.`;
+            promoMsg.textContent = `✓ $${promo.value.toFixed(2)} Off Applied!`;
         }
-        
-        // Safety check: Don't let the discount be more than the total
         if (promoDiscount > baseTotal) promoDiscount = baseTotal;
-    
         promoMsg.style.color = "#28a745";
         discountRow.style.display = "block";
     } else {
@@ -112,79 +142,50 @@
         promoMsg.style.color = "#ff4d4d";
         discountRow.style.display = "none";
     }
-    // 5. Calculate Shipping
-   // 5. Calculate Automatic Tiered Shipping
-const deliveryType = document.querySelector('input[name="delivery"]:checked').value;
-const shipOptionsDiv = document.getElementById('shipping-options');
-const shipRegion = document.getElementById('ship-region').value; // "US" or "INTL"
-let shippingCost = 0;
 
-// Count total number of items (tumblers)
-const totalItems = finalCart.reduce((acc, item) => acc + (item.qty || 1), 0);
+    // 4. Tiered Shipping Logic (Auto-refreshes based on totalUnits)
+    const deliveryType = document.querySelector('input[name="delivery"]:checked').value;
+    const shipOptionsDiv = document.getElementById('shipping-options');
+    const shipRegion = document.getElementById('ship-region').value;
+    let shippingCost = 0;
 
-if (deliveryType === "shipping") {
-    shipOptionsDiv.style.display = "block";
-    
-    if (shipRegion === "US") {
-        shippingCost = 7.50; // Flat rate US
-        document.getElementById('paypal-button-container').style.display = "block";
-        promoMsg.textContent = ""; 
-    } else {
-        // --- INTERNATIONAL TIERED LOGIC ---
-        if (totalItems <= 3) {
-            shippingCost = 35.50;
-        } else if (totalItems <= 5) {
-            shippingCost = 55.50;
-        } else if (totalItems <= 8) {
-            shippingCost = 85.50;
-        } else {
-            // Safety Cap for 9+ Tumblers
-            shippingCost = 0;
-            promoMsg.textContent = "⚠️ Bulk International Shipping: Please contact us for a shipping quote.";
-            promoMsg.style.color = "#ff9800";
-            document.getElementById('paypal-button-container').style.display = "none";
-        }
-    }
-} else {
-    shipOptionsDiv.style.display = "none";
-    document.getElementById('paypal-button-container').style.display = "block";
-}
-
-    // New Shipping Logic with a "Safety Cap"
     if (deliveryType === "shipping") {
         shipOptionsDiv.style.display = "block";
-        const regionRate = parseFloat(document.getElementById('ship-region').value);
-        
-        // Check if it's International AND if the cart is getting too big
-        if (regionRate > 30 && finalCart.length > 5) {
-            promoMsg.textContent = "⚠️ Large International Order: Please contact us for a custom shipping quote before paying.";
-            promoMsg.style.color = "#ff9800";
-            // Optionally hide the paypal button here
-            document.getElementById('paypal-button-container').style.display = "none";
-            shippingCost = 0;
-        } else {
+        if (shipRegion === "US") {
+            shippingCost = 7.50;
             document.getElementById('paypal-button-container').style.display = "block";
-            shippingCost = regionRate;
+        } else {
+            // Tiered International
+            if (totalUnits === 1) shippingCost = 35.50;
+            else if (totalUnits <= 3) shippingCost = 55.00;
+            else if (totalUnits <= 5) shippingCost = 85.00;
+            else {
+                shippingCost = 0;
+                promoMsg.textContent = "⚠️ Bulk International Shipping: Contact us for a quote.";
+                promoMsg.style.color = "#ff9800";
+                document.getElementById('paypal-button-container').style.display = "none";
+            }
         }
+    } else {
+        shipOptionsDiv.style.display = "none";
+        document.getElementById('paypal-button-container').style.display = "block";
     }
 
-    // 6. The Final Math
+    // 5. Final Calculation
     const discountedSubtotal = baseTotal - promoDiscount;
     const tax = discountedSubtotal * 0.04;
     const finalGrandTotal = discountedSubtotal + shippingCost + tax;
 
-    // 7. Update the UI Labels
+    // 6. UI Updates
     document.getElementById('sub-total').textContent = baseTotal.toFixed(2);
     document.getElementById('discount-amt').textContent = promoDiscount.toFixed(2);
     document.getElementById('shipping-amt').textContent = shippingCost.toFixed(2);
     document.getElementById('tax-amt').textContent = tax.toFixed(2);
     document.getElementById('grand-total').textContent = finalGrandTotal.toFixed(2);
 
-    // Return the string for PayPal
     return finalGrandTotal.toFixed(2);
 }
-
-// Initialize PayPal Button
+        // Initialize PayPal Button
 paypal.Buttons({
     createOrder: (data, actions) => {
         return actions.order.create({
