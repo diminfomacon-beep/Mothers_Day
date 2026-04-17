@@ -27,12 +27,13 @@
             updateBundle();
         }
 
-        function updateBundle() {
+       function updateBundle() {
             const bundle = JSON.parse(localStorage.getItem('my_bundle')) || [];
             const list = document.getElementById('bundle-list');
             const summary = document.getElementById('summary');
             let subtotal = 0;
-
+        
+            // 1. Calculate the real subtotal and show the items
             list.innerHTML = bundle.map((item, i) => {
                 subtotal += item.price;
                 return `<div class="item-row">
@@ -40,15 +41,24 @@
                     <button class="remove-btn" onclick="removeItem(${i})">Remove</button>
                 </div>`;
             }).join('');
-
+        
+            // 2. DISCOUNT LOGIC: Only count items that cost money
+            // This creates a separate list of items where price > 0
+            const paidItems = bundle.filter(item => item.price > 0);
+            const paidItemCount = paidItems.length;
+        
             let discount = 0;
-            if (bundle.length >= 11) discount = 0.15;
-            else if (bundle.length >= 6) discount = 0.10;
-
+            if (paidItemCount >= 11) discount = 0.15;
+            else if (paidItemCount >= 6) discount = 0.10;
+        
             let finalPrice = subtotal * (1 - discount);
             
+            // 3. Update the display
             summary.innerHTML = `
                 <div>Subtotal: $${subtotal.toFixed(2)}</div>
+                <div style="font-size: 0.85em; color: #666;">
+                    (${paidItemCount} qualifying items for discount)
+                </div>
                 ${discount > 0 ? `<div class="discount-text">-${(discount*100)}% Bundle Discount Applied</div>` : ''}
                 <div style="font-size: 1.2em; font-weight: bold;">
                     ${discount > 0 ? `<span class="original-price">$${subtotal.toFixed(2)}</span> ` : ''}
