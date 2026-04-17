@@ -24,8 +24,8 @@
         <div id="shipping-options" style="display:none; margin-top:10px; padding-left: 20px;">
             <label>Destination:</label>
             <select id="ship-region" onchange="renderMasterCart()" class="input-style">
-                <option value="7.50">United States (+$7.50)</option>
-                <option value="35.50">International (+$35.50)</option>
+                <option value="US">United States ($7.50)</option>
+                <option value="INTL">International (Calculated at Checkout)</option>
             </select>
         </div>
 
@@ -113,9 +113,42 @@
         discountRow.style.display = "none";
     }
     // 5. Calculate Shipping
-    const deliveryType = document.querySelector('input[name="delivery"]:checked').value;
-    const shipOptionsDiv = document.getElementById('shipping-options');
-    let shippingCost = 0;
+   // 5. Calculate Automatic Tiered Shipping
+const deliveryType = document.querySelector('input[name="delivery"]:checked').value;
+const shipOptionsDiv = document.getElementById('shipping-options');
+const shipRegion = document.getElementById('ship-region').value; // "US" or "INTL"
+let shippingCost = 0;
+
+// Count total number of items (tumblers)
+const totalItems = finalCart.reduce((acc, item) => acc + (item.qty || 1), 0);
+
+if (deliveryType === "shipping") {
+    shipOptionsDiv.style.display = "block";
+    
+    if (shipRegion === "US") {
+        shippingCost = 7.50; // Flat rate US
+        document.getElementById('paypal-button-container').style.display = "block";
+        promoMsg.textContent = ""; 
+    } else {
+        // --- INTERNATIONAL TIERED LOGIC ---
+        if (totalItems === 1) {
+            shippingCost = 35.50;
+        } else if (totalItems <= 3) {
+            shippingCost = 55.00;
+        } else if (totalItems <= 5) {
+            shippingCost = 85.00;
+        } else {
+            // Safety Cap for 6+ Tumblers
+            shippingCost = 0;
+            promoMsg.textContent = "⚠️ Bulk International Shipping: Please contact us for a shipping quote.";
+            promoMsg.style.color = "#ff9800";
+            document.getElementById('paypal-button-container').style.display = "none";
+        }
+    }
+} else {
+    shipOptionsDiv.style.display = "none";
+    document.getElementById('paypal-button-container').style.display = "block";
+}
 
     // New Shipping Logic with a "Safety Cap"
     if (deliveryType === "shipping") {
