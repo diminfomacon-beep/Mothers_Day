@@ -16,7 +16,12 @@
 </head>
 <body>
     <div class="input-group">
-        <input type="text" id="custom-msg" placeholder="Gift message (optional)...">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+            <span class="status" style="font-size: 9px;">Message:</span>
+            <span id="char-count" style="font-size: 9px; color: #999;">0/200</span>
+        </div>
+        <input type="text" id="custom-msg" maxlength="200" placeholder="Gift message (optional)...">
+        
         <input type="file" id="image-upload" accept="image/*">
         <div id="upload-status" class="status"></div>
         <button id="add-btn">Add to Cart</button>
@@ -30,7 +35,18 @@
         const itemName = params.get('name') || "Item";
         const itemPrice = parseFloat(params.get('price')) || 0.00;
         const itemType = params.get('type'); // 'bundle' or 'premade'
-
+        const msgInput = document.getElementById('custom-msg');
+        const charCounter = document.getElementById('char-count');
+    
+        msgInput.oninput = function() {
+            const remaining = this.value.length;
+            charCounter.textContent = remaining + "/200";
+            if (remaining >= 180) {
+                charCounter.style.color = "#e75480"; // Turn pink when almost full
+            } else {
+                charCounter.style.color = "#999";
+            }
+        };
         document.getElementById('add-btn').onclick = async function() {
             const btn = this;
             const status = document.getElementById('upload-status');
