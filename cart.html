@@ -65,26 +65,29 @@
     `;
 
     // Add to Final Cart logic
-    document.getElementById('add-to-final').onclick = function() {
-        if (bundle.length === 0) return alert("Bundle is empty!");
-        
-        const finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
-        
-        // Use the summary of ALL items (including free ones) for your records
-        const allItemsList = bundle.map(i => i.name.replace(/_/g, ' ')).join(", ");
+   document.getElementById('add-to-final').onclick = function() {
+    if (bundle.length === 0) return alert("Bundle is empty!");
+    
+    const finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
+    
+    // Create a detailed list: "Red Roses (Msg: For Mom), White Lily (Msg: Happy Bday)"
+    const detailedSummary = bundle.map(i => {
+        const cleanName = i.name.replace(/_/g, ' ');
+        return i.message ? `${cleanName} [Msg: ${i.message}]` : cleanName;
+    }).join(", ");
 
-        finalCart.push({
-            name: "Custom Mother's Day Bundle",
-            details: allItemsList,
-            price: finalPrice,
-            qty: 1
-        });
+    finalCart.push({
+        name: "Custom Mother's Day Bundle",
+        details: detailedSummary, // This long string goes to PayPal
+        price: finalPrice,
+        qty: 1
+    });
 
-        localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
-        localStorage.removeItem('my_bundle');
-        alert("Bundle added to Final Cart!");
-    };
-}
+    localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
+    localStorage.removeItem('my_bundle');
+    alert("Bundle added to Final Cart!");
+};
+       }
         setInterval(updateBundle, 1000);
         updateBundle();
     </script>
