@@ -17,7 +17,7 @@
     <div id="master-list"></div>
 
     <div class="options-section">
-        <h3>1. Delivery Method</h3>
+        <h3>Choose Delivery Method</h3>
         <input type="radio" name="delivery" value="pickup" checked onclick="renderMasterCart()"> Local Pickup (Free)<br>
         <input type="radio" name="delivery" value="shipping" onclick="renderMasterCart()"> Shipping<br>
         
@@ -29,7 +29,7 @@
             </select>
         </div>
 
-        <h3>2. Discount Code</h3>
+        <h3>Enter Discount Code</h3>
         <input type="text" id="promo-input" placeholder="Enter code" class="input-style">
         <button onclick="renderMasterCart()" style="padding: 8px; cursor: pointer;">Apply</button>
         <div id="promo-msg" style="font-size: 12px; color: #28a745; margin-top: 5px;"></div>
@@ -61,8 +61,8 @@
     const validPromos = {
         "MOTHERSDAY": 0.10,  // 10% Off
         "VIP20": 0.20,       // 20% Off
-        "FLOWERPOWER": 0.15, // 15% Off
-        "SAVE5": 0.05        // 5% Off
+        "POWERSAVE": 0.15, // 15% Off
+        "SAVE05": 0.05        // 5% Off
     };
 
     // 3. Render the Cart Items
