@@ -85,25 +85,38 @@
     // Initial render
     renderCart();
 
-    paypal.Buttons({
-        createOrder: (data, actions) => {
-            const total = renderCart();
-            if (total <= 0) {
-                alert("Your bundle is empty!");
-                return;
+        paypal.Buttons({
+            createOrder: (data, actions) => {
+                const bundle = JSON.parse(localStorage.getItem('my_bundle')) || [];
+                const total = bundle.reduce((sum, item) => sum + item.price, 0).toFixed(2);
+                
+                // Create a summary string: "Red_Roses, Mothers_Day_Card"
+                const itemSummary = bundle.map(item => item.name).join(", ");
+        
+                if (total <= 0) {
+                    alert("Your bundle is empty!");
+                    return;
+                }
+        
+                return actions.order.create({
+                    purchase_units: [{
+                        description: "Mothers Day Bundle: " + itemSummary, // THIS SHOWS IN YOUR PAYPAL
+                        amount: {
+                            currency_code: "USD",
+                            value: total
+                        }
+                    }]
+                });
+            },
+            onApprove: (data, actions) => {
+                return actions.order.capture().then(details => {
+                    localStorage.removeItem('my_bundle');
+                    // Show a success message with the customer's name
+                    alert('Order placed! Thank you, ' + details.payer.name.given_name);
+                    renderCart();
+                });
             }
-            return actions.order.create({
-                purchase_units: [{ amount: { value: total } }]
-            });
-        },
-        onApprove: (data, actions) => {
-            return actions.order.capture().then(details => {
-                localStorage.removeItem('my_bundle');
-                alert('Transaction completed by ' + details.payer.name.given_name);
-                renderCart();
-            });
-        }
-    }).render('#paypal-button-container');
+        }).render('#paypal-button-container');
 </script>
 
 </body>
