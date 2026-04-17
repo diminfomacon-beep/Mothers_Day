@@ -2,67 +2,107 @@
 <html>
 <head>
     <style>
-        body { font-family: sans-serif; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        #master-list { width: 100%; max-width: 600px; }
-        .cart-item { border-bottom: 2px solid #e75480; padding: 15px 0; display: flex; justify-content: space-between; align-items: center; }
-        .item-info { flex-grow: 1; }
-        .qty-controls { display: flex; align-items: center; gap: 10px; margin-left: 20px; }
-        .qty-btn { background: #eee; border: 1px solid #ccc; padding: 5px 10px; cursor: pointer; border-radius: 3px; }
-        .remove-link { color: #ff4d4d; font-size: 11px; cursor: pointer; display: block; margin-top: 5px; }
-        .total-box { font-size: 1.5em; margin: 20px 0; text-align: center; width: 100%; font-weight: bold; }
-        #paypal-button-container { width: 100%; max-width: 350px; }
-    </style>
-</head>
+    body { font-family: sans-serif; padding: 20px; display: flex; flex-direction: column; align-items: center; background: #fffafb; }
+    #master-list { width: 100%; max-width: 600px; background: white; padding: 15px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+    .cart-item { border-bottom: 1px solid #eee; padding: 15px 0; display: flex; justify-content: space-between; align-items: center; }
+    .options-section { width: 100%; max-width: 600px; margin-top: 20px; padding: 15px; background: #fdf2f5; border-radius: 15px; }
+    .total-box { font-size: 1.2em; margin: 20px 0; text-align: right; width: 100%; max-width: 600px; line-height: 1.6; }
+    .grand-total-row { font-size: 1.5em; font-weight: bold; color: #e75480; border-top: 2px solid #e75480; padding-top: 10px; margin-top: 10px; }
+    #paypal-button-container { width: 100%; max-width: 350px; margin-top: 20px; }
+    .input-style { padding: 8px; border-radius: 8px; border: 1px solid #ccc; margin-top: 5px; }
+</style>
+
 <body>
-    <h2>Your Cart</h2>
+    <h2>Complete Your Order</h2>
     <div id="master-list"></div>
-    <div class="total-box">Grand Total: $<span id="grand-total">0.00</span></div>
+
+    <div class="options-section">
+        <h3>1. Delivery Method</h3>
+        <input type="radio" name="delivery" value="pickup" checked onclick="renderMasterCart()"> Local Pickup (Free)<br>
+        <input type="radio" name="delivery" value="shipping" onclick="renderMasterCart()"> Shipping<br>
+        
+        <div id="shipping-options" style="display:none; margin-top:10px; padding-left: 20px;">
+            <label>Destination:</label>
+            <select id="ship-region" onchange="renderMasterCart()" class="input-style">
+                <option value="7.50">United States (+$7.50)</option>
+                <option value="35.50">International (+$35.50)</option>
+            </select>
+        </div>
+
+        <h3>2. Discount Code</h3>
+        <input type="text" id="promo-input" placeholder="Enter code" class="input-style">
+        <button onclick="renderMasterCart()" style="padding: 8px; cursor: pointer;">Apply</button>
+        <div id="promo-msg" style="font-size: 12px; color: #28a745; margin-top: 5px;"></div>
+    </div>
+
+    <div class="total-box">
+        <div>Subtotal: $<span id="sub-total">0.00</span></div>
+        <div id="discount-row" style="color: #e75480; display:none;">Discount: -$<span id="discount-amt">0.00</span></div>
+        <div>Shipping: $<span id="shipping-amt">0.00</span></div>
+        <div>Tax (4%): $<span id="tax-amt">0.00</span></div>
+        <div class="grand-total-row">Grand Total: $<span id="grand-total">0.00</span></div>
+    </div>
+
     <div id="paypal-button-container"></div>
 
     <script src="https://www.paypal.com/sdk/js?client-id=AWHpVW_dn2CYWVWbV5HGD2v3NpGs5atS90DuDMGrNZzFT--Anx1Ec80q7bwOAQ2lqfc4Gpd0NbBkYWRd"></script>
     <script>
-        function updateQty(index, change) {
-            let finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
-            finalCart[index].qty = (finalCart[index].qty || 1) + change;
-            if (finalCart[index].qty < 1) return removeItem(index);
-            localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
-            renderMasterCart();
-        }
-
-        function removeItem(index) {
-            let finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
-            finalCart.splice(index, 1);
-            localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
-            renderMasterCart();
-        }
-
         function renderMasterCart() {
             const finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
             const container = document.getElementById('master-list');
-            let grandTotal = 0;
+            let baseTotal = 0;
 
+            // 1. Render items and calculate item subtotal
             container.innerHTML = finalCart.map((item, index) => {
-                const itemQty = item.qty || 1;
-                const lineTotal = item.price * itemQty;
-                grandTotal += lineTotal;
-                return `
-                    <div class="cart-item">
-                        <div class="item-info">
-                            <div style="font-weight:bold">${item.name}</div>
-                            <div style="font-size:12px; color:#666">${item.details || ''}</div>
-                            <span class="remove-link" onclick="removeItem(${index})">Remove Item</span>
-                        </div>
-                        <div class="qty-controls">
-                            <button class="qty-btn" onclick="updateQty(${index}, -1)">-</button>
-                            <span>${itemQty}</span>
-                            <button class="qty-btn" onclick="updateQty(${index}, 1)">+</button>
-                            <div style="min-width:70px; text-align:right">$${lineTotal.toFixed(2)}</div>
-                        </div>
-                    </div>`;
+                const qty = item.qty || 1;
+                const lineTotal = item.price * qty;
+                baseTotal += lineTotal;
+                return `<div class="cart-item">
+                    <div><b>${item.name}</b><br><small>${item.details || ''}</small></div>
+                    <div>${qty} x $${item.price.toFixed(2)} = $${lineTotal.toFixed(2)}</div>
+                </div>`;
             }).join('');
 
-            document.getElementById('grand-total').textContent = grandTotal.toFixed(2);
-            return grandTotal.toFixed(2);
+            // 2. Handle Discount Codes
+            let promoDiscount = 0;
+            const promoCode = document.getElementById('promo-input').value.toUpperCase();
+            const promoMsg = document.getElementById('promo-msg');
+            
+            // Example Code: MOTHERSDAY for 10% off
+            if (promoCode === "MOTHERSDAY") {
+                promoDiscount = baseTotal * 0.10;
+                promoMsg.textContent = "10% discount applied!";
+                document.getElementById('discount-row').style.display = "block";
+            } else {
+                promoMsg.textContent = "";
+                document.getElementById('discount-row').style.display = "none";
+            }
+
+            // 3. Handle Shipping Logic
+            const deliveryType = document.querySelector('input[name="delivery"]:checked').value;
+            const shipOptionsDiv = document.getElementById('shipping-options');
+            let shippingCost = 0;
+
+            if (deliveryType === "shipping") {
+                shipOptionsDiv.style.display = "block";
+                shippingCost = parseFloat(document.getElementById('ship-region').value);
+            } else {
+                shipOptionsDiv.style.display = "none";
+            }
+
+            // 4. Final Math
+            const discountedSubtotal = baseTotal - promoDiscount;
+            const tax = discountedSubtotal * 0.04;
+            const finalGrandTotal = discountedSubtotal + shippingCost + tax;
+
+            // 5. Update UI
+            document.getElementById('sub-total').textContent = baseTotal.toFixed(2);
+            document.getElementById('discount-amt').textContent = promoDiscount.toFixed(2);
+            document.getElementById('shipping-amt').textContent = shippingCost.toFixed(2);
+            document.getElementById('tax-amt').textContent = tax.toFixed(2);
+            document.getElementById('grand-total').textContent = finalGrandTotal.toFixed(2);
+
+            return finalGrandTotal.toFixed(2);
         }
 
         paypal.Buttons({
@@ -75,5 +115,6 @@
 
         renderMasterCart();
     </script>
+</body>
 </body>
 </html>
