@@ -57,14 +57,13 @@
     
     let baseTotal = 0;
 
-    // 2. Define your Promo Codes here
+   // 2. Define your Promo Codes here (Percentage or Flat Amount)
     const validPromos = {
-        "MOTHERSDAY": 0.10,  // 10% Off
-        "VIP20": 0.20,       // 20% Off
-        "POWERSAVE": 0.15, // 15% Off
-        "SAVE05": 0.05        // 5% Off
+        "MOTHERSDAY": { type: "percent", value: 0.10 }, // 10% off
+        "SAVE10": { type: "flat", value: 10.00 },       // $10.00 off
+        "VIP20": { type: "percent", value: 0.20 },      // 20% off
+        "GIFT5": { type: "flat", value: 5.00 }          // $5.00 off
     };
-
     // 3. Render the Cart Items
     if (finalCart.length === 0) {
         container.innerHTML = "<p style='text-align:center;'>Your cart is empty.</p>";
@@ -87,15 +86,25 @@
         }).join('');
     }
 
-    // 4. Calculate Discount (Only 1 code at a time)
+   // 4. Calculate Discount (Only 1 code at a time)
     let promoDiscount = 0;
     if (promoInput === "") {
         promoMsg.textContent = "";
         discountRow.style.display = "none";
     } else if (validPromos.hasOwnProperty(promoInput)) {
-        const percentage = validPromos[promoInput];
-        promoDiscount = baseTotal * percentage;
-        promoMsg.textContent = `Success! ${(percentage * 100)}% off applied.`;
+        const promo = validPromos[promoInput];
+        
+        if (promo.type === "percent") {
+            promoDiscount = baseTotal * promo.value;
+            promoMsg.textContent = `Success! ${(promo.value * 100)}% off applied.`;
+        } else if (promo.type === "flat") {
+            promoDiscount = promo.value;
+            promoMsg.textContent = `Success! $${promo.value.toFixed(2)} off applied.`;
+        }
+        
+        // Safety check: Don't let the discount be more than the total
+        if (promoDiscount > baseTotal) promoDiscount = baseTotal;
+    
         promoMsg.style.color = "#28a745";
         discountRow.style.display = "block";
     } else {
@@ -103,7 +112,6 @@
         promoMsg.style.color = "#ff4d4d";
         discountRow.style.display = "none";
     }
-
     // 5. Calculate Shipping
     const deliveryType = document.querySelector('input[name="delivery"]:checked').value;
     const shipOptionsDiv = document.getElementById('shipping-options');
