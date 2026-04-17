@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { margin: 0; font-family: sans-serif; display: flex; align-items: center; }
+        #add-btn {
+            background: #0070ba; color: white; border: none;
+            padding: 10px 16px; border-radius: 4px;
+            font-weight: bold; cursor: pointer; transition: 0.2s;
+        }
+        #add-btn:hover { background: #005ea6; }
+        #add-btn:active { transform: scale(0.95); }
+    </style>
+</head>
+<body>
+
+    <button id="add-btn">Add to Bundle</button>
+
+    <script>
+        // 1. Get the info from the URL (everything after the '?')
+        const params = new URLSearchParams(window.location.search);
+        const itemName = params.get('name') || "Item";
+        const itemPrice = parseFloat(params.get('price')) || 0.00;
+
+        // 2. Update the button text so you know it's working
+        const btn = document.getElementById('add-btn');
+        btn.textContent = `Add ${itemName} - $${itemPrice.toFixed(2)}`;
+
+        // 3. The logic to save the item
+        btn.onclick = function() {
+            // Get current bundle from storage
+            let bundle = JSON.parse(localStorage.getItem('my_bundle')) || [];
+            
+            // Add the new item
+            bundle.push({ name: itemName, price: itemPrice });
+            
+            // Save it back
+            localStorage.setItem('my_bundle', JSON.stringify(bundle));
+            
+            // Visual feedback
+            btn.textContent = "Added!";
+            btn.style.background = "#28a745"; // Green for success
+            
+            setTimeout(() => {
+                btn.textContent = `Add ${itemName} - $${itemPrice.toFixed(2)}`;
+                btn.style.background = "#0070ba";
+            }, 1000);
+        };
+    </script>
+</body>
+</html>
