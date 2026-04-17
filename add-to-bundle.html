@@ -37,8 +37,12 @@
     </style>
 </head>
 <body>
-
-    <button id="add-btn">Add</button>
+    <div style="display: flex; flex-direction: column; gap: 8px; align-items: center;">
+        <input type="text" id="custom-msg" placeholder="Gift message (optional)..." 
+               style="padding: 8px; border-radius: 15px; border: 1px solid #ccc; width: 180px; font-size: 12px;">
+        
+        <button id="add-btn">Add to Cart</button>
+    </div>
 
     <script>
         const params = new URLSearchParams(window.location.search);
@@ -46,18 +50,25 @@
         const itemPrice = parseFloat(params.get('price')) || 0.00;
 
         document.getElementById('add-btn').onclick = function() {
+            const msg = document.getElementById('custom-msg').value;
             let bundle = JSON.parse(localStorage.getItem('my_bundle')) || [];
-            bundle.push({ name: itemName, price: itemPrice });
+            
+            // Add the item PLUS the message
+            bundle.push({ 
+                name: itemName, 
+                price: itemPrice, 
+                message: msg // Storing the custom message here
+            });
+            
             localStorage.setItem('my_bundle', JSON.stringify(bundle));
             
-            // Success feedback
             this.textContent = "Added!";
-            this.style.background = "#28a745"; // Briefly turns green
-            
+            this.style.background = "#28a745";
             setTimeout(() => {
-                this.textContent = "Add";
-                this.style.background = "#e75480"; // Returns to your pink
-            }, 800);
+                this.textContent = "Add to Cart";
+                this.style.background = "#e75480";
+                document.getElementById('custom-msg').value = ""; // Clear input
+            }, 1000);
         };
     </script>
 </body>
