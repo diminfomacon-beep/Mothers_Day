@@ -2,17 +2,46 @@
 <html>
 <head>
     <style>
-        body { font-family: sans-serif; padding: 20px; }
-        .cart-item { border-bottom: 2px solid #e75480; padding: 15px 0; }
-        .item-name { font-weight: bold; color: #e75480; font-size: 1.1em; }
-        .item-details { font-size: 0.9em; color: #666; font-style: italic; }
-        .total-box { font-size: 1.5em; margin: 20px 0; text-align: right; }
-    </style>
+    body { 
+        font-family: sans-serif; 
+        padding: 20px; 
+        display: flex; 
+        flex-direction: column; 
+        align-items: center; /* Centers everything horizontally */
+    }
+
+    #master-list {
+        width: 100%;
+        max-width: 600px; /* Keeps the list from getting too wide on desktop */
+    }
+
+    .cart-item { 
+        border-bottom: 2px solid #e75480; 
+        padding: 15px 0; 
+        width: 100%;
+    }
+
+    .total-box { 
+        font-size: 1.5em; 
+        margin: 20px 0; 
+        text-align: center; /* Centers the total text */
+        width: 100%;
+    }
+
+    /* This targets the PayPal container specifically */
+    #paypal-button-container { 
+        width: 100%; 
+        max-width: 350px; /* Standard professional width for PayPal buttons */
+        margin: 0 auto; 
+    }
+</style>
+
 </head>
 <body>
     <h2>Final Checkout</h2>
     <div id="master-list"></div>
     <div class="total-box">Grand Total: $<span id="grand-total">0.00</span></div>
+    
     <div id="paypal-button-container"></div>
 
     <script src="https://www.paypal.com/sdk/js?client-id=AWHpVW_dn2CYWVWbV5HGD2v3NpGs5atS90DuDMGrNZzFT--Anx1Ec80q7bwOAQ2lqfc4Gpd0NbBkYWRd"></script>
