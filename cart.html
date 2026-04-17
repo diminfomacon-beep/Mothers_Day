@@ -1,34 +1,110 @@
 <!DOCTYPE html>
 <html>
-<body>
-  <div id="display"><h4>Bundle: $0.00</h4></div>
-  <div id="paypal-button-container"></div>
+<head>
+    <style>
+        body { font-family: 'Open Sans', sans-serif; color: #333; padding: 10px; }
+        .cart-container { border: 1px solid #eee; padding: 15px; border-radius: 8px; background: #fff; }
+        h3 { color: #e75480; margin-top: 0; }
+        
+        .item-row { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 8px 0; 
+            border-bottom: 1px outline #f9f9f9;
+        }
 
-  <script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID"></script>
-  <script>
-    function updateCart() {
-      const cart = JSON.parse(localStorage.getItem('my_bundle')) || [];
-      const total = cart.reduce((sum, item) => sum + item.price, 0);
-      document.getElementById('display').innerHTML = `<h4>Bundle Total: $${total.toFixed(2)}</h4>`;
-      return total.toFixed(2);
+        .remove-btn { 
+            background: none; 
+            border: none; 
+            color: #ff4d4d; 
+            cursor: pointer; 
+            font-size: 12px; 
+            text-decoration: underline;
+        }
+
+        .total-row { 
+            margin-top: 15px; 
+            font-weight: bold; 
+            font-size: 1.2em; 
+            border-top: 2px solid #e75480; 
+            padding-top: 10px; 
+        }
+
+        #paypal-button-container { margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="cart-container">
+    <h3>Your Bundle</h3>
+    <div id="item-list"></div>
+    <div class="total-row">Total: $<span id="total-price">0.00</span></div>
+    <div id="paypal-button-container"></div>
+</div>
+
+<script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID"></script>
+<script>
+    function renderCart() {
+        const listContainer = document.getElementById('item-list');
+        const totalDisp = document.getElementById('total-price');
+        const bundle = JSON.parse(localStorage.getItem('my_bundle')) || [];
+        
+        listContainer.innerHTML = ''; // Clear current list
+        let total = 0;
+
+        if (bundle.length === 0) {
+            listContainer.innerHTML = '<p style="color:#999 italic">Your bundle is empty.</p>';
+        }
+
+        bundle.forEach((item, index) => {
+            const row = document.createElement('div');
+            row.className = 'item-row';
+            row.innerHTML = `
+                <span>${item.name.replace(/_/g, ' ')} - $${item.price.toFixed(2)}</span>
+                <button class="remove-btn" onclick="removeItem(${index})">Remove</button>
+            `;
+            listContainer.appendChild(row);
+            total += item.price;
+        });
+
+        totalDisp.textContent = total.toFixed(2);
+        return total.toFixed(2);
     }
 
-    // Update the total display every second
-    setInterval(updateCart, 1000);
+    function removeItem(index) {
+        let bundle = JSON.parse(localStorage.getItem('my_bundle')) || [];
+        bundle.splice(index, 1); // Remove the specific item by its position
+        localStorage.setItem('my_bundle', JSON.stringify(bundle));
+        renderCart(); // Refresh the list
+    }
+
+    // Refresh cart when the user adds something (every 1 second)
+    setInterval(renderCart, 1000);
+
+    // Initial render
+    renderCart();
 
     paypal.Buttons({
-      createOrder: (data, actions) => {
-        return actions.order.create({
-          purchase_units: [{ amount: { value: updateCart() } }]
-        });
-      },
-      onApprove: (data, actions) => {
-        return actions.order.capture().then(() => {
-          localStorage.removeItem('my_bundle'); // Clear cart after success
-          alert('Payment Successful!');
-        });
-      }
+        createOrder: (data, actions) => {
+            const total = renderCart();
+            if (total <= 0) {
+                alert("Your bundle is empty!");
+                return;
+            }
+            return actions.order.create({
+                purchase_units: [{ amount: { value: total } }]
+            });
+        },
+        onApprove: (data, actions) => {
+            return actions.order.capture().then(details => {
+                localStorage.removeItem('my_bundle');
+                alert('Transaction completed by ' + details.payer.name.given_name);
+                renderCart();
+            });
+        }
     }).render('#paypal-button-container');
-  </script>
+</script>
+
 </body>
 </html>
