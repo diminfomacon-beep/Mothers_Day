@@ -2,27 +2,40 @@
 <html>
 <head>
     <style>
-        body { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; font-family: sans-serif; height: 100vh; justify-content: center; }
+        body { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; font-family: sans-serif; height: 100vh; justify-content: center; background: transparent; }
         .input-group { display: flex; flex-direction: column; gap: 5px; width: 220px; }
-        input[type="text"], input[type="file"] { padding: 8px; border-radius: 12px; border: 1px solid #ddd; font-size: 12px; outline: none; }
+        
+        .label-row { display: flex; justify-content: space-between; align-items: flex-end; width: 100%; }
+        .label-text { font-size: 10px; color: #e75480; font-weight: bold; }
+        .char-count { font-size: 9px; color: #999; }
+        
+        input[type="text"], input[type="file"] { 
+            padding: 8px; border-radius: 12px; border: 1px solid #ddd; 
+            font-size: 12px; outline: none; width: 100%; box-sizing: border-box; 
+        }
+        
         #add-btn {
             background-color: #e75480; color: white; border: none;
             padding: 10px 24px; border-radius: 20px;
             font-weight: bold; cursor: pointer; transition: 0.3s; width: 100%;
+            margin-top: 5px;
         }
+        
         #add-btn:disabled { background: #ccc; cursor: not-allowed; }
-        .status { font-size: 10px; color: #e75480; height: 12px; font-weight: bold; }
+        .status { font-size: 10px; color: #e75480; height: 12px; font-weight: bold; text-align: center; }
     </style>
 </head>
 <body>
     <div class="input-group">
-        <div style="display: flex; justify-content: space-between; align-items: flex-end;">
-            <span class="status" style="font-size: 9px;">Message:</span>
-            <span id="char-count" style="font-size: 9px; color: #999;">0/200</span>
+        <div class="label-row">
+            <span class="label-text">GIFT MESSAGE:</span>
+            <span id="char-count" class="char-count">0/200</span>
         </div>
-        <input type="text" id="custom-msg" maxlength="200" placeholder="Gift message (optional)...">
+        <input type="text" id="custom-msg" maxlength="200" placeholder="Type your note here...">
         
+        <span class="label-text">UPLOAD PHOTO:</span>
         <input type="file" id="image-upload" accept="image/*">
+        
         <div id="upload-status" class="status"></div>
         <button id="add-btn">Add to Cart</button>
     </div>
@@ -34,24 +47,23 @@
         const params = new URLSearchParams(window.location.search);
         const itemName = params.get('name') || "Item";
         const itemPrice = parseFloat(params.get('price')) || 0.00;
-        const itemType = params.get('type'); // 'bundle' or 'premade'
+        const itemType = params.get('type'); 
+
+        // Character Counter Logic
         const msgInput = document.getElementById('custom-msg');
         const charCounter = document.getElementById('char-count');
-    
+
         msgInput.oninput = function() {
-            const remaining = this.value.length;
-            charCounter.textContent = remaining + "/200";
-            if (remaining >= 180) {
-                charCounter.style.color = "#e75480"; // Turn pink when almost full
-            } else {
-                charCounter.style.color = "#999";
-            }
+            const count = this.value.length;
+            charCounter.textContent = count + "/200";
+            charCounter.style.color = count >= 180 ? "#e75480" : "#999";
         };
+
         document.getElementById('add-btn').onclick = async function() {
             const btn = this;
             const status = document.getElementById('upload-status');
             const fileInput = document.getElementById('image-upload');
-            const msg = document.getElementById('custom-msg').value;
+            const msg = msgInput.value;
             let finalMsg = msg;
 
             btn.disabled = true;
@@ -72,18 +84,16 @@
                 } catch (err) {
                     alert("Upload failed. Try again.");
                     btn.disabled = false;
+                    status.textContent = "";
                     return;
                 }
             }
 
-            // --- THE LOGIC GATE ---
             if (itemType === 'premade') {
-                // Send directly to Final Checkout
                 let finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
                 finalCart.push({ name: itemName.replace(/_/g, ' '), price: itemPrice, details: finalMsg, qty: 1 });
                 localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
             } else {
-                // Send to Bundle Builder
                 let bundle = JSON.parse(localStorage.getItem('my_bundle')) || [];
                 bundle.push({ name: itemName, price: itemPrice, message: finalMsg });
                 localStorage.setItem('my_bundle', JSON.stringify(bundle));
@@ -97,7 +107,8 @@
                 btn.style.background = "#e75480";
                 btn.disabled = false;
                 fileInput.value = "";
-                document.getElementById('custom-msg').value = "";
+                msgInput.value = "";
+                charCounter.textContent = "0/200";
             }, 1000);
         };
     </script>
