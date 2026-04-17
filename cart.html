@@ -3,20 +3,30 @@
 <head>
     <style>
         body { font-family: sans-serif; padding: 10px; background: #fff; }
-        .item-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #eee; font-size: 14px; }
-        .discount-text { color: #e75480; font-weight: bold; margin: 10px 0; }
+        .item-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 14px; }
+        .remove-btn { color: #ff4d4d; border: none; background: none; cursor: pointer; font-size: 11px; text-decoration: underline; }
+        .price-details { text-align: right; margin-top: 15px; }
+        .original-price { text-decoration: line-through; color: #999; font-size: 0.9em; }
+        .discount-text { color: #e75480; font-weight: bold; font-size: 0.9em; }
         #add-to-final { 
             background: #e75480; color: white; border: none; padding: 12px; 
-            width: 100%; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 15px;
+            width: 100%; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px;
         }
     </style>
 </head>
 <body>
     <div id="bundle-list"></div>
-    <div id="summary"></div>
+    <div class="price-details" id="summary"></div>
     <button id="add-to-final">Add Bundle to Cart</button>
 
     <script>
+        function removeItem(index) {
+            let bundle = JSON.parse(localStorage.getItem('my_bundle')) || [];
+            bundle.splice(index, 1);
+            localStorage.setItem('my_bundle', JSON.stringify(bundle));
+            updateBundle();
+        }
+
         function updateBundle() {
             const bundle = JSON.parse(localStorage.getItem('my_bundle')) || [];
             const list = document.getElementById('bundle-list');
@@ -25,38 +35,39 @@
 
             list.innerHTML = bundle.map((item, i) => {
                 subtotal += item.price;
-                return `<div class="item-row"><span>${item.name.replace(/_/g, ' ')}</span><span>$${item.price.toFixed(2)}</span></div>`;
+                return `<div class="item-row">
+                    <span>${item.name.replace(/_/g, ' ')} ($${item.price.toFixed(2)})</span>
+                    <button class="remove-btn" onclick="removeItem(${i})">Remove</button>
+                </div>`;
             }).join('');
 
-            // Discount Logic
             let discount = 0;
             if (bundle.length >= 11) discount = 0.15;
             else if (bundle.length >= 6) discount = 0.10;
 
             let finalPrice = subtotal * (1 - discount);
+            
             summary.innerHTML = `
-                <div class="discount-text">${discount > 0 ? (discount*100)+'% Discount Applied!' : ''}</div>
-                <div style="font-weight:bold">Bundle Total: $${finalPrice.toFixed(2)}</div>
+                <div>Subtotal: $${subtotal.toFixed(2)}</div>
+                ${discount > 0 ? `<div class="discount-text">-${(discount*100)}% Bundle Discount Applied</div>` : ''}
+                <div style="font-size: 1.2em; font-weight: bold;">
+                    ${discount > 0 ? `<span class="original-price">$${subtotal.toFixed(2)}</span> ` : ''}
+                    Total: $${finalPrice.toFixed(2)}
+                </div>
             `;
 
             document.getElementById('add-to-final').onclick = function() {
                 if (bundle.length === 0) return alert("Bundle is empty!");
-
                 const finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
-                
-                // Package the bundle as ONE item
-                const bundlePackage = {
+                finalCart.push({
                     name: "Custom Mother's Day Bundle",
                     details: bundle.map(i => i.name.replace(/_/g, ' ')).join(", "),
-                    price: finalPrice
-                };
-
-                finalCart.push(bundlePackage);
+                    price: finalPrice,
+                    qty: 1 // Bundles usually count as 1 package
+                });
                 localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
-                localStorage.removeItem('my_bundle'); // Clear the builder for a new one
-                
+                localStorage.removeItem('my_bundle');
                 alert("Bundle added to Final Cart!");
-                // Optional: window.top.location.href = "https://sites.google.com/d/1Ilg8NV30IkHe6SBAk0Lwp0_u0DQN6dto/p/1wLdAmqRV_RnQ32ijwo33rnTGyTatVvHp/edit";
             };
         }
         setInterval(updateBundle, 1000);
