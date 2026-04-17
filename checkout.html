@@ -48,72 +48,114 @@
     <script src="https://www.paypal.com/sdk/js?client-id=AWHpVW_dn2CYWVWbV5HGD2v3NpGs5atS90DuDMGrNZzFT--Anx1Ec80q7bwOAQ2lqfc4Gpd0NbBkYWRd"></script>
     <script>
         function renderMasterCart() {
-            const finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
-            const container = document.getElementById('master-list');
-            let baseTotal = 0;
+    // 1. Setup & Data Retrieval
+    const finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
+    const container = document.getElementById('master-list');
+    const promoInput = document.getElementById('promo-input').value.trim().toUpperCase();
+    const promoMsg = document.getElementById('promo-msg');
+    const discountRow = document.getElementById('discount-row');
+    
+    let baseTotal = 0;
 
-            // 1. Render items and calculate item subtotal
-            container.innerHTML = finalCart.map((item, index) => {
-                const qty = item.qty || 1;
-                const lineTotal = item.price * qty;
-                baseTotal += lineTotal;
-                return `<div class="cart-item">
-                    <div><b>${item.name}</b><br><small>${item.details || ''}</small></div>
-                    <div>${qty} x $${item.price.toFixed(2)} = $${lineTotal.toFixed(2)}</div>
+    // 2. Define your Promo Codes here
+    const validPromos = {
+        "MOTHERSDAY": 0.10,  // 10% Off
+        "VIP20": 0.20,       // 20% Off
+        "FLOWERPOWER": 0.15, // 15% Off
+        "SAVE5": 0.05        // 5% Off
+    };
+
+    // 3. Render the Cart Items
+    if (finalCart.length === 0) {
+        container.innerHTML = "<p style='text-align:center;'>Your cart is empty.</p>";
+    } else {
+        container.innerHTML = finalCart.map((item, index) => {
+            const qty = item.qty || 1;
+            const lineTotal = item.price * qty;
+            baseTotal += lineTotal;
+            return `
+                <div class="cart-item">
+                    <div>
+                        <b style="color:#e75480;">${item.name}</b><br>
+                        <small style="color:#666;">${item.details || ''}</small>
+                    </div>
+                    <div style="text-align:right;">
+                        ${qty} x $${item.price.toFixed(2)}<br>
+                        <b>$${lineTotal.toFixed(2)}</b>
+                    </div>
                 </div>`;
-            }).join('');
+        }).join('');
+    }
 
-            // 2. Handle Discount Codes
-            let promoDiscount = 0;
-            const promoCode = document.getElementById('promo-input').value.toUpperCase();
-            const promoMsg = document.getElementById('promo-msg');
-            
-            // Example Code: MOTHERSDAY for 10% off
-            if (promoCode === "MOTHERSDAY") {
-                promoDiscount = baseTotal * 0.10;
-                promoMsg.textContent = "10% discount applied!";
-                document.getElementById('discount-row').style.display = "block";
-            } else {
-                promoMsg.textContent = "";
-                document.getElementById('discount-row').style.display = "none";
-            }
+    // 4. Calculate Discount (Only 1 code at a time)
+    let promoDiscount = 0;
+    if (promoInput === "") {
+        promoMsg.textContent = "";
+        discountRow.style.display = "none";
+    } else if (validPromos.hasOwnProperty(promoInput)) {
+        const percentage = validPromos[promoInput];
+        promoDiscount = baseTotal * percentage;
+        promoMsg.textContent = `Success! ${(percentage * 100)}% off applied.`;
+        promoMsg.style.color = "#28a745";
+        discountRow.style.display = "block";
+    } else {
+        promoMsg.textContent = "Invalid code.";
+        promoMsg.style.color = "#ff4d4d";
+        discountRow.style.display = "none";
+    }
 
-            // 3. Handle Shipping Logic
-            const deliveryType = document.querySelector('input[name="delivery"]:checked').value;
-            const shipOptionsDiv = document.getElementById('shipping-options');
-            let shippingCost = 0;
+    // 5. Calculate Shipping
+    const deliveryType = document.querySelector('input[name="delivery"]:checked').value;
+    const shipOptionsDiv = document.getElementById('shipping-options');
+    let shippingCost = 0;
 
-            if (deliveryType === "shipping") {
-                shipOptionsDiv.style.display = "block";
-                shippingCost = parseFloat(document.getElementById('ship-region').value);
-            } else {
-                shipOptionsDiv.style.display = "none";
-            }
+    if (deliveryType === "shipping") {
+        shipOptionsDiv.style.display = "block";
+        shippingCost = parseFloat(document.getElementById('ship-region').value);
+    } else {
+        shipOptionsDiv.style.display = "none";
+        shippingCost = 0;
+    }
 
-            // 4. Final Math
-            const discountedSubtotal = baseTotal - promoDiscount;
-            const tax = discountedSubtotal * 0.04;
-            const finalGrandTotal = discountedSubtotal + shippingCost + tax;
+    // 6. The Final Math
+    const discountedSubtotal = baseTotal - promoDiscount;
+    const tax = discountedSubtotal * 0.04;
+    const finalGrandTotal = discountedSubtotal + shippingCost + tax;
 
-            // 5. Update UI
-            document.getElementById('sub-total').textContent = baseTotal.toFixed(2);
-            document.getElementById('discount-amt').textContent = promoDiscount.toFixed(2);
-            document.getElementById('shipping-amt').textContent = shippingCost.toFixed(2);
-            document.getElementById('tax-amt').textContent = tax.toFixed(2);
-            document.getElementById('grand-total').textContent = finalGrandTotal.toFixed(2);
+    // 7. Update the UI Labels
+    document.getElementById('sub-total').textContent = baseTotal.toFixed(2);
+    document.getElementById('discount-amt').textContent = promoDiscount.toFixed(2);
+    document.getElementById('shipping-amt').textContent = shippingCost.toFixed(2);
+    document.getElementById('tax-amt').textContent = tax.toFixed(2);
+    document.getElementById('grand-total').textContent = finalGrandTotal.toFixed(2);
 
-            return finalGrandTotal.toFixed(2);
-        }
+    // Return the string for PayPal
+    return finalGrandTotal.toFixed(2);
+}
 
-        paypal.Buttons({
-            createOrder: (data, actions) => {
-                return actions.order.create({
-                    purchase_units: [{ amount: { value: renderMasterCart() } }]
-                });
-            }
-        }).render('#paypal-button-container');
+// Initialize PayPal Button
+paypal.Buttons({
+    createOrder: (data, actions) => {
+        return actions.order.create({
+            purchase_units: [{
+                amount: {
+                    currency_code: "USD",
+                    value: renderMasterCart() // Pulls the current Grand Total
+                }
+            }]
+        });
+    },
+    onApprove: (data, actions) => {
+        return actions.order.capture().then(details => {
+            alert('Transaction completed by ' + details.payer.name.given_name + '!');
+            localStorage.removeItem('final_shopping_cart');
+            window.location.href = "thank-you.html"; // Optional success page
+        });
+    }
+}).render('#paypal-button-container');
 
-        renderMasterCart();
+// Run once on page load
+renderMasterCart();
     </script>
 </body>
 </body>
