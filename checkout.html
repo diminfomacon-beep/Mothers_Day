@@ -131,14 +131,14 @@ if (deliveryType === "shipping") {
         promoMsg.textContent = ""; 
     } else {
         // --- INTERNATIONAL TIERED LOGIC ---
-        if (totalItems === 1) {
+        if (totalItems <= 3) {
             shippingCost = 35.50;
-        } else if (totalItems <= 3) {
-            shippingCost = 55.00;
         } else if (totalItems <= 5) {
-            shippingCost = 85.00;
+            shippingCost = 55.50;
+        } else if (totalItems <= 8) {
+            shippingCost = 85.50;
         } else {
-            // Safety Cap for 6+ Tumblers
+            // Safety Cap for 9+ Tumblers
             shippingCost = 0;
             promoMsg.textContent = "⚠️ Bulk International Shipping: Please contact us for a shipping quote.";
             promoMsg.style.color = "#ff9800";
