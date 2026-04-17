@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; font-family: sans-serif; height: 100vh; justify-content: center; }
+        .input-group { display: flex; flex-direction: column; gap: 5px; width: 220px; }
+        input[type="text"], input[type="file"] { padding: 8px; border-radius: 12px; border: 1px solid #ddd; font-size: 12px; outline: none; }
+        #add-btn {
+            background-color: #e75480; color: white; border: none;
+            padding: 10px 24px; border-radius: 20px;
+            font-weight: bold; cursor: pointer; transition: 0.3s; width: 100%;
+        }
+        #add-btn:disabled { background: #ccc; cursor: not-allowed; }
+        .status { font-size: 10px; color: #e75480; height: 12px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="input-group">
+        <input type="text" id="custom-msg" placeholder="Gift message (optional)...">
+        <input type="file" id="image-upload" accept="image/*">
+        <div id="upload-status" class="status"></div>
+        <button id="add-btn">Add to Cart</button>
+    </div>
+
+    <script>
+        const CLOUD_NAME = "dim_image_uploads"; 
+        const UPLOAD_PRESET = "dim_image_uploads"; 
+        
+        const params = new URLSearchParams(window.location.search);
+        const itemName = params.get('name') || "Item";
+        const itemPrice = parseFloat(params.get('price')) || 0.00;
+        const itemType = params.get('type'); // 'bundle' or 'premade'
+
+        document.getElementById('add-btn').onclick = async function() {
+            const btn = this;
+            const status = document.getElementById('upload-status');
+            const fileInput = document.getElementById('image-upload');
+            const msg = document.getElementById('custom-msg').value;
+            let finalMsg = msg;
+
+            btn.disabled = true;
+            
+            if (fileInput.files.length > 0) {
+                status.textContent = "Uploading Image...";
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+                formData.append('upload_preset', UPLOAD_PRESET);
+
+                try {
+                    const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await response.json();
+                    finalMsg += (finalMsg ? " | Pic: " : "Pic: ") + data.secure_url;
+                } catch (err) {
+                    alert("Upload failed. Try again.");
+                    btn.disabled = false;
+                    return;
+                }
+            }
+
+            // --- THE LOGIC GATE ---
+            if (itemType === 'premade') {
+                // Send directly to Final Checkout
+                let finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
+                finalCart.push({ name: itemName.replace(/_/g, ' '), price: itemPrice, details: finalMsg, qty: 1 });
+                localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
+            } else {
+                // Send to Bundle Builder
+                let bundle = JSON.parse(localStorage.getItem('my_bundle')) || [];
+                bundle.push({ name: itemName, price: itemPrice, message: finalMsg });
+                localStorage.setItem('my_bundle', JSON.stringify(bundle));
+            }
+            
+            status.textContent = "";
+            btn.textContent = "Added!";
+            btn.style.background = "#28a745";
+            setTimeout(() => {
+                btn.textContent = "Add to Cart";
+                btn.style.background = "#e75480";
+                btn.disabled = false;
+                fileInput.value = "";
+                document.getElementById('custom-msg').value = "";
+            }, 1000);
+        };
+    </script>
+</body>
+</html>
