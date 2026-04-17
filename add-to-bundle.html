@@ -2,49 +2,62 @@
 <html>
 <head>
     <style>
-        body { margin: 0; font-family: sans-serif; display: flex; align-items: center; }
-        #add-btn {
-            background: #0070ba; color: white; border: none;
-            padding: 10px 16px; border-radius: 4px;
-            font-weight: bold; cursor: pointer; transition: 0.2s;
+        /* This centers the button perfectly in the Google Sites embed box */
+        body { 
+            margin: 0; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; /* Takes up full height of the embed area */
+            overflow: hidden;
         }
-        #add-btn:hover { background: #005ea6; }
-        #add-btn:active { transform: scale(0.95); }
+        
+        #add-btn {
+            background-color: #e75480; /* Your specific Pink */
+            color: white; 
+            border: none;
+            padding: 10px 30px; 
+            border-radius: 20px; /* Rounded pill shape looks great on Sites */
+            font-weight: bold; 
+            font-family: 'Open Sans', sans-serif; /* Clean modern font */
+            cursor: pointer; 
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        #add-btn:hover { 
+            background-color: #c93d66; /* Slightly darker pink on hover */
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        #add-btn:active {
+            transform: translateY(0);
+        }
     </style>
 </head>
 <body>
 
-    <button id="add-btn">Add to Bundle</button>
+    <button id="add-btn">Add</button>
 
     <script>
-        // 1. Get the info from the URL (everything after the '?')
         const params = new URLSearchParams(window.location.search);
         const itemName = params.get('name') || "Item";
         const itemPrice = parseFloat(params.get('price')) || 0.00;
 
-        // 2. Update the button text so you know it's working
-        const btn = document.getElementById('add-btn');
-        btn.textContent = `Add ${itemName} - $${itemPrice.toFixed(2)}`;
-
-        // 3. The logic to save the item
-        btn.onclick = function() {
-            // Get current bundle from storage
+        document.getElementById('add-btn').onclick = function() {
             let bundle = JSON.parse(localStorage.getItem('my_bundle')) || [];
-            
-            // Add the new item
             bundle.push({ name: itemName, price: itemPrice });
-            
-            // Save it back
             localStorage.setItem('my_bundle', JSON.stringify(bundle));
             
-            // Visual feedback
-            btn.textContent = "Added!";
-            btn.style.background = "#28a745"; // Green for success
+            // Success feedback
+            this.textContent = "Added!";
+            this.style.background = "#28a745"; // Briefly turns green
             
             setTimeout(() => {
-                btn.textContent = `Add ${itemName} - $${itemPrice.toFixed(2)}`;
-                btn.style.background = "#0070ba";
-            }, 1000);
+                this.textContent = "Add";
+                this.style.background = "#e75480"; // Returns to your pink
+            }, 800);
         };
     </script>
 </body>
