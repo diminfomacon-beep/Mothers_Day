@@ -123,7 +123,7 @@
         const regionRate = parseFloat(document.getElementById('ship-region').value);
         
         // Check if it's International AND if the cart is getting too big
-        if (regionRate > 30 && finalCart.length > 8) {
+        if (regionRate > 30 && finalCart.length > 5) {
             promoMsg.textContent = "⚠️ Large International Order: Please contact us for a custom shipping quote before paying.";
             promoMsg.style.color = "#ff9800";
             // Optionally hide the paypal button here
