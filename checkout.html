@@ -156,9 +156,9 @@ function renderMasterCart() {
             document.getElementById('paypal-button-container').style.display = "block";
         } else {
             // Tiered International
-            if (totalUnits === 1) shippingCost = 35.50;
-            else if (totalUnits <= 3) shippingCost = 55.00;
-            else if (totalUnits <= 5) shippingCost = 85.00;
+            if (totalUnits <= 3) shippingCost = 35.50;
+            else if (totalUnits <= 5) shippingCost = 55.00;
+            else if (totalUnits <= 8) shippingCost = 85.00;
             else {
                 shippingCost = 0;
                 promoMsg.textContent = "⚠️ Bulk International Shipping: Email us for a quote (info@dimbrightideas.com).";
