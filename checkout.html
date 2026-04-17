@@ -117,12 +117,22 @@
     const shipOptionsDiv = document.getElementById('shipping-options');
     let shippingCost = 0;
 
+    // New Shipping Logic with a "Safety Cap"
     if (deliveryType === "shipping") {
         shipOptionsDiv.style.display = "block";
-        shippingCost = parseFloat(document.getElementById('ship-region').value);
-    } else {
-        shipOptionsDiv.style.display = "none";
-        shippingCost = 0;
+        const regionRate = parseFloat(document.getElementById('ship-region').value);
+        
+        // Check if it's International AND if the cart is getting too big
+        if (regionRate > 30 && finalCart.length > 8) {
+            promoMsg.textContent = "⚠️ Large International Order: Please contact us for a custom shipping quote before paying.";
+            promoMsg.style.color = "#ff9800";
+            // Optionally hide the paypal button here
+            document.getElementById('paypal-button-container').style.display = "none";
+            shippingCost = 0;
+        } else {
+            document.getElementById('paypal-button-container').style.display = "block";
+            shippingCost = regionRate;
+        }
     }
 
     // 6. The Final Math
