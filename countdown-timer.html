@@ -1,0 +1,72 @@
+<div id="countdown-container">
+  <div id="countdown-title">Mother’s Day Bundle Launch In:</div>
+  <div id="countdown">
+    <div><span id="days">0</span><small>Days</small></div>
+    <div><span id="hours">0</span><small>Hours</small></div>
+    <div><span id="minutes">0</span><small>Minutes</small></div>
+    <div><span id="seconds">0</span><small>Seconds</small></div>
+  </div>
+</div>
+
+<style>
+#countdown-container {
+  text-align: center;
+  font-family: Arial, sans-serif;
+  margin-top: 10px;
+}
+
+#countdown-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+#countdown {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+}
+
+#countdown div {
+  background: #e65187;
+  padding: 5px 5px;
+  border-radius: 8px;
+  min-width: 60px;
+}
+
+#countdown span {
+  font-size: 22px;
+  font-weight: bold;
+  display: block;
+}
+
+#countdown small {
+  font-size: 12px;
+}
+</style>
+
+<script>
+// 🔥 SET YOUR LAUNCH DATE HERE
+const launchDate = new Date("April 24, 2026 00:00:00").getTime();
+
+const timer = setInterval(function() {
+  const now = new Date().getTime();
+  const distance = launchDate - now;
+
+  if (distance < 0) {
+    clearInterval(timer);
+    document.getElementById("countdown-container").innerHTML = "🎉 Now Live! Shop the Mother’s Day Bundles!";
+    return;
+  }
+
+  const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((distance / (1000 * 60 * 60)) % 24);
+  const minutes = Math.floor((distance / (1000 * 60)) % 60);
+  const seconds = Math.floor((distance / 1000) % 60);
+
+  document.getElementById("days").innerText = days;
+  document.getElementById("hours").innerText = hours;
+  document.getElementById("minutes").innerText = minutes;
+  document.getElementById("seconds").innerText = seconds;
+}, 1000);
+</script>
