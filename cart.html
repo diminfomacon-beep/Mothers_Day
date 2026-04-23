@@ -8,41 +8,70 @@
         .price-details { text-align: right; margin-top: 15px; }
         .original-price { text-decoration: line-through; color: #999; font-size: 0.9em; }
         .discount-text { color: #e75480; font-weight: bold; font-size: 0.9em; }
+
         #add-to-final { 
             background: #e75480; color: white; border: none; padding: 12px; 
             width: 100%; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px;
         }
+
+        #clear-cart {
+            background:#999; color:white; border:none; padding:10px;
+            width:100%; border-radius:5px; cursor:pointer; margin-top:8px;
+        }
+
+        #status-msg {
+            margin-top:10px;
+            font-size:13px;
+            color:green;
+        }
     </style>
 </head>
 <body>
+
     <div id="bundle-list"></div>
     <div class="price-details" id="summary"></div>
+
     <button id="add-to-final">Add Bundle to Cart</button>
-    <button id="clear-cart" style="
-        background:#999; color:white; border:none; padding:10px;
-        width:100%; border-radius:5px; cursor:pointer; margin-top:8px;">
-        Clear Bundle
-    </button>
+    <button id="clear-cart">Clear Bundle</button>
+
+    <div id="status-msg"></div>
 
     <script>
+        function getBundle() {
+            return JSON.parse(localStorage.getItem('my_bundle')) || [];
+        }
+
+        function saveBundle(bundle) {
+            localStorage.setItem('my_bundle', JSON.stringify(bundle));
+        }
+
+        function removeItem(index) {
+            let bundle = getBundle();
+            bundle.splice(index, 1);
+            saveBundle(bundle);
+            updateBundle();
+        }
+
         function clearBundle() {
             localStorage.removeItem('my_bundle');
             updateBundle();
-        }
-        function removeItem(index) {
-            let bundle = JSON.parse(localStorage.getItem('my_bundle')) || [];
-            bundle.splice(index, 1);
-            localStorage.setItem('my_bundle', JSON.stringify(bundle));
-            updateBundle();
+            showMessage("Bundle cleared.");
         }
 
-       function updateBundle() {
-            const bundle = JSON.parse(localStorage.getItem('my_bundle')) || [];
+        function showMessage(msg) {
+            const el = document.getElementById('status-msg');
+            el.textContent = msg;
+            setTimeout(() => el.textContent = "", 3000);
+        }
+
+        function updateBundle() {
+            const bundle = getBundle();
             const list = document.getElementById('bundle-list');
             const summary = document.getElementById('summary');
+
             let subtotal = 0;
-        
-            // Render the list and calculate subtotal
+
+            // Render items
             list.innerHTML = bundle.map((item, i) => {
                 subtotal += item.price;
                 return `<div class="item-row">
@@ -50,60 +79,69 @@
                     <button class="remove-btn" onclick="removeItem(${i})">Remove</button>
                 </div>`;
             }).join('');
-        
-            // --- UPDATED DISCOUNT LOGIC ---
-            // Count only items where price is greater than 0
+
+            // Discount logic
             const qualifyingItems = bundle.filter(item => item.price > 0).length;
-        
+
             let discount = 0;
             if (qualifyingItems >= 11) discount = 0.15;
             else if (qualifyingItems >= 6) discount = 0.10;
-        
-            let finalPrice = subtotal * (1 - discount);
-            
+
+            const finalPrice = subtotal * (1 - discount);
+
+            // Summary display
             summary.innerHTML = `
-                <div style="color: #666; font-size: 0.85em;">
+                <div style="color:#666;font-size:0.85em;">
                     Qualifying Items: ${qualifyingItems}
                 </div>
                 <div>Subtotal: $${subtotal.toFixed(2)}</div>
-                ${discount > 0 ? `<div class="discount-text">-${(discount*100)}% Bundle Discount Applied</div>` : ''}
-                <div style="font-size: 1.2em; font-weight: bold; margin-top: 5px;">
+                ${discount > 0 ? `<div class="discount-text">-${discount*100}% Bundle Discount Applied</div>` : ''}
+                <div style="font-size:1.2em;font-weight:bold;margin-top:5px;">
                     ${discount > 0 ? `<span class="original-price">$${subtotal.toFixed(2)}</span> ` : ''}
                     Total: $${finalPrice.toFixed(2)}
                 </div>
             `;
-        
-            // Add to Final Cart logic
-           document.getElementById('add-to-final').onclick = function() {
-            if (bundle.length === 0) return alert("Bundle is empty!");
-            
-            const finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
-            
-            // Create a detailed list: "Red Roses (Msg: For Mom), White Lily (Msg: Happy Bday)"
-            const detailedSummary = bundle.map(i => {
-                const cleanName = i.name.replace(/_/g, ' ');
-                return i.message ? `${cleanName} [Msg: ${i.message}]` : cleanName;
-            }).join(", ");
-        
-            finalCart.push({
-                name: "Custom Mother's Day Bundle",
-                details: detailedSummary, // This long string goes to PayPal
-                price: finalPrice,
-                qty: 1
-            });
+
+            // Disable clear button if empty
+            document.getElementById('clear-cart').disabled = bundle.length === 0;
+
+            // Add to cart logic
+            document.getElementById('add-to-final').onclick = function() {
+                if (bundle.length === 0) {
+                    showMessage("Bundle is empty.");
+                    return;
+                }
+
+                const finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
+
+                const detailedSummary = bundle.map(i => {
+                    const cleanName = i.name.replace(/_/g, ' ');
+                    return i.message ? `${cleanName} [Msg: ${i.message}]` : cleanName;
+                }).join(", ");
+
+                finalCart.push({
+                    name: "Custom Mother's Day Bundle",
+                    details: detailedSummary,
+                    price: finalPrice,
+                    qty: 1
+                });
+
+                localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
+                localStorage.removeItem('my_bundle');
+
+                updateBundle();
+                showMessage("Bundle added to cart!");
+            };
+        }
+
+        // Attach clear button ONCE
         document.getElementById('clear-cart').onclick = function() {
-            if (confirm("Are you sure you want to clear your bundle?")) {
-                clearBundle();
-            }
+            clearBundle();
         };
-        document.getElementById('clear-cart').disabled = bundle.length === 0;
-            localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
-            localStorage.removeItem('my_bundle');
-            alert("Bundle added to Final Cart!");
-        };
-       }
-        setInterval(updateBundle, 1000);
+
+        // Initial load
         updateBundle();
     </script>
+
 </body>
 </html>
