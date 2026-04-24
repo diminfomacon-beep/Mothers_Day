@@ -47,6 +47,15 @@ html {
         <span class="label-text">UPLOAD PHOTO IF APPLICABLE:</span>
         <input type="file" id="image-upload" accept="image/*">
         <div id="upload-status" class="status"></div>
+        <div id="addon-section" style="display: none;">
+            <span class="label-text">CHOOSE ADD-ON:</span>
+            <select id="addon-select" style="width: 100%; padding: 8px; border-radius: 12px; border: 1px solid #ddd; margin-bottom: 5px;">
+                <option value="">None</option>
+                <option value="Gift Wrap (+ $2)">Gift Wrap</option>
+                <option value="Rush Shipping (+ $5)">Rush Shipping</option>
+                <option value="Custom Note Card (+ $1)">Custom Note Card</option>
+            </select>
+        </div>
         <button id="add-btn">Loading...</button>
     </div>
 
@@ -58,7 +67,13 @@ html {
         const itemName = params.get('name') || "Item";
         const itemPrice = parseFloat(params.get('price')) || 0.00;
         const itemType = params.get('type'); 
-
+        const addonSection = document.getElementById('addon-section');
+        const addonSelect = document.getElementById('addon-select');
+        
+        // Only show for 'premade' items
+        if (itemType === 'premade') {
+            addonSection.style.display = 'block';
+        }
         // --- NEW BUTTON TEXT LOGIC ---
         const btn = document.getElementById('add-btn');
         const defaultText = (itemType === 'bundle') ? "Add to Bundle" : "Add to Cart";
@@ -104,12 +119,21 @@ html {
 
             if (itemType === 'premade') {
                 let finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
-                finalCart.push({ name: itemName.replace(/_/g, ' '), price: itemPrice, details: finalMsg, qty: 1 });
+                
+                // Capture selected addon
+                const selectedAddon = addonSelect.value;
+                let detailsWithAddon = finalMsg;
+                if (selectedAddon) {
+                    detailsWithAddon += (detailsWithAddon ? " | Add-on: " : "Add-on: ") + selectedAddon;
+                }
+            
+                finalCart.push({ 
+                    name: itemName.replace(/_/g, ' '), 
+                    price: itemPrice, 
+                    details: detailsWithAddon, 
+                    qty: 1 
+                });
                 localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
-            } else {
-                let bundle = JSON.parse(localStorage.getItem('my_bundle')) || [];
-                bundle.push({ name: itemName, price: itemPrice, message: finalMsg });
-                localStorage.setItem('my_bundle', JSON.stringify(bundle));
             }
             
             status.textContent = "";
@@ -121,6 +145,7 @@ html {
                 btn.disabled = false;
                 fileInput.value = "";
                 msgInput.value = "";
+                addonSelect.value = ""; // Reset dropdown
                 charCounter.textContent = "0/200";
             }, 1000);
         };
