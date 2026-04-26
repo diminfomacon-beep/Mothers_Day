@@ -13,6 +13,7 @@
         #add-btn:disabled { background: #ccc; cursor: not-allowed; }
         .status { font-size: 10px; color: #e75480; height: 12px; font-weight: bold; text-align: center; }
         .btn-blue {background-color: #395763 !important;}
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
@@ -47,14 +48,26 @@
         const btn = document.getElementById('add-btn');
         const msgInput = document.getElementById('custom-msg');
         const charCounter = document.getElementById('char-count');
+        const inputGroup = document.querySelector('.input-group');
 
-        // --- NEW: Setup Dynamic UI ---
-       if (itemType === 'premade') {
+       // --- UI SETUP ---
+        if (itemType === 'simple') {
+            // Hide everything for Simple items
+            document.querySelector('.input-group').children[0].classList.add('hidden');
+            document.getElementById('custom-msg').classList.add('hidden');
+            document.querySelectorAll('.label-text')[0].classList.add('hidden');
+            document.querySelectorAll('.label-text')[1].classList.add('hidden');
+            document.getElementById('image-upload').classList.add('hidden');
+            addonSection.style.display = 'none';
+            btn.classList.add('btn-blue'); // Blue
+        } 
+        else if (itemType === 'premade') {
             addonSection.style.display = 'block';
             const opts = ["None", "Heart Wood Key Chain (+ $3)", "Circle Wood Key Chain (+ $3)", "Aluminum Key Chain (+ $3)", "Aluminum Bookmark (+ $4)", "Small Photo Magnet (+ $6)"];
             opts.forEach(o => addonSelect.innerHTML += `<option value="${o}">${o}</option>`);
+            // Pink button (default, no class needed)
         } 
-       else if (itemType === 'regular') {
+        else if (itemType === 'regular') {
             // 1. Build the menu if vars exist
             const varsParam = params.get('vars');
             if (varsParam) {
@@ -67,9 +80,7 @@
                     addonSelect.innerHTML += `<option value="${label}" data-price="${price}">${label} (+$${price})</option>`;
                 });
             }
-        
-            // 2. APPLY THE BLUE COLOR
-            btn.classList.add('btn-blue');
+            btn.classList.add('btn-blue'); // Blue
         }
 
         btn.textContent = (itemType === 'bundle') ? "Add to Bundle" : "Add to Cart";
@@ -79,14 +90,14 @@
             charCounter.textContent = count + "/200";
             charCounter.style.color = count >= 180 ? "#e75480" : "#999";
         };
-
-        btn.onclick = async function() {
+       btn.onclick = async function() {
             const status = document.getElementById('upload-status');
             const fileInput = document.getElementById('image-upload');
             let finalMsg = msgInput.value;
             btn.disabled = true;
             
-            if (fileInput.files.length > 0) {
+            // Cloudinary Upload Logic (only if a file is actually selected)
+            if (fileInput && fileInput.files.length > 0) {
                 status.textContent = "Uploading...";
                 const fd = new FormData();
                 fd.append('file', fileInput.files[0]);
@@ -95,7 +106,7 @@
                 const data = await res.json();
                 finalMsg += (finalMsg ? " | Pic: " : "Pic: ") + data.secure_url;
             }
-
+        
             // --- LOGIC GATE ---
             if (itemType === 'premade') {
                 let finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
@@ -114,23 +125,35 @@
                 const priceInc = parseFloat(sel.dataset.price) || 0;
                 finalCart.push({ name: itemName.replace(/_/g, ' '), price: itemPrice + priceInc, details: finalMsg + " | Variety: " + sel.value, qty: 1 });
                 localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
-            } 
+            }
+            else if (itemType === 'simple') {
+                // NEW: Simple item logic
+                let finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
+                finalCart.push({ name: itemName.replace(/_/g, ' '), price: itemPrice, details: "As-is", qty: 1 });
+                localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
+            }
             else {
+                // Bundle logic
                 let bundle = JSON.parse(localStorage.getItem('my_bundle')) || [];
                 bundle.push({ name: itemName, price: itemPrice, message: finalMsg });
                 localStorage.setItem('my_bundle', JSON.stringify(bundle));
             }
             
+            // --- SUCCESS ANIMATION ---
             status.textContent = ""; 
             btn.textContent = "Added!";
-            btn.style.background = "#28a745"; // Success Green
+            btn.style.background = "#28a745";
             
             setTimeout(() => {
                 btn.textContent = defaultText;
-                // Restore the correct color based on type
-                btn.style.background = (itemType === 'regular') ? "#395763" : "#e75480";
+                // Updated: If it's regular OR simple, set to Blue; otherwise Pink
+                btn.style.background = (itemType === 'regular' || itemType === 'simple') ? "#395763" : "#e75480";
                 btn.disabled = false;
-                // ... reset fields ...
+               // Reset fields
+                if(fileInput) fileInput.value = "";
+                msgInput.value = "";
+                if(addonSelect) addonSelect.value = ""; 
+                charCounter.textContent = "0/200";
             }, 1000);
         };
     </script>
