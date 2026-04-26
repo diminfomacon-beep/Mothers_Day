@@ -61,6 +61,7 @@
         const msgInput = document.getElementById('custom-msg');
         const charCounter = document.getElementById('char-count');
         const inputGroup = document.querySelector('.input-group');
+        const dynamicContainer = document.getElementById('dynamic-vars-container');
 
        // --- UI SETUP ---
         if (itemType === 'simple') {
@@ -165,27 +166,34 @@
                 finalCart.push({ name: itemName.replace(/_/g, ' '), price: itemPrice + priceInc, details: finalMsg + " | Variety: " + sel.value, qty: 1 });
                 localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
             }
-            else if (itemType === 'shirts') {
-                let finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
-                const selects = addonSection.querySelectorAll('.shirt-select');
-                let totalAddonPrice = 0;
-                let selectedDetails = "";
+           else if (itemType === 'shirts') {
+            let finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
             
-                selects.forEach(sel => {
-                    const option = sel.options[sel.selectedIndex];
-                    totalAddonPrice += parseFloat(option.dataset.price) || 0;
-                    selectedDetails += ` | ${sel.previousElementSibling.textContent.replace(':','')} : ${option.value}`;
-                });
-            
-                finalCart.push({ 
-                    name: itemName.replace(/_/g, ' '), 
-                    price: itemPrice + totalAddonPrice, 
-                    details: finalMsg + selectedDetails, 
-                    qty: 1 
-                });
-                localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
-            }
-            else if (itemType === 'simple') {
+            // Target the selects specifically inside your new container
+            const selects = document.querySelectorAll('#dynamic-vars-container .shirt-select');
+            let totalAddonPrice = 0;
+            let selectedDetails = "";
+        
+            selects.forEach(sel => {
+                const option = sel.options[sel.selectedIndex];
+                totalAddonPrice += parseFloat(option.dataset.price) || 0;
+                
+                // Find the label text:
+                // We look for the sibling element that comes before the select
+                // In our new HTML structure, this is the label div
+                const labelText = sel.previousElementSibling ? sel.previousElementSibling.textContent.replace(':', '') : "Option";
+                
+                selectedDetails += ` | ${labelText} : ${option.value}`;
+            });
+        
+            finalCart.push({ 
+                name: itemName.replace(/_/g, ' '), 
+                price: itemPrice + totalAddonPrice, 
+                details: (finalMsg ? finalMsg + " " : "") + selectedDetails, 
+                qty: 1 
+            });
+            localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
+        }            else if (itemType === 'simple') {
                 // NEW: Simple item logic
                 let finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
                 finalCart.push({ name: itemName.replace(/_/g, ' '), price: itemPrice, details: "As-is", qty: 1 });
