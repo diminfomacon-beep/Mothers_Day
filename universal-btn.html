@@ -56,7 +56,8 @@
             addonSection.style.display = 'block';
             document.getElementById('select-label').textContent = "CHOOSE VARIETY:";
             btn.style.backgroundColor = "#395763"; // Blue for regular
-            const vars = params.get('vars').split(','); // format: "Small|0,Medium|2"
+            const varsParam = params.get('vars');
+            const vars = varsParam ? varsParam.split(',') : []; // format: "Small|0,Medium|2"
             vars.forEach(v => {
                 const [label, price] = v.split('|');
                 addonSelect.innerHTML += `<option value="${label}" data-price="${price}">${label} (+$${price})</option>`;
