@@ -12,6 +12,7 @@
         #add-btn { background-color: #e75480; color: white; border: none; padding: 10px 24px; border-radius: 20px; font-weight: bold; cursor: pointer; transition: 0.3s; width: 100%; margin-top: 5px; }
         #add-btn:disabled { background: #ccc; cursor: not-allowed; }
         .status { font-size: 10px; color: #e75480; height: 12px; font-weight: bold; text-align: center; }
+        .btn-blue {background-color: #395763 !important;}
     </style>
 </head>
 <body>
@@ -53,13 +54,12 @@
             const opts = ["None", "Heart Wood Key Chain (+ $3)", "Circle Wood Key Chain (+ $3)", "Aluminum Key Chain (+ $3)", "Aluminum Bookmark (+ $4)", "Small Photo Magnet (+ $6)"];
             opts.forEach(o => addonSelect.innerHTML += `<option value="${o}">${o}</option>`);
         } 
-        else if (itemType === 'regular') {
-            // Only show the section IF 'vars' parameter exists and isn't empty
+       else if (itemType === 'regular') {
+            // 1. Build the menu if vars exist
             const varsParam = params.get('vars');
-            if (varsParam && varsParam.length > 0) {
+            if (varsParam) {
                 addonSection.style.display = 'block';
                 document.getElementById('select-label').textContent = "CHOOSE VARIETY:";
-                btn.style.backgroundColor = "#395763";
                 
                 const vars = varsParam.split(',');
                 vars.forEach(v => {
@@ -67,6 +67,9 @@
                     addonSelect.innerHTML += `<option value="${label}" data-price="${price}">${label} (+$${price})</option>`;
                 });
             }
+        
+            // 2. APPLY THE BLUE COLOR
+            btn.classList.add('btn-blue');
         }
 
         btn.textContent = (itemType === 'bundle') ? "Add to Bundle" : "Add to Cart";
@@ -118,9 +121,17 @@
                 localStorage.setItem('my_bundle', JSON.stringify(bundle));
             }
             
-            status.textContent = ""; btn.textContent = "Added!";
-            btn.style.background = "#28a745";
-            setTimeout(() => { location.reload(); }, 1000);
+            status.textContent = ""; 
+            btn.textContent = "Added!";
+            btn.style.background = "#28a745"; // Success Green
+            
+            setTimeout(() => {
+                btn.textContent = defaultText;
+                // Restore the correct color based on type
+                btn.style.background = (itemType === 'regular') ? "#395763" : "#e75480";
+                btn.disabled = false;
+                // ... reset fields ...
+            }, 1000);
         };
     </script>
 </body>
