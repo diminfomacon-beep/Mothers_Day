@@ -204,11 +204,13 @@
                 finalCart.push({ name: itemName.replace(/_/g, ' '), price: itemPrice, details: "As-is", qty: 1 });
                 localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
             }
-            else {
+            else if (itemType === 'bundle') {
                 // Bundle logic
                 let bundle = JSON.parse(localStorage.getItem('my_bundle')) || [];
-                bundle.push({ name: itemName, price: itemPrice, message: finalMsg });
+                bundle.push({ name: itemName.replace(/_/g, ' '), price: itemPrice, message: finalMsg });
                 localStorage.setItem('my_bundle', JSON.stringify(bundle));
+                // Set to null so it doesn't try to save to the shopping_cart
+                finalCart = null; 
             }
             
             // --- SUCCESS ANIMATION ---
