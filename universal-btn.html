@@ -2,20 +2,7 @@
 <html>
 <head>
     <style>
-        body { 
-            margin: 0; 
-            padding: 20px 0 0 0; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            gap: 8px; 
-            font-family: sans-serif; 
-            min-height: 100vh; 
-            box-sizing: border-box; 
-            justify-content: flex-start; 
-            background: transparent; 
-            overflow: hidden; 
-        }
+        body { margin: 0; padding: 20px 0 0 0; display: flex; flex-direction: column; align-items: center; gap: 8px; font-family: sans-serif; min-height: 100vh; box-sizing: border-box; justify-content: flex-start; background: transparent; overflow: hidden; }
         html { overflow: hidden; height: 100%; }
         .input-group { display: flex; flex-direction: column; gap: 5px; width: 220px; }
         .label-row { display: flex; justify-content: space-between; align-items: flex-end; width: 100%; }
@@ -34,20 +21,13 @@
             <span id="char-count" class="char-count">0/200</span>
         </div>
         <input type="text" id="custom-msg" maxlength="200" placeholder="Type your note here...">
-        <span class="label-text">UPLOAD PHOTO IF APPLICABLE:</span>
+        <span class="label-text" id="dynamic-label">UPLOAD PHOTO IF APPLICABLE:</span>
         <input type="file" id="image-upload" accept="image/*">
         <div id="upload-status" class="status"></div>
         
         <div id="addon-section" style="display: none;">
-            <span class="label-text">CHOOSE ADD-ON:</span>
-            <select id="addon-select">
-                <option value="">None</option>
-                <option value="Heart Wood Key Chain (+ $3)">Heart Wood Key Chain (+ $3)</option>
-                <option value="Circle Wood Key Chain (+ $3)">Circle Wood Key Chain (+ $3)</option>
-                <option value="Aluminum Key Chain (+ $3)">Aluminum Key Chain (+ $3)</option>
-                <option value="Aluminum Bookmark (+ $4)">Aluminum Bookmark (+ $4)</option>
-                <option value="Small Photo Magnet (+ $6)">Small Photo Magnet (+ $6)</option>
-            </select>
+            <span class="label-text" id="select-label">CHOOSE ADD-ON:</span>
+            <select id="addon-select"></select>
         </div>
 
         <button id="add-btn">Loading...</button>
@@ -56,7 +36,6 @@
     <script>
         const CLOUD_NAME = "dim_image_uploads"; 
         const UPLOAD_PRESET = "dim_image_uploads"; 
-        
         const params = new URLSearchParams(window.location.search);
         const itemName = params.get('name') || "Item";
         const itemPrice = parseFloat(params.get('price')) || 0.00;
@@ -67,14 +46,24 @@
         const btn = document.getElementById('add-btn');
         const msgInput = document.getElementById('custom-msg');
         const charCounter = document.getElementById('char-count');
-        const defaultText = (itemType === 'bundle') ? "Add to Bundle" : "Add to Cart";
 
-        // Show/Hide addon section
+        // --- NEW: Setup Dynamic UI ---
         if (itemType === 'premade') {
             addonSection.style.display = 'block';
+            const opts = ["None", "Heart Wood Key Chain (+ $3)", "Circle Wood Key Chain (+ $3)", "Aluminum Key Chain (+ $3)", "Aluminum Bookmark (+ $4)", "Small Photo Magnet (+ $6)"];
+            opts.forEach(o => addonSelect.innerHTML += `<option value="${o}">${o}</option>`);
+        } else if (itemType === 'regular') {
+            addonSection.style.display = 'block';
+            document.getElementById('select-label').textContent = "CHOOSE VARIETY:";
+            btn.style.backgroundColor = "#395763"; // Blue for regular
+            const vars = params.get('vars').split(','); // format: "Small|0,Medium|2"
+            vars.forEach(v => {
+                const [label, price] = v.split('|');
+                addonSelect.innerHTML += `<option value="${label}" data-price="${price}">${label} (+$${price})</option>`;
+            });
         }
 
-        btn.textContent = defaultText;
+        btn.textContent = (itemType === 'bundle') ? "Add to Bundle" : "Add to Cart";
 
         msgInput.oninput = function() {
             const count = this.value.length;
@@ -85,73 +74,47 @@
         btn.onclick = async function() {
             const status = document.getElementById('upload-status');
             const fileInput = document.getElementById('image-upload');
-            const msg = msgInput.value;
-            let finalMsg = msg;
-
+            let finalMsg = msgInput.value;
             btn.disabled = true;
             
             if (fileInput.files.length > 0) {
-                status.textContent = "Uploading Image...";
-                const formData = new FormData();
-                formData.append('file', fileInput.files[0]);
-                formData.append('upload_preset', UPLOAD_PRESET);
-
-                try {
-                    const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
-                        method: 'POST',
-                        body: formData
-                    });
-                    const data = await response.json();
-                    finalMsg += (finalMsg ? " | Pic: " : "Pic: ") + data.secure_url;
-                } catch (err) {
-                    alert("Upload failed. Try again.");
-                    btn.disabled = false;
-                    status.textContent = "";
-                    return;
-                }
+                status.textContent = "Uploading...";
+                const fd = new FormData();
+                fd.append('file', fileInput.files[0]);
+                fd.append('upload_preset', UPLOAD_PRESET);
+                const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: 'POST', body: fd });
+                const data = await res.json();
+                finalMsg += (finalMsg ? " | Pic: " : "Pic: ") + data.secure_url;
             }
 
+            // --- LOGIC GATE ---
             if (itemType === 'premade') {
                 let finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
-                
-                // Add-on Price Logic
-                const selectedAddon = addonSelect.value;
-                let detailsWithAddon = finalMsg;
-                let priceIncrease = 0;
-
-                if (selectedAddon) {
-                    const match = selectedAddon.match(/\$\s*(\d+)/);
-                    if (match) {
-                        priceIncrease = parseFloat(match[1]);
-                    }
-                    detailsWithAddon += (detailsWithAddon ? " | Add-on: " : "Add-on: ") + selectedAddon;
+                let priceInc = 0;
+                const sel = addonSelect.value;
+                if (sel && sel !== "None") {
+                    const match = sel.match(/\$\s*(\d+)/);
+                    if (match) priceInc = parseFloat(match[1]);
                 }
-
-                finalCart.push({ 
-                    name: itemName.replace(/_/g, ' '), 
-                    price: itemPrice + priceIncrease, 
-                    details: detailsWithAddon, 
-                    qty: 1 
-                });
+                finalCart.push({ name: itemName.replace(/_/g, ' '), price: itemPrice + priceInc, details: finalMsg + (sel ? " | Add-on: " + sel : ""), qty: 1 });
                 localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
-            } else {
+            } 
+            else if (itemType === 'regular') {
+                let finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
+                const sel = addonSelect.options[addonSelect.selectedIndex];
+                const priceInc = parseFloat(sel.dataset.price) || 0;
+                finalCart.push({ name: itemName.replace(/_/g, ' '), price: itemPrice + priceInc, details: finalMsg + " | Variety: " + sel.value, qty: 1 });
+                localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
+            } 
+            else {
                 let bundle = JSON.parse(localStorage.getItem('my_bundle')) || [];
                 bundle.push({ name: itemName, price: itemPrice, message: finalMsg });
                 localStorage.setItem('my_bundle', JSON.stringify(bundle));
             }
             
-            status.textContent = "";
-            btn.textContent = "Added!";
+            status.textContent = ""; btn.textContent = "Added!";
             btn.style.background = "#28a745";
-            setTimeout(() => {
-                btn.textContent = defaultText;
-                btn.style.background = "#e75480";
-                btn.disabled = false;
-                fileInput.value = "";
-                msgInput.value = "";
-                addonSelect.value = ""; 
-                charCounter.textContent = "0/200";
-            }, 1000);
+            setTimeout(() => { location.reload(); }, 1000);
         };
     </script>
 </body>
