@@ -94,7 +94,34 @@
             }
             btn.classList.add('btn-blue'); // Blue
         }
-
+        else if (itemType === 'shirts') {
+            const varsParam = params.get('vars'); // Example: "Size:S|0,M|0|||Print:Classic|0,Distressed|2"
+            if (varsParam) {
+                addonSection.style.display = 'block';
+                
+                // Split the two sets (Size and Print)
+                const sets = varsParam.split('|||');
+                
+                sets.forEach(set => {
+                    const [header, options] = set.split(':');
+                    
+                    // Create a label for each set
+                    addonSection.innerHTML += `<span class="label-text">${header}:</span>`;
+                    
+                    // Create a specific select for this set
+                    const newSelect = document.createElement('select');
+                    newSelect.className = 'shirt-select';
+                    
+                    options.split(',').forEach(opt => {
+                        const [label, price] = opt.split('|');
+                        newSelect.innerHTML += `<option value="${label}" data-price="${price}">${label} (+$${price})</option>`;
+                    });
+                    
+                    addonSection.appendChild(newSelect);
+                });
+            }
+            btn.classList.add('btn-blue');
+        }
         btn.textContent = (itemType === 'bundle') ? "Add to Bundle" : "Add to Cart";
 
         msgInput.oninput = function() {
@@ -136,6 +163,26 @@
                 const sel = addonSelect.options[addonSelect.selectedIndex];
                 const priceInc = parseFloat(sel.dataset.price) || 0;
                 finalCart.push({ name: itemName.replace(/_/g, ' '), price: itemPrice + priceInc, details: finalMsg + " | Variety: " + sel.value, qty: 1 });
+                localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
+            }
+            else if (itemType === 'shirts') {
+                let finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
+                const selects = addonSection.querySelectorAll('.shirt-select');
+                let totalAddonPrice = 0;
+                let selectedDetails = "";
+            
+                selects.forEach(sel => {
+                    const option = sel.options[sel.selectedIndex];
+                    totalAddonPrice += parseFloat(option.dataset.price) || 0;
+                    selectedDetails += ` | ${sel.previousElementSibling.textContent.replace(':','')} : ${option.value}`;
+                });
+            
+                finalCart.push({ 
+                    name: itemName.replace(/_/g, ' '), 
+                    price: itemPrice + totalAddonPrice, 
+                    details: finalMsg + selectedDetails, 
+                    qty: 1 
+                });
                 localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
             }
             else if (itemType === 'simple') {
