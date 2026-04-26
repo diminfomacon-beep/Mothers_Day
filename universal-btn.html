@@ -48,20 +48,25 @@
         const charCounter = document.getElementById('char-count');
 
         // --- NEW: Setup Dynamic UI ---
-        if (itemType === 'premade') {
+       if (itemType === 'premade') {
             addonSection.style.display = 'block';
             const opts = ["None", "Heart Wood Key Chain (+ $3)", "Circle Wood Key Chain (+ $3)", "Aluminum Key Chain (+ $3)", "Aluminum Bookmark (+ $4)", "Small Photo Magnet (+ $6)"];
             opts.forEach(o => addonSelect.innerHTML += `<option value="${o}">${o}</option>`);
-        } else if (itemType === 'regular') {
-            addonSection.style.display = 'block';
-            document.getElementById('select-label').textContent = "CHOOSE VARIETY:";
-            btn.style.backgroundColor = "#395763"; // Blue for regular
+        } 
+        else if (itemType === 'regular') {
+            // Only show the section IF 'vars' parameter exists and isn't empty
             const varsParam = params.get('vars');
-            const vars = varsParam ? varsParam.split(',') : []; // format: "Small|0,Medium|2"
-            vars.forEach(v => {
-                const [label, price] = v.split('|');
-                addonSelect.innerHTML += `<option value="${label}" data-price="${price}">${label} (+$${price})</option>`;
-            });
+            if (varsParam && varsParam.length > 0) {
+                addonSection.style.display = 'block';
+                document.getElementById('select-label').textContent = "CHOOSE VARIETY:";
+                btn.style.backgroundColor = "#395763";
+                
+                const vars = varsParam.split(',');
+                vars.forEach(v => {
+                    const [label, price] = v.split('|');
+                    addonSelect.innerHTML += `<option value="${label}" data-price="${price}">${label} (+$${price})</option>`;
+                });
+            }
         }
 
         btn.textContent = (itemType === 'bundle') ? "Add to Bundle" : "Add to Cart";
