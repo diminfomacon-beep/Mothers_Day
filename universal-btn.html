@@ -14,26 +14,35 @@
         .status { font-size: 10px; color: #000; height: 12px; font-weight: bold; text-align: center; }
         .btn-blue {background-color: #395763 !important;}
         .hidden { display: none !important; }
+        .hidden { display: none !important; }
+        .toggle-btn { width: 100%; padding: 10px; margin-bottom: 5px; background: #f8f9fa; border: 1px solid #ccc; cursor: pointer;}
     </style>
 </head>
-<body>
-    <div class="input-group">
+<div class="input-group">
+    <button type="button" id="toggle-note" class="toggle-btn" onclick="toggleSection('note-wrap')">Add Custom Note</button>
+    <button type="button" id="toggle-upload" class="toggle-btn" onclick="toggleSection('upload-wrap')">Upload Photo</button>
+
+    <div id="note-wrap" class="hidden">
         <div class="label-row">
             <span class="label-text">NOTE/SPECIAL INSTRUCTIONS:</span>
             <span id="char-count" class="char-count">0/200</span>
         </div>
         <input type="text" id="custom-msg" maxlength="200" placeholder="Type your note here...">
-        <span class="label-text" id="dynamic-label">UPLOAD PHOTO IF APPLICABLE:</span>
+    </div>
+
+    <div id="upload-wrap" class="hidden">
+        <span class="label-text">UPLOAD PHOTO:</span>
         <input type="file" id="image-upload" accept="image/*">
         <div id="upload-status" class="status"></div>
-        
-        <div id="addon-section" style="display: none;">
-            <span class="label-text" id="select-label">CHOOSE ADD-ON:</span>
-            <select id="addon-select"></select>
-        </div>
-
-        <button id="add-btn">Loading...</button>
     </div>
+    
+    <div id="addon-section" style="display: none;">
+        <span class="label-text" id="select-label">CHOOSE ADD-ON:</span>
+        <select id="addon-select"></select>
+    </div>
+
+    <button id="add-btn">Loading...</button>
+</div>
 
     <script>
         const CLOUD_NAME = "dim_image_uploads"; 
@@ -142,20 +151,40 @@
             // --- SUCCESS ANIMATION ---
             status.textContent = ""; 
             btn.textContent = "Added!";
-            btn.style.background = "#28a745";
+            btn.style.background = "#28a745"; // Success Green
             
             setTimeout(() => {
-                btn.textContent = defaultText;
-                // Updated: If it's regular OR simple, set to Blue; otherwise Pink
+                // 1. Reset text based on the item type
+                btn.textContent = (itemType === 'bundle') ? "Add to Bundle" : "Add to Cart";
+                
+                // 2. Restore the correct color
+                // If it's regular OR simple, set to Blue; otherwise Pink
                 btn.style.background = (itemType === 'regular' || itemType === 'simple') ? "#395763" : "#e75480";
+                
+                // 3. Re-enable the button
                 btn.disabled = false;
-               // Reset fields
+                
+                // 4. Reset inputs
                 if(fileInput) fileInput.value = "";
                 msgInput.value = "";
                 if(addonSelect) addonSelect.value = ""; 
                 charCounter.textContent = "0/200";
+                document.getElementById('note-wrap').classList.add('hidden');
+                document.getElementById('upload-wrap').classList.add('hidden');
             }, 1000);
         };
+        // Add this function anywhere in your <script>
+function toggleSection(id) {
+    const section = document.getElementById(id);
+    section.classList.toggle('hidden');
+}
+
+// Update your simple item check to hide the toggles
+if (itemType === 'simple') {
+    document.getElementById('toggle-note').classList.add('hidden');
+    document.getElementById('toggle-upload').classList.add('hidden');
+    addonSection.style.display = 'none';
+}
     </script>
 </body>
 </html>
