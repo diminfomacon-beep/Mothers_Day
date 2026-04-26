@@ -40,8 +40,10 @@
     </div>
     
     <div id="addon-section" style="display: none;">
-        <span class="label-text" id="select-label">Add-On Items:</span>
-        <select id="addon-select"></select>
+        <div id="regular-add-on-wrap">
+            <span class="label-text" id="select-label">Add-On Items:</span>
+            <select id="addon-select"></select>
+        </div>
         
         <div id="dynamic-vars-container"></div>
     </div>
@@ -101,7 +103,8 @@
             const varsParam = params.get('vars'); // Example: "Size:S|0,M|0|||Print:Classic|0,Distressed|2"
             if (varsParam) {
                 addonSection.style.display = 'block';
-                
+                document.getElementById('regular-add-on-wrap').classList.add('hidden');
+                const dynamicContainer = document.getElementById('dynamic-vars-container');
                 // Split the two sets (Size and Print)
                 const sets = varsParam.split('|||');
                 
