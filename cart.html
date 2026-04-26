@@ -6,24 +6,11 @@
         .item-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 14px; }
         .remove-btn { color: #ff4d4d; border: none; background: none; cursor: pointer; font-size: 11px; text-decoration: underline; }
         .price-details { text-align: right; margin-top: 15px; }
-        .original-price { text-decoration: line-through; color: #999; font-size: 0.9em; }
-        .discount-text { color: #e75480; font-weight: bold; font-size: 0.9em; }
-
-        #add-to-final { 
-            background: #e75480; color: white; border: none; padding: 12px; 
-            width: 100%; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px;
-        }
-
-        #clear-cart {
-            background:#999; color:white; border:none; padding:10px;
-            width:100%; border-radius:5px; cursor:pointer; margin-top:8px;
-        }
-
-        #status-msg {
-            margin-top:10px;
-            font-size:13px;
-            color:green;
-        }
+        .original-price {text-decoration: line-through;color: #bbb; /* Lighter grey */font-size: 0.8em; /* Smaller */margin-right: 5px;}
+        .discount-text {color: #999; /* Subtle grey instead of bright pink */font-size: 0.85em; font-style: italic; /* Softer look */margin: 5px 0;}
+        #add-to-final {background: #e75480; color: white; border: none; padding: 12px; width: 100%; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px;}
+        #clear-cart {background:#999; color:white; border:none; padding:10px;width:100%; border-radius:5px; cursor:pointer; margin-top:8px;}
+        #status-msg {margin-top:10px;font-size:13px;color:green;}
     </style>
 </head>
 <body>
@@ -91,14 +78,15 @@
 
             // Summary display
             summary.innerHTML = `
-                <div style="color:#666;font-size:0.85em;">
-                    Qualifying Items: ${qualifyingItems}
+                <div style="font-size: 0.9em; margin-bottom: 5px;">
+                    Subtotal: $${subtotal.toFixed(2)}
                 </div>
-                <div>Subtotal: $${subtotal.toFixed(2)}</div>
-                ${discount > 0 ? `<div class="discount-text">-${discount*100}% Bundle Discount Applied</div>` : ''}
-                <div style="font-size:1.2em;font-weight:bold;margin-top:5px;">
-                    ${discount > 0 ? `<span class="original-price">$${subtotal.toFixed(2)}</span> ` : ''}
-                    Total: $${finalPrice.toFixed(2)}
+                
+                ${discount > 0 ? `<div class="discount-text">Bundle discount applied: -${discount*100}%</div>` : ''}
+                
+                <div style="font-size: 1.3em; font-weight: bold; margin-top: 10px;">
+                    Total: ${discount > 0 ? `<span class="original-price">$${subtotal.toFixed(2)}</span>` : ''}
+                    $${finalPrice.toFixed(2)}
                 </div>
             `;
 
