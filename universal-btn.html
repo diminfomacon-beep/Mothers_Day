@@ -14,13 +14,16 @@
         .status { font-size: 10px; color: #000; height: 12px; font-weight: bold; text-align: center; }
         .btn-blue {background-color: #395763 !important;}
         .hidden { display: none !important; }
-        .hidden { display: none !important; }
-        .toggle-btn { width: 100%; padding: 10px; margin-bottom: 5px; background: #f8f9fa; border: 1px solid #ccc; cursor: pointer;}
+        .button-container {display: flex;gap: 10px; /* Space between buttons */margin-bottom: 10px;}
+        .toggle-btn {flex: 1; padding: 8px 12px;font-size: 14px;background-color: #f0f0f0;border: 1px solid #ddd;border-radius: 20px; cursor: pointer;transition: background 0.2s;}
+        .toggle-btn:hover {background-color: #e0e0e0;}
     </style>
 </head>
 <div class="input-group">
-    <button type="button" id="toggle-note" class="toggle-btn" onclick="toggleSection('note-wrap')">Add Custom Note</button>
-    <button type="button" id="toggle-upload" class="toggle-btn" onclick="toggleSection('upload-wrap')">Upload Photo</button>
+    <div class="button-container">
+        <button type="button" id="toggle-note" class="toggle-btn" onclick="toggleSection('note-wrap')">Add Note</button>
+        <button type="button" id="toggle-upload" class="toggle-btn" onclick="toggleSection('upload-wrap')">Upload Photo</button>
+    </div>
 
     <div id="note-wrap" class="hidden">
         <div class="label-row">
