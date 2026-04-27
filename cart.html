@@ -113,13 +113,14 @@
     };
 
     document.getElementById('clear-cart').onclick = clearBundle;
-
-    // Listen for the signal from the product buttons
-    window.addEventListener('message', function(event) {
-        if (event.data === 'bundleUpdated') {
-            updateBundle(); // Corrected function name
+// This listens for any changes to localStorage anywhere on your site
+    window.addEventListener('storage', function(event) {
+        if (event.key === 'my_bundle') {
+            updateBundle();
         }
     });
+    // Listen for the signal from the product buttons
+  
 
     updateBundle();
 </script>
