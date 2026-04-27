@@ -14,9 +14,27 @@
     </style>
 </head>
 <body>
-    <div style="background: #fff3f5; border: 1px solid #e75480; padding: 10px; border-radius: 8px; font-size: 12px; margin-bottom: 10px; color: #333;">
-        <strong>📸 Photo Submission:</strong> Please email your images to <strong>info@dimbrightideas.com</strong> from your order email.
-    </div>
+    <style>
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+        100% { transform: scale(1); }
+    }
+    .photo-notice {
+        background: #fff3f5;
+        border: 1px solid #e75480;
+        padding: 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        margin-bottom: 15px;
+        color: #333;
+        text-align: center;
+        animation: pulse 2s infinite ease-in-out;
+    }
+</style>
+
+<div class="photo-notice">
+    <strong>📸 Photo Submission:</strong> Please email your images to <strong>info@dimbrightideas.com</strong> from your order email.
     <div id="bundle-list"></div>
     <div class="price-details" id="summary"></div>
 
