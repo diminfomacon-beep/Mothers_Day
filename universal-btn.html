@@ -209,6 +209,7 @@
                 let bundle = JSON.parse(localStorage.getItem('my_bundle')) || [];
                 bundle.push({ name: itemName.replace(/_/g, ' '), price: itemPrice, message: finalMsg });
                 localStorage.setItem('my_bundle', JSON.stringify(bundle));
+                window.parent.postMessage('bundleUpdated', '*');
                 // Set to null so it doesn't try to save to the shopping_cart
                 finalCart = null; 
             }
