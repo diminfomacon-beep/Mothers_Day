@@ -115,6 +115,8 @@ console.log("Current Vars:", params.get('vars'));
                     addonSelect.innerHTML += `<option value="${label}" data-price="${price}">${label} (+$${price})</option>`;
                 });
             }
+            btn.classList.add('btn-blue'); // Blue
+
         }
         else if (itemType === 'shirts') {
             const varsParam = params.get('vars'); // Example: "Size:S|0,M|0|||Print:Classic|0,Distressed|2"
