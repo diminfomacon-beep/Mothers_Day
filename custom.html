@@ -89,14 +89,16 @@ window.addEventListener('storage', function(event) {
         let subtotal = 0;
 
         // Render items
+        // Inside your bundle container's updateBundle() function:
         list.innerHTML = bundle.map((item, i) => {
             subtotal += item.price;
+            // This displays the name, the variety (from the message), and the price
             return `<div class="item-row">
-                <span>${item.name.replace(/_/g, ' ')} ($${item.price.toFixed(2)})</span>
+                <span>${item.name} ${item.message ? `<br><small style="color:#666">${item.message}</small>` : ''}</span>
+                <span>$${item.price.toFixed(2)}</span>
                 <button class="remove-btn" onclick="removeItem(${i})">Remove</button>
             </div>`;
         }).join('');
-
         // Discount logic
         const qualifyingItems = bundle.filter(item => item.price > 0).length;
         let discount = 0;
