@@ -164,6 +164,29 @@
                 finalCart.push({ name: itemName.replace(/_/g, ' '), price: itemPrice + priceInc, details: finalMsg + (sel ? " | Add-on: " + sel : ""), qty: 1 });
                 localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
             } 
+            // Add this inside the "LOGIC GATE" section of your universal-btn.html
+            else if (itemType === 'custom-bundle') {
+                let bundle = JSON.parse(localStorage.getItem('custom_bundle_key')) || [];
+                let priceToAdd = itemPrice;
+                let detailString = finalMsg;
+            
+                // Handle Shirt/Variable logic
+                if (document.querySelectorAll('.shirt-select').length > 0) {
+                    document.querySelectorAll('.shirt-select').forEach(sel => {
+                        const opt = sel.options[sel.selectedIndex];
+                        priceToAdd += parseFloat(opt.dataset.price) || 0;
+                        detailString += ` | ${sel.previousElementSibling.textContent.replace(':', '')}: ${opt.value}`;
+                    });
+                } else if (addonSelect && addonSelect.value !== "None") {
+                    const opt = addonSelect.options[addonSelect.selectedIndex];
+                    priceToAdd += parseFloat(opt.dataset.price) || 0;
+                    detailString += " | Add-on: " + opt.value;
+                }
+            
+                bundle.push({ name: itemName.replace(/_/g, ' '), price: priceToAdd, details: detailString });
+                localStorage.setItem('custom_bundle_key', JSON.stringify(bundle));
+                window.dispatchEvent(new Event('storage'));
+            }
             else if (itemType === 'regular') {
                 let finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
                 const sel = addonSelect.options[addonSelect.selectedIndex];
