@@ -186,25 +186,28 @@
                 finalCart.push({ name: itemName.replace(/_/g, ' '), price: itemPrice + priceInc, details: finalMsg + " | Variety: " + sel.value, qty: 1 });
                 localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
             }
-                           else if (itemType === 'custom-bundle') {
+                          else if (itemType === 'custom-bundle') {
                 let customBundle = JSON.parse(localStorage.getItem('my_custom_bundle')) || [];
                 
                 let priceInc = 0;
-                let selectedText = "";
+                let varietyDetails = ""; // This will hold the "Variety: X" string
                 
-                // Check if dropdown has options and one is selected
-                const sel = (addonSelect.options.length > 0) ? addonSelect.options[addonSelect.selectedIndex] : null;
+                const sel = (addonSelect && addonSelect.options.length > 0) ? addonSelect.options[addonSelect.selectedIndex] : null;
             
-                if (sel) {
+                if (sel && sel.value !== "") {
                     priceInc = parseFloat(sel.dataset.price) || 0;
-                    selectedText = " (" + sel.value + ")";
+                    varietyDetails = " | Variety: " + sel.value;
                 }
                 
                 customBundle.push({ 
-                    name: itemName.replace(/_/g, ' ') + selectedText, 
+                    name: itemName.replace(/_/g, ' '), 
                     price: itemPrice + priceInc, 
-                    message: finalMsg 
+                    message: finalMsg + varietyDetails // Adding variety details to the message
                 });
+                
+                localStorage.setItem('my_custom_bundle', JSON.stringify(customBundle));
+                window.dispatchEvent(new Event('storage'));
+            }
                 
                 localStorage.setItem('my_custom_bundle', JSON.stringify(customBundle));
                 window.dispatchEvent(new Event('storage'));
