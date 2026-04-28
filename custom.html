@@ -45,13 +45,28 @@
 
    <script>
     function getBundle() {
-        return JSON.parse(localStorage.getItem('my_bundle')) || [];
-    }
+    // Changed from 'my_bundle' to 'my_custom_bundle'
+    return JSON.parse(localStorage.getItem('my_custom_bundle')) || [];
+}
 
-    function saveBundle(bundle) {
-        localStorage.setItem('my_bundle', JSON.stringify(bundle));
-    }
+function saveBundle(bundle) {
+    // Changed from 'my_bundle' to 'my_custom_bundle'
+    localStorage.setItem('my_custom_bundle', JSON.stringify(bundle));
+}
 
+function clearBundle() {
+    // Changed from 'my_bundle' to 'my_custom_bundle'
+    localStorage.removeItem('my_custom_bundle');
+    updateBundle();
+    showMessage("Bundle cleared.");
+}
+
+// Update the storage event listener at the bottom:
+window.addEventListener('storage', function(event) {
+    if (event.key === 'my_custom_bundle') { // Listen for the new key
+        updateBundle();
+    }
+});
     function removeItem(index) {
         let bundle = getBundle();
         bundle.splice(index, 1);
@@ -59,11 +74,6 @@
         updateBundle();
     }
 
-    function clearBundle() {
-        localStorage.removeItem('my_bundle');
-        updateBundle();
-        showMessage("Bundle cleared.");
-    }
 
     function showMessage(msg) {
         const el = document.getElementById('status-msg');
@@ -108,6 +118,7 @@
     }
 
     // --- ADD TO CART LOGIC (Moved outside of updateBundle) ---
+   // --- ADD TO CART LOGIC ---
     document.getElementById('add-to-final').onclick = function() {
         const bundle = getBundle();
         if (bundle.length === 0) {
@@ -119,28 +130,23 @@
         const finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
         const detailedSummary = bundle.map(i => i.message ? `${i.name} [Msg: ${i.message}]` : i.name).join(", ");
 
-     // Change this line in your copy of the container code
-    finalCart.push({
-        name: "Custom Bundle", // Changed from "Custom Mother's Day Bundle"
-        details: detailedSummary,
-        price: finalPrice,
-        qty: 1
-    });
+        finalCart.push({
+            name: "Custom Bundle", 
+            details: detailedSummary,
+            price: finalPrice,
+            qty: 1
+        });
 
         localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
-        localStorage.removeItem('my_bundle');
+        
+        // FIX: Remove the new key, not the old one
+        localStorage.removeItem('my_custom_bundle'); 
+        
         updateBundle();
         showMessage("Bundle added to cart!");
     };
 
-    document.getElementById('clear-cart').onclick = clearBundle;
-// This listens for any changes to localStorage anywhere on your site
-    window.addEventListener('storage', function(event) {
-        if (event.key === 'my_bundle') {
-            updateBundle();
-        }
-    });
-    // Listen for the signal from the product buttons
+
   
 
     updateBundle();
