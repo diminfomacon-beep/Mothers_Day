@@ -99,6 +99,21 @@
             }
             btn.classList.add('btn-blue'); // Blue
         }
+            // --- UI SETUP ---
+        else if (itemType === 'custom-bundle') {
+            const varsParam = params.get('vars');
+            if (varsParam) {
+                addonSection.style.display = 'block';
+                document.getElementById('select-label').textContent = "SELECT VARIETY:";
+                
+                const vars = varsParam.split(',');
+                vars.forEach(v => {
+                    const [label, price] = v.split('|');
+                    // Ensure this adds to the addonSelect dropdown
+                    addonSelect.innerHTML += `<option value="${label}" data-price="${price}">${label} (+$${price})</option>`;
+                });
+            }
+        }
         else if (itemType === 'shirts') {
             const varsParam = params.get('vars'); // Example: "Size:S|0,M|0|||Print:Classic|0,Distressed|2"
             if (varsParam) {
@@ -174,19 +189,19 @@
                            else if (itemType === 'custom-bundle') {
                 let customBundle = JSON.parse(localStorage.getItem('my_custom_bundle')) || [];
                 
-                // Safety check: Make sure the select actually has a valid selection
                 let priceInc = 0;
-                let selectedValue = "Default";
-            
-                const sel = addonSelect.options ? addonSelect.options[addonSelect.selectedIndex] : null;
+                let selectedText = "";
+                
+                // Check if dropdown has options and one is selected
+                const sel = (addonSelect.options.length > 0) ? addonSelect.options[addonSelect.selectedIndex] : null;
             
                 if (sel) {
                     priceInc = parseFloat(sel.dataset.price) || 0;
-                    selectedValue = sel.value;
+                    selectedText = " (" + sel.value + ")";
                 }
                 
                 customBundle.push({ 
-                    name: itemName.replace(/_/g, ' ') + " (" + selectedValue + ")", 
+                    name: itemName.replace(/_/g, ' ') + selectedText, 
                     price: itemPrice + priceInc, 
                     message: finalMsg 
                 });
