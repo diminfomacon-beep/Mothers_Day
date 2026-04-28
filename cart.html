@@ -92,18 +92,27 @@
         let discount = 0;
         if (qualifyingItems >= 11) discount = 0.15;
         else if (qualifyingItems >= 6) discount = 0.10;
-
+        
         const finalPrice = subtotal * (1 - discount);
-
+        
         summary.innerHTML = `
-            <div style="font-size: 0.9em; margin-bottom: 5px;">Subtotal: $${subtotal.toFixed(2)}</div>
-            ${discount > 0 ? `<div class="discount-text">Bundle discount applied: -${discount*100}%</div>` : ''}
-            <div style="font-size: 1.3em; font-weight: bold; margin-top: 10px;">
-                Total: ${discount > 0 ? `<span class="original-price">$${subtotal.toFixed(2)}</span>` : ''}
-                $${finalPrice.toFixed(2)}
+            <div style="font-size: 0.9em; margin-bottom: 5px;">
+                Subtotal: $${subtotal.toFixed(2)}
+            </div>
+            
+            ${discount > 0 ? `
+                <div class="discount-text" style="color: #e75480; font-weight: bold;">
+                    Bundle Discount Applied: ${discount * 100}% OFF
+                </div>
+                <div style="font-size: 1.1em; color: #666; margin-top: 5px;">
+                    Original Price: <span style="text-decoration: line-through;">$${subtotal.toFixed(2)}</span>
+                </div>
+            ` : ''}
+            
+            <div style="font-size: 1.5em; font-weight: bold; margin-top: 10px; color: #333;">
+                Total: $${finalPrice.toFixed(2)}
             </div>
         `;
-
         document.getElementById('clear-cart').disabled = bundle.length === 0;
     }
 
