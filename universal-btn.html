@@ -58,6 +58,8 @@
         const itemName = params.get('name') || "Item";
         const itemPrice = parseFloat(params.get('price')) || 0.00;
         const itemType = params.get('type'); 
+console.log("Current Item Type:", itemType);
+console.log("Current Vars:", params.get('vars'));
         
         const addonSection = document.getElementById('addon-section');
         const addonSelect = document.getElementById('addon-select');
