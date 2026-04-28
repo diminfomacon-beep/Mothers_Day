@@ -128,8 +128,8 @@
             }
             btn.classList.add('btn-blue');
         }
-        btn.textContent = (itemType === 'bundle') ? "Add to Bundle" : "Add to Cart";
-
+        // Now it will say "Add to Bundle" for both the original and your new custom bundle
+        btn.textContent = (itemType === 'bundle' || itemType === 'custom-bundle') ? "Add to Bundle" : "Add to Cart";
         msgInput.oninput = function() {
             const count = this.value.length;
             charCounter.textContent = count + "/200";
@@ -241,8 +241,8 @@
             
             setTimeout(() => {
                 // 1. Reset text based on the item type
-                btn.textContent = (itemType === 'bundle') ? "Add to Bundle" : "Add to Cart";
-                
+                // Update the revert logic inside the setTimeout:
+                btn.textContent = (itemType === 'bundle' || itemType === 'custom-bundle') ? "Add to Bundle" : "Add to Cart";                
                 // 2. Restore the correct color
                 // If it's regular OR simple, set to Blue; otherwise Pink
                 btn.style.background = (itemType === 'regular' || itemType === 'simple') ? "#395763" : "#e75480";
