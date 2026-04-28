@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: sans-serif; padding: 10px; background: #b6d9e4; }
+        .item-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 14px; }
+        .remove-btn { color: #ff4d4d; border: none; background: none; cursor: pointer; font-size: 11px; text-decoration: underline; }
+        .price-details { text-align: right; margin-top: 15px; }
+        #add-to-final { background: #105e53; color: white; border: none; padding: 12px; width: 100%; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        #clear-cart { background: #999; color: white; border: none; padding: 10px; width: 100%; border-radius: 5px; cursor: pointer; margin-top: 8px; }
+    </style>
+</head>
+<body>
+    <div id="bundle-list"></div>
+    <div class="price-details" id="summary"></div>
+    <button id="add-to-final">Add Bundle to Cart</button>
+    <button id="clear-cart">Clear Bundle</button>
+
+    <script>
+        function updateBundle() {
+            const bundle = JSON.parse(localStorage.getItem('my_bundle')) || [];
+            const list = document.getElementById('bundle-list');
+            const summary = document.getElementById('summary');
+            let subtotal = 0;
+
+            list.innerHTML = bundle.map((item, i) => {
+                subtotal += item.price;
+                return `<div class="item-row">
+                    <span>${item.name} (${item.details || ''}) - $${item.price.toFixed(2)}</span>
+                    <button class="remove-btn" onclick="removeItem(${i})">Remove</button>
+                </div>`;
+            }).join('');
+
+            summary.innerHTML = `<strong>Total: $${subtotal.toFixed(2)}</strong>`;
+        }
+
+        function removeItem(i) {
+            let bundle = JSON.parse(localStorage.getItem('my_bundle')) || [];
+            bundle.splice(i, 1);
+            localStorage.setItem('my_bundle', JSON.stringify(bundle));
+            updateBundle();
+        }
+
+        document.getElementById('add-to-final').onclick = () => {
+            const bundle = JSON.parse(localStorage.getItem('my_bundle')) || [];
+            if (bundle.length === 0) return;
+            let finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
+            finalCart.push({ name: "Custom Bundle", price: bundle.reduce((a,b)=>a+b.price,0), details: bundle.map(i=>i.name).join(", "), qty: 1 });
+            localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
+            localStorage.removeItem('my_bundle');
+            updateBundle();
+            window.location.href = '/cart'; // Adjust to your cart page
+        };
+
+        document.getElementById('clear-cart').onclick = () => { localStorage.removeItem('my_bundle'); updateBundle(); };
+        window.addEventListener('storage', updateBundle);
+        updateBundle();
+    </script>
+</body>
+</html>
