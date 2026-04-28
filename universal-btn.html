@@ -104,7 +104,7 @@ console.log("Current Vars:", params.get('vars'));
                     addonSection.appendChild(newSelect);
                 });
             }
-            btn.textContent = "Add to Bundle";
+            btn.classList.add('btn-blue');
             }
         else if (itemType === 'regular') {
             // 1. Build the menu if vars exist
@@ -231,8 +231,6 @@ console.log("Current Vars:", params.get('vars'));
             
             localStorage.setItem('my_custom_bundle', JSON.stringify(customBundle));
             window.dispatchEvent(new Event('storage'));
-            btn.classList.add('btn-blue'); // Blue
-
         }
     else if (itemType === 'custom-bundle') {
         let customBundle = JSON.parse(localStorage.getItem('my_custom_bundle')) || [];
