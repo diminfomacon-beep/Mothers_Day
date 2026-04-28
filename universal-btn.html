@@ -152,139 +152,107 @@ console.log("Current Vars:", params.get('vars'));
             charCounter.textContent = count + "/200";
             charCounter.style.color = count >= 180 ? "#e75480" : "#999";
         };
-       btn.onclick = async function() {
-            const status = document.getElementById('upload-status');
-            const fileInput = document.getElementById('image-upload');
-            let finalMsg = msgInput.value;
-            btn.disabled = true;
-            
-            // Cloudinary Upload Logic (only if a file is actually selected)
-            if (fileInput && fileInput.files.length > 0) {
-                status.textContent = "Uploading...";
-                const fd = new FormData();
-                fd.append('file', fileInput.files[0]);
-                fd.append('upload_preset', UPLOAD_PRESET);
-                const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: 'POST', body: fd });
-                const data = await res.json();
-                finalMsg += (finalMsg ? " | Pic: " : "Pic: ") + data.secure_url;
-            }
-        // Add this at the very end of your UI SETUP block (before the btn.onclick)
-btn.textContent = (itemType === 'bundle' || itemType === 'custom-bundle') ? "Add to Bundle" : "Add to Cart";
-            // --- LOGIC GATE ---
-            if (itemType === 'premade') {
-                let finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
-                let priceInc = 0;
-                const sel = addonSelect.value;
-                if (sel && sel !== "None") {
-                    const match = sel.match(/\$\s*(\d+)/);
-                    if (match) priceInc = parseFloat(match[1]);
-                }
-                finalCart.push({ name: itemName.replace(/_/g, ' '), price: itemPrice + priceInc, details: finalMsg + (sel ? " | Add-on: " + sel : ""), qty: 1 });
-                localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
-            } 
-                        else if (itemType === 'regular') {
-                let finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
-                const sel = addonSelect.options[addonSelect.selectedIndex];
-                const priceInc = parseFloat(sel.dataset.price) || 0;
-                finalCart.push({ name: itemName.replace(/_/g, ' '), price: itemPrice + priceInc, details: finalMsg + " | Variety: " + sel.value, qty: 1 });
-                localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
-            }
-                          else if (itemType === 'custom-bundle') {
-                let customBundle = JSON.parse(localStorage.getItem('my_custom_bundle')) || [];
-                
-                let priceInc = 0;
-                let varietyDetails = ""; // This will hold the "Variety: X" string
-                
-                const sel = (addonSelect && addonSelect.options.length > 0) ? addonSelect.options[addonSelect.selectedIndex] : null;
-            
-                if (sel && sel.value !== "") {
-                    priceInc = parseFloat(sel.dataset.price) || 0;
-                    varietyDetails = " | Variety: " + sel.value;
-                }
-                
-                customBundle.push({ 
-                    name: itemName.replace(/_/g, ' '), 
-                    price: itemPrice + priceInc, 
-                    message: finalMsg + varietyDetails // Adding variety details to the message
-                });
-                
-                localStorage.setItem('my_custom_bundle', JSON.stringify(customBundle));
-                window.dispatchEvent(new Event('storage'));
-            }
-                
-                localStorage.setItem('my_custom_bundle', JSON.stringify(customBundle));
-                window.dispatchEvent(new Event('storage'));
-            }
-           else if (itemType === 'shirts') {
-            let finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
-            
-            // Target the selects specifically inside your new container
-            const selects = document.querySelectorAll('#dynamic-vars-container .shirt-select');
-            let totalAddonPrice = 0;
-            let selectedDetails = "";
+      btn.onclick = async function() {
+    const status = document.getElementById('upload-status');
+    const fileInput = document.getElementById('image-upload');
+    let finalMsg = msgInput.value;
+    btn.disabled = true;
+    
+    // Cloudinary Upload
+    if (fileInput && fileInput.files.length > 0) {
+        status.textContent = "Uploading...";
+        const fd = new FormData();
+        fd.append('file', fileInput.files[0]);
+        fd.append('upload_preset', UPLOAD_PRESET);
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: 'POST', body: fd });
+        const data = await res.json();
+        finalMsg += (finalMsg ? " | Pic: " : "Pic: ") + data.secure_url;
+    }
+
+    // --- LOGIC GATE ---
+    if (itemType === 'premade') {
+        let finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
+        let priceInc = 0;
+        const sel = addonSelect.value;
+        if (sel && sel !== "None") {
+            const match = sel.match(/\$\s*(\d+)/);
+            if (match) priceInc = parseFloat(match[1]);
+        }
+        finalCart.push({ name: itemName.replace(/_/g, ' '), price: itemPrice + priceInc, details: finalMsg + (sel ? " | Add-on: " + sel : ""), qty: 1 });
+        localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
+    } 
+    else if (itemType === 'regular') {
+        let finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
+        const sel = addonSelect.options[addonSelect.selectedIndex];
+        const priceInc = parseFloat(sel.dataset.price) || 0;
+        finalCart.push({ name: itemName.replace(/_/g, ' '), price: itemPrice + priceInc, details: finalMsg + " | Variety: " + sel.value, qty: 1 });
+        localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
+    }
+    else if (itemType === 'custom-bundle') {
+        let customBundle = JSON.parse(localStorage.getItem('my_custom_bundle')) || [];
+        let priceInc = 0;
+        let varietyDetails = ""; 
         
-            selects.forEach(sel => {
-                const option = sel.options[sel.selectedIndex];
-                totalAddonPrice += parseFloat(option.dataset.price) || 0;
-                
-                // Find the label text:
-                // We look for the sibling element that comes before the select
-                // In our new HTML structure, this is the label div
-                const labelText = sel.previousElementSibling ? sel.previousElementSibling.textContent.replace(':', '') : "Option";
-                
-                selectedDetails += ` | ${labelText} : ${option.value}`;
-            });
+        const sel = (addonSelect && addonSelect.options.length > 0) ? addonSelect.options[addonSelect.selectedIndex] : null;
+
+        if (sel && sel.value !== "") {
+            priceInc = parseFloat(sel.dataset.price) || 0;
+            varietyDetails = " | Variety: " + sel.value;
+        }
         
-            finalCart.push({ 
-                name: itemName.replace(/_/g, ' '), 
-                price: itemPrice + totalAddonPrice, 
-                details: (finalMsg ? finalMsg + " " : "") + selectedDetails, 
-                qty: 1 
-            });
-            localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
-        }            else if (itemType === 'simple') {
-                // NEW: Simple item logic
-                let finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
-                finalCart.push({ name: itemName.replace(/_/g, ' '), price: itemPrice, details: "As-is", qty: 1 });
-                localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
-            }
-            else if (itemType === 'bundle') {
-                let bundle = JSON.parse(localStorage.getItem('my_bundle')) || [];
-                bundle.push({ name: itemName.replace(/_/g, ' '), price: itemPrice, message: finalMsg });
-                localStorage.setItem('my_bundle', JSON.stringify(bundle));
-                
-                // Trigger a window event so the same page (if needed) knows
-                window.dispatchEvent(new Event('storage'));
-                
-                finalCart = null; 
-            }
-            
-            // --- SUCCESS ANIMATION ---
-            status.textContent = ""; 
-            btn.textContent = "Added!";
-            btn.style.background = "#28a745"; // Success Green
-            
-            setTimeout(() => {
-                // 1. Reset text based on the item type
-                // Update the revert logic inside the setTimeout:
-                btn.textContent = (itemType === 'bundle' || itemType === 'custom-bundle') ? "Add to Bundle" : "Add to Cart";                
-                // 2. Restore the correct color
-                // If it's regular OR simple, set to Blue; otherwise Pink
-                btn.style.background = (itemType === 'regular' || itemType === 'simple') ? "#395763" : "#e75480";
-                
-                // 3. Re-enable the button
-                btn.disabled = false;
-                
-                // 4. Reset inputs
-                if(fileInput) fileInput.value = "";
-                msgInput.value = "";
-                if(addonSelect) addonSelect.value = ""; 
-                charCounter.textContent = "0/200";
-                document.getElementById('note-wrap').classList.add('hidden');
-                document.getElementById('upload-wrap').classList.add('hidden');
-            }, 1000);
-        };
-        // Add this function anywhere in your <script>
+        customBundle.push({ 
+            name: itemName.replace(/_/g, ' '), 
+            price: itemPrice + priceInc, 
+            message: finalMsg + varietyDetails 
+        });
+        
+        localStorage.setItem('my_custom_bundle', JSON.stringify(customBundle));
+        window.dispatchEvent(new Event('storage'));
+    }
+    else if (itemType === 'shirts') {
+        let finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
+        const selects = document.querySelectorAll('#dynamic-vars-container .shirt-select');
+        let totalAddonPrice = 0;
+        let selectedDetails = "";
+        selects.forEach(sel => {
+            const option = sel.options[sel.selectedIndex];
+            totalAddonPrice += parseFloat(option.dataset.price) || 0;
+            const labelText = sel.previousElementSibling ? sel.previousElementSibling.textContent.replace(':', '') : "Option";
+            selectedDetails += ` | ${labelText} : ${option.value}`;
+        });
+        finalCart.push({ name: itemName.replace(/_/g, ' '), price: itemPrice + totalAddonPrice, details: (finalMsg ? finalMsg + " " : "") + selectedDetails, qty: 1 });
+        localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
+    }
+    else if (itemType === 'simple') {
+        let finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
+        finalCart.push({ name: itemName.replace(/_/g, ' '), price: itemPrice, details: "As-is", qty: 1 });
+        localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
+    }
+    else if (itemType === 'bundle') {
+        let bundle = JSON.parse(localStorage.getItem('my_bundle')) || [];
+        bundle.push({ name: itemName.replace(/_/g, ' '), price: itemPrice, message: finalMsg });
+        localStorage.setItem('my_bundle', JSON.stringify(bundle));
+        window.dispatchEvent(new Event('storage'));
+    }
+
+    // --- SUCCESS ANIMATION ---
+    status.textContent = ""; 
+    btn.textContent = "Added!";
+    btn.style.background = "#28a745";
+    
+    setTimeout(() => {
+        btn.textContent = (itemType === 'bundle' || itemType === 'custom-bundle') ? "Add to Bundle" : "Add to Cart"; 
+        btn.style.background = (itemType === 'regular' || itemType === 'simple') ? "#395763" : "#e75480";
+        btn.disabled = false;
+        if(fileInput) fileInput.value = "";
+        msgInput.value = "";
+        if(addonSelect) addonSelect.value = ""; 
+        charCounter.textContent = "0/200";
+        document.getElementById('note-wrap').classList.add('hidden');
+        document.getElementById('upload-wrap').classList.add('hidden');
+    }, 1000);
+};
+       
 function toggleSection(id) {
     const section = document.getElementById(id);
     section.classList.toggle('hidden');
