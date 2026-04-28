@@ -171,23 +171,27 @@
                 finalCart.push({ name: itemName.replace(/_/g, ' '), price: itemPrice + priceInc, details: finalMsg + " | Variety: " + sel.value, qty: 1 });
                 localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
             }
-                            else if (itemType === 'custom-bundle') {
-                // Save to a unique key for the new bundle
+                           else if (itemType === 'custom-bundle') {
                 let customBundle = JSON.parse(localStorage.getItem('my_custom_bundle')) || [];
                 
-                // Logic for varieties
-                const sel = addonSelect.options[addonSelect.selectedIndex];
-                const priceInc = parseFloat(sel.dataset.price) || 0;
+                // Safety check: Make sure the select actually has a valid selection
+                let priceInc = 0;
+                let selectedValue = "Default";
+            
+                const sel = addonSelect.options ? addonSelect.options[addonSelect.selectedIndex] : null;
+            
+                if (sel) {
+                    priceInc = parseFloat(sel.dataset.price) || 0;
+                    selectedValue = sel.value;
+                }
                 
                 customBundle.push({ 
-                    name: itemName.replace(/_/g, ' ') + " (" + sel.value + ")", 
+                    name: itemName.replace(/_/g, ' ') + " (" + selectedValue + ")", 
                     price: itemPrice + priceInc, 
                     message: finalMsg 
                 });
                 
                 localStorage.setItem('my_custom_bundle', JSON.stringify(customBundle));
-                
-                // Trigger event so the new page listens for this specific key
                 window.dispatchEvent(new Event('storage'));
             }
            else if (itemType === 'shirts') {
