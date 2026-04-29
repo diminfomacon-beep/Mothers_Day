@@ -126,16 +126,24 @@
             }
         
             // 2. Calculate Shipping Cost
+           // --- Updated Shipping Calculation ---
             let shippingCost = 0;
             if (deliveryType === "shipping") {
-                if (shipRegion.value === "US") {
+                if (document.getElementById('ship-region').value === "US") {
                     shippingCost = 7.50;
-                } else if (shipRegion.value === "INTL") {
-                    // Logic for International - perhaps a flat fee or 0 if handled elsewhere
-                    shippingCost = 25.00; 
+                } else {
+                    // Count total items (summing the 'qty' of each item)
+                    const totalQty = finalCart.reduce((sum, item) => sum + (item.qty || 1), 0);
+                    
+                    if (totalQty >= 8) {
+                        shippingCost = 85.00;
+                    } else if (totalQty >= 4) {
+                        shippingCost = 45.00;
+                    } else {
+                        shippingCost = 25.00; // 1-3 items
+                    }
                 }
-            }
-        
+            }        
             // 3. Final Calculations
             const finalSubtotal = baseTotal - promoDiscount;
             const tax = finalSubtotal * 0.04;
