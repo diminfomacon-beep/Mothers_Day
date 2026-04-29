@@ -130,7 +130,7 @@
             let shippingCost = 0;
             if (deliveryType === "shipping") {
                 if (document.getElementById('ship-region').value === "US") {
-                    shippingCost = 7.50;
+                    shippingCost = 9.50;
                 } else {
                     // Count total items (summing the 'qty' of each item)
                     const totalQty = finalCart.reduce((sum, item) => sum + (item.qty || 1), 0);
