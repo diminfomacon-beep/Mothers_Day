@@ -113,21 +113,44 @@
                 document.getElementById('discount-row').style.display = "none";
             }
 
+            // 1. Handle UI Visibility for Shipping Options
             const deliveryType = document.querySelector('input[name="delivery"]:checked').value;
-            let shippingCost = (deliveryType === "shipping" && document.getElementById('ship-region').value === "US") ? 7.50 : 0;
-            
+            const shippingDiv = document.getElementById('shipping-options');
+            const shipRegion = document.getElementById('ship-region');
+        
+            if (deliveryType === 'shipping') {
+                shippingDiv.style.display = 'block';
+            } else {
+                shippingDiv.style.display = 'none';
+                shipRegion.value = "US"; // Reset to US if they switch to pickup
+            }
+        
+            // 2. Calculate Shipping Cost
+            let shippingCost = 0;
+            if (deliveryType === "shipping") {
+                if (shipRegion.value === "US") {
+                    shippingCost = 7.50;
+                } else if (shipRegion.value === "INTL") {
+                    // Logic for International - perhaps a flat fee or 0 if handled elsewhere
+                    shippingCost = 25.00; 
+                }
+            }
+        
+            // 3. Final Calculations
             const finalSubtotal = baseTotal - promoDiscount;
             const tax = finalSubtotal * 0.04;
             const grandTotal = finalSubtotal + shippingCost + tax;
-
+        
+            // 4. Update the DOM
             document.getElementById('sub-total').textContent = baseTotal.toFixed(2);
             document.getElementById('discount-amt').textContent = promoDiscount.toFixed(2);
             document.getElementById('shipping-amt').textContent = shippingCost.toFixed(2);
             document.getElementById('tax-amt').textContent = tax.toFixed(2);
             document.getElementById('grand-total').textContent = grandTotal.toFixed(2);
-
+        
             return grandTotal.toFixed(2);
         }
+        
         function sendOrderEmail() {
             const finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
             
