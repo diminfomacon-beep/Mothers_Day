@@ -150,14 +150,44 @@
                 });
         }
 
-        paypal.Buttons({
+       paypal.Buttons({
             createOrder: (data, actions) => {
+                const finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
+                
+                // 1. Map items to PayPal format (127 char limit per name)
+                const purchaseItems = finalCart.map(item => ({
+                    name: item.name.substring(0, 127),
+                    quantity: (item.qty || 1).toString(),
+                    unit_amount: { 
+                        currency_code: "USD", 
+                        value: item.price.toFixed(2) 
+                    }
+                }));
+        
+                // 2. Fetch totals from your page's DOM
+                const subtotal = document.getElementById('sub-total').textContent;
+                const shipping = document.getElementById('shipping-amt').textContent;
+                const tax = document.getElementById('tax-amt').textContent;
+                const grandTotal = document.getElementById('grand-total').textContent;
+        
                 return actions.order.create({
-                    purchase_units: [{ amount: { currency_code: "USD", value: renderMasterCart() } }]
+                    purchase_units: [{
+                        items: purchaseItems,
+                        amount: {
+                            currency_code: "USD",
+                            value: grandTotal,
+                            breakdown: {
+                                item_total: { currency_code: "USD", value: subtotal },
+                                shipping: { currency_code: "USD", value: shipping },
+                                tax_total: { currency_code: "USD", value: tax }
+                            }
+                        }
+                    }]
                 });
             },
             onApprove: (data, actions) => {
                 return actions.order.capture().then(() => {
+                    sendOrderEmail()
                     localStorage.removeItem('final_shopping_cart');
                     window.location.href = "thank-you.html";
                 });
