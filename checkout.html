@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<script type="text/javascript">
+   (function(){ emailjs.init("1LZbCPvH49G_r0ypB"); })();
+</script>
     <style>
         body { font-family: sans-serif; padding: 20px; display: flex; flex-direction: column; align-items: center; background: #fffafb; }
         #master-list { width: 100%; max-width: 600px; background: white; padding: 15px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
@@ -123,6 +127,27 @@
             document.getElementById('grand-total').textContent = grandTotal.toFixed(2);
 
             return grandTotal.toFixed(2);
+        }
+        function sendOrderEmail() {
+            const finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
+            
+            // Format the items for an email
+            let orderSummary = finalCart.map(item => 
+                `Item: ${item.name}\nDetails: ${item.details}\nPrice: $${item.price}\n\n`
+            ).join('');
+        
+            const templateParams = {
+                order_details: orderSummary,
+                grand_total: document.getElementById('grand-total').textContent,
+                // Add other fields from your template here
+            };
+        
+            emailjs.send('service_ezq1fuc', 'template_ut1r5xk', templateParams)
+                .then(function(response) {
+                    console.log('SUCCESS!', response.status);
+                }, function(error) {
+                    console.log('FAILED...', error);
+                });
         }
 
         paypal.Buttons({
