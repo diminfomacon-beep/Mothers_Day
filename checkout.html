@@ -66,6 +66,8 @@
             renderMasterCart();
         }
 
+        // ... (updateQty and removeItem functions remain the same) ...
+
         function renderMasterCart() {
             const finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
             const container = document.getElementById('master-list');
@@ -99,7 +101,7 @@
                 }).join('');
             }
 
-            // --- 1. Promo Logic (Percent & Flat) ---
+            // --- Promo Logic ---
             let promoDiscount = 0;
             const validPromos = { 
                 "MOTHERSDAY": { type: "percent", value: 0.10 },
@@ -107,24 +109,25 @@
                 "SAVE10": { type: "flat", value: 10.00 }
             };
 
-            if (promoInput === "") {
-                promoMsg.textContent = "";
-                document.getElementById('discount-row').style.display = "none";
-            } else if (validPromos[promoInput]) {
-                const promo = validPromos[promoInput];
-                promoDiscount = promo.type === "percent" ? baseTotal * promo.value : promo.value;
-                if (promoDiscount > baseTotal) promoDiscount = baseTotal;
-                
-                promoMsg.style.color = "#28a745";
-                promoMsg.textContent = "Code applied!";
-                document.getElementById('discount-row').style.display = "block";
+            if (promoInput !== "") {
+                if (validPromos[promoInput]) {
+                    const promo = validPromos[promoInput];
+                    promoDiscount = promo.type === "percent" ? baseTotal * promo.value : promo.value;
+                    if (promoDiscount > baseTotal) promoDiscount = baseTotal;
+                    promoMsg.style.color = "#28a745";
+                    promoMsg.textContent = "Code applied!";
+                    document.getElementById('discount-row').style.display = "block";
+                } else {
+                    promoMsg.style.color = "#dc3545";
+                    promoMsg.textContent = "Invalid or expired code.";
+                    document.getElementById('discount-row').style.display = "none";
+                }
             } else {
-                promoMsg.style.color = "#dc3545";
-                promoMsg.textContent = "Invalid or expired code.";
+                promoMsg.textContent = "";
                 document.getElementById('discount-row').style.display = "none";
             }
 
-            // --- 2. Shipping Logic (US vs CA vs INTL) ---
+            // --- Shipping Logic ---
             const deliveryType = document.querySelector('input[name="delivery"]:checked').value;
             const selectedRegion = document.getElementById('ship-region').value;
             let shippingCost = 0;
@@ -146,7 +149,6 @@
                 document.getElementById('shipping-options').style.display = 'none';
             }
 
-            // --- 3. Final Calculations ---
             const subtotalAfterDiscount = baseTotal - promoDiscount;
             const tax = subtotalAfterDiscount * 0.04;
             const grandTotal = subtotalAfterDiscount + shippingCost + tax;
@@ -158,6 +160,21 @@
             document.getElementById('grand-total').textContent = grandTotal.toFixed(2);
 
             return grandTotal.toFixed(2);
+        }
+
+        // --- NEW: Alert Function ---
+        function sendPushNotification(total) {
+            fetch("https://api.pushover.net/1/messages.json", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams({
+                    token: "au8jzsjjx9wz4dxvgc95h9nj86mzgz", // PASTE YOUR TOKEN HERE
+                    user: "ueb3ouifx46g56n7by3rfh198nmagb",   // PASTE YOUR USER KEY HERE
+                    title: "New Sale! 💰",
+                    message: "You just received an order for $" + total,
+                    priority: 1
+                })
+            });
         }
 
         function sendOrderEmail() {
@@ -174,15 +191,11 @@
 
         paypal.Buttons({
             createOrder: (data, actions) => {
-                const finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
                 const subtotal = document.getElementById('sub-total').textContent;
                 const discount = document.getElementById('discount-amt').textContent;
                 const shipping = document.getElementById('shipping-amt').textContent;
                 const tax = document.getElementById('tax-amt').textContent;
                 const grandTotal = document.getElementById('grand-total').textContent;
-
-                // Important: PayPal doesn't have a "Discount" field. 
-                // We subtract the discount from the item_total to keep the math balanced.
                 const itemTotalAdjusted = (parseFloat(subtotal) - parseFloat(discount)).toFixed(2);
 
                 return actions.order.create({
@@ -201,7 +214,9 @@
             },
             onApprove: (data, actions) => {
                 return actions.order.capture().then(() => {
-                    sendOrderEmail();
+                    const total = document.getElementById('grand-total').textContent;
+                    sendPushNotification(total); // Trigger Pushover Alert
+                    sendOrderEmail();           // Trigger Email
                     localStorage.removeItem('final_shopping_cart');
                     window.location.href = "thank-you.html";
                 });
