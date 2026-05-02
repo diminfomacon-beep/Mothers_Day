@@ -27,9 +27,9 @@
         
         <div id="shipping-options" style="display:none; margin-top:10px; padding-left: 20px;">
             <label>Destination:</label>
-            <select id="ship-region" onchange="renderMasterCart()" class="input-style">
+           <select id="ship-region" onchange="renderMasterCart()" class="input-style">
                 <option value="US">United States ($9.50)</option>
-                <option value="INTL">International (Calculated at Checkout)</option>
+                <option value="CA">Canada (Calculated at Checkout)</option> <option value="INTL">International (Calculated at Checkout)</option>
             </select>
         </div>
 
@@ -126,24 +126,36 @@
             }
         
             // 2. Calculate Shipping Cost
-           // --- Updated Shipping Calculation ---
-            let shippingCost = 0;
-            if (deliveryType === "shipping") {
-                if (document.getElementById('ship-region').value === "US") {
-                    shippingCost = 9.50;
-                } else {
-                    // Count total items (summing the 'qty' of each item)
-                    const totalQty = finalCart.reduce((sum, item) => sum + (item.qty || 1), 0);
-                    
-                    if (totalQty >= 8) {
-                        shippingCost = 135.00;
-                    } else if (totalQty >= 4) {
-                        shippingCost = 95.00;
-                    } else {
-                        shippingCost = 65.00; // 1-3 items
+           // --- Updated Shipping Calculation for US, CA, and INTL ---
+                let shippingCost = 0;
+                const totalQty = finalCart.reduce((sum, item) => sum + (item.qty || 1), 0);
+                const selectedRegion = document.getElementById('ship-region').value;
+                
+                if (deliveryType === "shipping") {
+                    if (selectedRegion === "US") {
+                        shippingCost = 9.50;
+                    } 
+                    else if (selectedRegion === "CA") {
+                        // TIERED SHIPPING FOR CANADA
+                        if (totalQty >= 8) {
+                            shippingCost = 75.00; // Example: High Tier
+                        } else if (totalQty >= 4) {
+                            shippingCost = 40.00; // Example: Mid Tier
+                        } else {
+                            shippingCost = 25.00; // Example: 1-3 items
+                        }
+                    } 
+                    else if (selectedRegion === "INTL") {
+                        // TIERED SHIPPING FOR REST OF WORLD
+                        if (totalQty >= 8) {
+                            shippingCost = 135.00;
+                        } else if (totalQty >= 4) {
+                            shippingCost = 95.00;
+                        } else {
+                            shippingCost = 65.00;
+                        }
                     }
                 }
-            }        
             // 3. Final Calculations
             const finalSubtotal = baseTotal - promoDiscount;
             const tax = finalSubtotal * 0.04;
