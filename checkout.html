@@ -51,13 +51,10 @@
 
     <script src="https://www.paypal.com/sdk/js?client-id=AWHpVW_dn2CYWVWbV5HGD2v3NpGs5atS90DuDMGrNZzFT--Anx1Ec80q7bwOAQ2lqfc4Gpd0NbBkYWRd"></script>
     <script>
-        function updateQty(index, change) {
+       function updateQty(index, change) {
             let finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
             finalCart[index].qty = (finalCart[index].qty || 1) + change;
-            
-            if (finalCart[index].qty <= 0) {
-                finalCart.splice(index, 1);
-            }
+            if (finalCart[index].qty <= 0) finalCart.splice(index, 1);
             localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
             renderMasterCart();
         }
@@ -73,18 +70,18 @@
             const finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
             const container = document.getElementById('master-list');
             const promoInput = document.getElementById('promo-input').value.trim().toUpperCase();
+            const promoMsg = document.getElementById('promo-msg');
             
             let baseTotal = 0;
-            let totalUnits = 0;
+            const totalQty = finalCart.reduce((sum, item) => sum + (item.qty || 1), 0);
 
             if (finalCart.length === 0) {
                 container.innerHTML = "<p style='text-align:center;'>Your cart is empty.</p>";
             } else {
                 container.innerHTML = finalCart.map((item, index) => {
                     const qty = item.qty || 1;
-                    const lineTotal = item.price * qty; // item.price already contains add-on
+                    const lineTotal = item.price * qty;
                     baseTotal += lineTotal;
-                    
                     return `
                         <div class="cart-item">
                             <div>
@@ -102,125 +99,99 @@
                 }).join('');
             }
 
-            // Calculation Logic
+            // --- 1. Promo Logic (Percent & Flat) ---
             let promoDiscount = 0;
-            const validPromos = { "MOTHERSDAY": 0.10, "VIP20": 0.20 };
-            
-            if (validPromos[promoInput]) {
-                promoDiscount = baseTotal * validPromos[promoInput];
+            const validPromos = { 
+                "MOTHERSDAY": { type: "percent", value: 0.10 },
+                "VIP20": { type: "percent", value: 0.20 },
+                "SAVE10": { type: "flat", value: 10.00 }
+            };
+
+            if (promoInput === "") {
+                promoMsg.textContent = "";
+                document.getElementById('discount-row').style.display = "none";
+            } else if (validPromos[promoInput]) {
+                const promo = validPromos[promoInput];
+                promoDiscount = promo.type === "percent" ? baseTotal * promo.value : promo.value;
+                if (promoDiscount > baseTotal) promoDiscount = baseTotal;
+                
+                promoMsg.style.color = "#28a745";
+                promoMsg.textContent = "Code applied!";
                 document.getElementById('discount-row').style.display = "block";
             } else {
+                promoMsg.style.color = "#dc3545";
+                promoMsg.textContent = "Invalid or expired code.";
                 document.getElementById('discount-row').style.display = "none";
             }
 
-            // 1. Handle UI Visibility for Shipping Options
+            // --- 2. Shipping Logic (US vs CA vs INTL) ---
             const deliveryType = document.querySelector('input[name="delivery"]:checked').value;
-            const shippingDiv = document.getElementById('shipping-options');
-            const shipRegion = document.getElementById('ship-region');
-        
+            const selectedRegion = document.getElementById('ship-region').value;
+            let shippingCost = 0;
+
             if (deliveryType === 'shipping') {
-                shippingDiv.style.display = 'block';
-            } else {
-                shippingDiv.style.display = 'none';
-                shipRegion.value = "US"; // Reset to US if they switch to pickup
-            }
-        
-            // 2. Calculate Shipping Cost
-           // --- Updated Shipping Calculation for US, CA, and INTL ---
-                let shippingCost = 0;
-                const totalQty = finalCart.reduce((sum, item) => sum + (item.qty || 1), 0);
-                const selectedRegion = document.getElementById('ship-region').value;
-                
-                if (deliveryType === "shipping") {
-                    if (selectedRegion === "US") {
-                        shippingCost = 9.50;
-                    } 
-                    else if (selectedRegion === "CA") {
-                        // TIERED SHIPPING FOR CANADA
-                        if (totalQty >= 8) {
-                            shippingCost = 75.00; // Example: High Tier
-                        } else if (totalQty >= 4) {
-                            shippingCost = 40.00; // Example: Mid Tier
-                        } else {
-                            shippingCost = 25.00; // Example: 1-3 items
-                        }
-                    } 
-                    else if (selectedRegion === "INTL") {
-                        // TIERED SHIPPING FOR REST OF WORLD
-                        if (totalQty >= 8) {
-                            shippingCost = 135.00;
-                        } else if (totalQty >= 4) {
-                            shippingCost = 95.00;
-                        } else {
-                            shippingCost = 65.00;
-                        }
-                    }
+                document.getElementById('shipping-options').style.display = 'block';
+                if (selectedRegion === "US") {
+                    shippingCost = 9.50;
+                } else if (selectedRegion === "CA") {
+                    if (totalQty >= 8) shippingCost = 75.00;
+                    else if (totalQty >= 4) shippingCost = 40.00;
+                    else shippingCost = 25.00;
+                } else {
+                    if (totalQty >= 8) shippingCost = 135.00;
+                    else if (totalQty >= 4) shippingCost = 95.00;
+                    else shippingCost = 65.00;
                 }
-            // 3. Final Calculations
-            const finalSubtotal = baseTotal - promoDiscount;
-            const tax = finalSubtotal * 0.04;
-            const grandTotal = finalSubtotal + shippingCost + tax;
-        
-            // 4. Update the DOM
+            } else {
+                document.getElementById('shipping-options').style.display = 'none';
+            }
+
+            // --- 3. Final Calculations ---
+            const subtotalAfterDiscount = baseTotal - promoDiscount;
+            const tax = subtotalAfterDiscount * 0.04;
+            const grandTotal = subtotalAfterDiscount + shippingCost + tax;
+
             document.getElementById('sub-total').textContent = baseTotal.toFixed(2);
             document.getElementById('discount-amt').textContent = promoDiscount.toFixed(2);
             document.getElementById('shipping-amt').textContent = shippingCost.toFixed(2);
             document.getElementById('tax-amt').textContent = tax.toFixed(2);
             document.getElementById('grand-total').textContent = grandTotal.toFixed(2);
-        
+
             return grandTotal.toFixed(2);
         }
-        
+
         function sendOrderEmail() {
             const finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
-            
-            // Format the items for an email
-            let orderSummary = finalCart.map(item => 
-                `Item: ${item.name}\nDetails: ${item.details}\nPrice: $${item.price}\n\n`
-            ).join('');
-        
+            let orderSummary = finalCart.map(item => `Item: ${item.name} x${item.qty || 1}\nDetails: ${item.details}\n\n`).join('');
             const templateParams = {
                 order_details: orderSummary,
                 grand_total: document.getElementById('grand-total').textContent,
-                // Add other fields from your template here
+                discount: document.getElementById('discount-amt').textContent,
+                shipping: document.getElementById('shipping-amt').textContent
             };
-        
-            emailjs.send('service_ezq1fuc', 'template_ut1r5xk', templateParams)
-                .then(function(response) {
-                    console.log('SUCCESS!', response.status);
-                }, function(error) {
-                    console.log('FAILED...', error);
-                });
+            emailjs.send('service_ezq1fuc', 'template_ut1r5xk', templateParams);
         }
 
-       paypal.Buttons({
+        paypal.Buttons({
             createOrder: (data, actions) => {
                 const finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
-                
-                // 1. Map items to PayPal format (127 char limit per name)
-                const purchaseItems = finalCart.map(item => ({
-                    name: item.name.substring(0, 127),
-                    quantity: (item.qty || 1).toString(),
-                    unit_amount: { 
-                        currency_code: "USD", 
-                        value: item.price.toFixed(2) 
-                    }
-                }));
-        
-                // 2. Fetch totals from your page's DOM
                 const subtotal = document.getElementById('sub-total').textContent;
+                const discount = document.getElementById('discount-amt').textContent;
                 const shipping = document.getElementById('shipping-amt').textContent;
                 const tax = document.getElementById('tax-amt').textContent;
                 const grandTotal = document.getElementById('grand-total').textContent;
-        
+
+                // Important: PayPal doesn't have a "Discount" field. 
+                // We subtract the discount from the item_total to keep the math balanced.
+                const itemTotalAdjusted = (parseFloat(subtotal) - parseFloat(discount)).toFixed(2);
+
                 return actions.order.create({
                     purchase_units: [{
-                        items: purchaseItems,
                         amount: {
                             currency_code: "USD",
                             value: grandTotal,
                             breakdown: {
-                                item_total: { currency_code: "USD", value: subtotal },
+                                item_total: { currency_code: "USD", value: itemTotalAdjusted },
                                 shipping: { currency_code: "USD", value: shipping },
                                 tax_total: { currency_code: "USD", value: tax }
                             }
@@ -230,7 +201,7 @@
             },
             onApprove: (data, actions) => {
                 return actions.order.capture().then(() => {
-                    sendOrderEmail()
+                    sendOrderEmail();
                     localStorage.removeItem('final_shopping_cart');
                     window.location.href = "thank-you.html";
                 });
