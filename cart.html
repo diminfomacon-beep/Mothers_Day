@@ -15,11 +15,27 @@
 </head>
 <body>
     <style>
-    @keyframes pulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.02); }
-        100% { transform: scale(1); }
-    }
+    .status-msg {
+  position: relative;
+  display: inline-block;
+}
+
+.status-msg::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 100%;
+  background: rgba(202, 228, 219, 0.4);
+  opacity: 0;
+  animation: highlightPulse 2s ease-in-out infinite;
+}
+
+@keyframes highlightPulse {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
+}
     .photo-notice {
         background: #fff3f5;
         border: 1px solid #e75480;
