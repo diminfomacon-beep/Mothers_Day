@@ -138,32 +138,41 @@ console.log("Current Vars:", params.get('vars'));
             btn.classList.add('btn-blue'); // Blue
 
         }
-        else if (itemType === 'shirts') {
-            const varsParam = params.get('vars'); // Example: "Size:S|0,M|0|||Print:Classic|0,Distressed|2"
+         else if (itemType === 'shirts') {
+            const varsParam = params.get('vars');
             if (varsParam) {
                 addonSection.style.display = 'block';
                 document.getElementById('regular-add-on-wrap').classList.add('hidden');
-                const dynamicContainer = document.getElementById('dynamic-vars-container');
-                // Split the two sets (Size and Print)
+                
                 const sets = varsParam.split('|||');
                 
                 sets.forEach(set => {
                     const [header, options] = set.split(':');
                     
-                    // Create a label for each set
                     addonSection.innerHTML += `<span class="label-text">${header}:</span>`;
                     
-                    // Create a specific select for this set
                     const newSelect = document.createElement('select');
+                    newSelect.id = header.toLowerCase(); // Creates 'color', 'size', etc.
                     newSelect.className = 'shirt-select';
-                    
+        
                     options.split(',').forEach(opt => {
                         const [label, price] = opt.split('|');
                         newSelect.innerHTML += `<option value="${label}" data-price="${price}">${label} (+$${price})</option>`;
                     });
                     
+                    // Add the select to the page FIRST
                     addonSection.appendChild(newSelect);
                 });
+        
+                // NOW that they are on the page, we can find 'color' and watch it
+                const colorMenu = document.getElementById('color');
+                if (colorMenu) {
+                    colorMenu.addEventListener('change', function() {
+                        updateSizeAvailability(this.value);
+                    });
+                    // Run it once immediately in case the default color is limited
+                    updateSizeAvailability(colorMenu.value);
+                }
             }
             btn.classList.add('btn-blue');
         }
@@ -174,22 +183,50 @@ console.log("Current Vars:", params.get('vars'));
             charCounter.textContent = count + "/200";
             charCounter.style.color = count >= 180 ? "#e75480" : "#999";
         };
+        function updateSizeAvailability(selectedColor) {
+            const sizeSelect = document.getElementById('size');
+            if (!sizeSelect) return;
+        
+            // These colors only go up to XL
+            const limitedColors = [
+                "Navy Blue", "Lime Green", "Purple", "Sport Gray", 
+                "Safety Pink", "Irish Green", "Tangerine", "Sand", 
+                "Light Pink", "Sage", "Dusty Rose", "Light Blue"
+            ];
+        
+            const isLimited = limitedColors.includes(selectedColor);
+        
+            // Loop through each size option (S, M, L, XL, 2XL, 3XL)
+            Array.from(sizeSelect.options).forEach(option => {
+                const sizeValue = option.value;
+                
+                if (isLimited && (sizeValue === "2XL" || sizeValue === "3XL")) {
+                    option.disabled = true;
+                    // If the user currently has a disabled size picked, reset to 'S'
+                    if (sizeSelect.value === sizeValue) {
+                        sizeSelect.value = "S";
+                    }
+                } else {
+                    option.disabled = false;
+                }
+            });
+        }
       btn.onclick = async function() {
-    const status = document.getElementById('upload-status');
-    const fileInput = document.getElementById('image-upload');
-    let finalMsg = msgInput.value;
-    btn.disabled = true;
-    
-    // Cloudinary Upload
-    if (fileInput && fileInput.files.length > 0) {
-        status.textContent = "Uploading...";
-        const fd = new FormData();
-        fd.append('file', fileInput.files[0]);
-        fd.append('upload_preset', UPLOAD_PRESET);
-        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: 'POST', body: fd });
-        const data = await res.json();
-        finalMsg += (finalMsg ? " | Pic: " : "Pic: ") + data.secure_url;
-    }
+        const status = document.getElementById('upload-status');
+        const fileInput = document.getElementById('image-upload');
+        let finalMsg = msgInput.value;
+        btn.disabled = true;
+        
+        // Cloudinary Upload
+        if (fileInput && fileInput.files.length > 0) {
+            status.textContent = "Uploading...";
+            const fd = new FormData();
+            fd.append('file', fileInput.files[0]);
+            fd.append('upload_preset', UPLOAD_PRESET);
+            const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: 'POST', body: fd });
+            const data = await res.json();
+            finalMsg += (finalMsg ? " | Pic: " : "Pic: ") + data.secure_url;
+        }
 
     // --- LOGIC GATE ---
     if (itemType === 'premade') {
