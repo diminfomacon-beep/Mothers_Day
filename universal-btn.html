@@ -91,21 +91,46 @@ console.log("Current Vars:", params.get('vars'));
             if (varsParam) {
                 addonSection.style.display = 'block';
                 document.getElementById('regular-add-on-wrap').classList.add('hidden');
+                
                 const sets = varsParam.split('|||');
-                sets.forEach(set => {
+                
+                // We use 'index' to keep track of which shirt we are on
+                sets.forEach((set, index) => {
                     const [header, options] = set.split(':');
                     addonSection.innerHTML += `<span class="label-text">${header}:</span>`;
+                    
                     const newSelect = document.createElement('select');
                     newSelect.className = 'shirt-select';
+                    
+                    // This creates IDs like "color-0", "size-1", "color-2", etc.
+                    const type = header.toLowerCase().includes('color') ? 'color' : 'size';
+                    newSelect.id = `${type}-${index}`; 
+        
                     options.split(',').forEach(opt => {
                         const [label, price] = opt.split('|');
                         newSelect.innerHTML += `<option value="${label}" data-price="${price}">${label} (+$${price})</option>`;
                     });
+        
                     addonSection.appendChild(newSelect);
                 });
+        
+                // Now we link the pairs together
+                for (let i = 0; i < sets.length; i++) {
+                    const colorMenu = document.getElementById(`color-${i}`);
+                    // We assume the Size menu is the very next item in the list
+                    const sizeMenu = document.getElementById(`size-${i+1}`); 
+                    
+                    if (colorMenu && sizeMenu) {
+                        colorMenu.addEventListener('change', function() {
+                            updateBundleSize(this.value, sizeMenu);
+                        });
+                        // Check availability immediately on load
+                        updateBundleSize(colorMenu.value, sizeMenu);
+                    }
+                }
             }
             btn.classList.add('btn-blue');
-            }
+        }
         else if (itemType === 'regular') {
             // 1. Build the menu if vars exist
             const varsParam = params.get('vars');
@@ -183,6 +208,27 @@ console.log("Current Vars:", params.get('vars'));
             charCounter.textContent = count + "/200";
             charCounter.style.color = count >= 180 ? "#e75480" : "#999";
         };
+        function updateBundleSize(selectedColor, sizeSelect) {
+            const limitedColors = [
+                "Navy Blue", "Lime Green", "Purple", "Sport Gray", 
+                "Safety Pink", "Irish Green", "Tangerine", "Sand", 
+                "Light Pink", "Sage", "Dusty Rose", "Light Blue"
+            ];
+        
+            const isLimited = limitedColors.includes(selectedColor);
+        
+            Array.from(sizeSelect.options).forEach(option => {
+                const sizeValue = option.value;
+                if (isLimited && (sizeValue === "2XL" || sizeValue === "3XL")) {
+                    option.disabled = true;
+                    if (sizeSelect.value === sizeValue) {
+                        sizeSelect.value = "S";
+                    }
+                } else {
+                    option.disabled = false;
+                }
+            });
+        }
         function updateSizeAvailability(selectedColor) {
             const sizeSelect = document.getElementById('size');
             if (!sizeSelect) return;
