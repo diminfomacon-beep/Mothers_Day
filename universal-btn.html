@@ -12,7 +12,7 @@
         #add-btn { background-color: #e75480; color: white; border: none; padding: 10px 24px; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; width: 100%; margin-top: 5px; }
         #add-btn:disabled { background: #ccc; cursor: not-allowed; }
         .status { font-size: 10px; color: #000; height: 12px; font-weight: bold; text-align: center; }
-        .btn-blue {background-color: #395763 !important;}
+        .btn-blue {background-color: #2F6B64 !important;}
         .hidden { display: none !important; }
         .button-container {display: flex;gap: 10px; /* Space between buttons */margin-bottom: 10px;}
         .toggle-btn {flex: 1; padding: 5px 7px;font-size: 12px;background-color: #E6E6FA;border: 1px solid #c5c5dd;border-radius: 12px; cursor: pointer;transition: background 0.2s;}
@@ -287,7 +287,7 @@ console.log("Current Vars:", params.get('vars'));
     setTimeout(() => {
         // Keep exactly this one, and remove the others:
         btn.textContent = (itemType === 'bundle' || itemType === 'custom-bundle' || itemType === 'shirt-bundle') ? "Add to Bundle" : "Add to Cart";
-        btn.style.background = (itemType === 'regular' || itemType === 'simple') ? "#395763" : "#e75480";
+        btn.style.background = (itemType === 'regular' || itemType === 'simple') ? "#2F6B64" : "#e75480";
         btn.disabled = false;
         if(fileInput) fileInput.value = "";
         msgInput.value = "";
