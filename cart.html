@@ -11,44 +11,12 @@
         #add-to-final {background: #e75480; color: white; border: none; padding: 12px; width: 100%; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px;}
         #clear-cart {background:#999; color:white; border:none; padding:10px;width:100%; border-radius:5px; cursor:pointer; margin-top:8px;}
         #status-msg {margin-top:10px;font-size:13px;color:green;}
+        @keyframes borderPulse {  0% { box-shadow: 0 0 0 0 rgba(47, 107, 100, 0.4); }  50% { box-shadow: 0 0 0 6px rgba(47, 107, 100, 0); }  100% { box-shadow: 0 0 0 0 rgba(47, 107, 100, 0); }}
+        .status-msg {  animation: borderPulse 2s infinite;}
+        .photo-notice {background: #fff3f5;border: 1px solid #e75480;padding: 12px;border-radius: 8px;font-size: 12px;margin-bottom: 15px;color: #333;text-align: center;animation: pulse 2s infinite ease-in-out;}
     </style>
 </head>
 <body>
-    <style>
-    .status-msg {
-  position: relative;
-  display: inline-block;
-}
-
-.status-msg::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  width: 100%;
-  background: rgba(202, 228, 219, 0.4);
-  opacity: 0;
-  animation: highlightPulse 2s ease-in-out infinite;
-}
-
-@keyframes highlightPulse {
-  0%, 100% { opacity: 0; }
-  50% { opacity: 1; }
-}
-    .photo-notice {
-        background: #fff3f5;
-        border: 1px solid #e75480;
-        padding: 12px;
-        border-radius: 8px;
-        font-size: 12px;
-        margin-bottom: 15px;
-        color: #333;
-        text-align: center;
-        animation: pulse 2s infinite ease-in-out;
-    }
-</style>
-
 <div class="photo-notice">
     <strong>🖼️Multiple Photo Submissions:</strong> Please email your images to <strong>info@dimbrightideas.com</strong> from your order email.</div>
     <div id="bundle-list"></div>
