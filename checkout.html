@@ -68,10 +68,32 @@
         // ... (updateQty and removeItem functions remain the same) ...
 
         function renderMasterCart() {
-            const finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
-            const container = document.getElementById('master-list');
-            const promoInput = document.getElementById('promo-input').value.trim().toUpperCase();
-            const promoMsg = document.getElementById('promo-msg');
+        // 1. Grab items from all possible "drawers"
+        const standardItems = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
+        const bundleItems = JSON.parse(localStorage.getItem('my_bundle')) || [];
+        const customBundleItems = JSON.parse(localStorage.getItem('my_custom_bundle')) || [];
+    
+        // 2. Convert Bundle items to match the "Standard" format (so names and prices show up)
+        const formattedBundles = bundleItems.map(item => ({
+            name: item.name,
+            price: item.price,
+            details: item.message || "Bundle Item",
+            qty: 1
+        }));
+    
+        const formattedCustomBundles = customBundleItems.map(item => ({
+            name: item.name,
+            price: item.price,
+            details: item.message || "Custom Bundle Item",
+            qty: 1
+        }));
+    
+        // 3. Combine them all into one master list for the checkout to display
+        const finalCart = [...standardItems, ...formattedBundles, ...formattedCustomBundles];
+    
+        // --- The rest of your existing function starts here ---
+        const container = document.getElementById('master-list');
+        const promoInput = document.getElementById('promo-input').value.trim().toUpperCase();
             
             let baseTotal = 0;
             const totalQty = finalCart.reduce((sum, item) => sum + (item.qty || 1), 0);
