@@ -69,7 +69,15 @@
         // ... (updateQty and removeItem functions remain the same) ...
 
         function renderMasterCart() {
-            const finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
+            const standardItems = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
+            const bundleItems = JSON.parse(localStorage.getItem('my_bundle')) || [];
+            const customBundleItems = JSON.parse(localStorage.getItem('my_custom_bundle')) || [];
+            
+            const finalCart = [
+                ...standardItems, 
+                ...bundleItems.map(i => ({...i, details: i.message})), 
+                ...customBundleItems.map(i => ({...i, details: i.message}))
+            ];           
             const container = document.getElementById('master-list');
             const promoInput = document.getElementById('promo-input').value.trim().toUpperCase();
             const promoMsg = document.getElementById('promo-msg');
@@ -191,38 +199,57 @@
 
         paypal.Buttons({
             createOrder: (data, actions) => {
-                const subtotal = document.getElementById('sub-total').textContent;
-                const discount = document.getElementById('discount-amt').textContent;
-                const shipping = document.getElementById('shipping-amt').textContent;
-                const tax = document.getElementById('tax-amt').textContent;
-                const grandTotal = document.getElementById('grand-total').textContent;
-                const itemTotalAdjusted = (parseFloat(subtotal) - parseFloat(discount)).toFixed(2);
-                const finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
-
-                return actions.order.create({
-                    purchase_units: [{
-                        amount: {
-                            currency_code: "USD",
-                            value: grandTotal,
-                            breakdown: {
-                                item_total: { currency_code: "USD", value: itemTotalAdjusted },
-                                shipping: { currency_code: "USD", value: shipping },
-                                tax_total: { currency_code: "USD", value: tax }
-                            }
+            // 1. Gather items from all three locations
+            const standardItems = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
+            const bundleItems = JSON.parse(localStorage.getItem('my_bundle')) || [];
+            const customBundleItems = JSON.parse(localStorage.getItem('my_custom_bundle')) || [];
+        
+            // 2. Format them for PayPal (combining them into one array)
+            const allItems = [
+                ...standardItems.map(item => ({
+                    name: item.name,
+                    description: item.details || "Standard Item",
+                    unit_amount: { currency_code: "USD", value: item.price.toFixed(2) },
+                    quantity: item.qty || 1
+                })),
+                ...bundleItems.map(item => ({
+                    name: item.name,
+                    description: item.message || "Bundle Item",
+                    unit_amount: { currency_code: "USD", value: item.price.toFixed(2) },
+                    quantity: 1 // Bundles usually default to 1
+                })),
+                ...customBundleItems.map(item => ({
+                    name: item.name,
+                    description: item.message || "Custom Bundle Item",
+                    unit_amount: { currency_code: "USD", value: item.price.toFixed(2) },
+                    quantity: 1
+                }))
+            ];
+        
+            const subtotal = document.getElementById('sub-total').textContent;
+            const discount = document.getElementById('discount-amt').textContent;
+            const shipping = document.getElementById('shipping-amt').textContent;
+            const tax = document.getElementById('tax-amt').textContent;
+            const grandTotal = document.getElementById('grand-total').textContent;
+            
+            // PayPal needs the subtotal minus the discount
+            const itemTotalAdjusted = (parseFloat(subtotal) - parseFloat(discount)).toFixed(2);
+        
+            return actions.order.create({
+                purchase_units: [{
+                    amount: {
+                        currency_code: "USD",
+                        value: grandTotal,
+                        breakdown: {
+                            item_total: { currency_code: "USD", value: itemTotalAdjusted },
+                            shipping: { currency_code: "USD", value: shipping },
+                            tax_total: { currency_code: "USD", value: tax }
                         }
-                    items: finalCart.map(item => ({
-                        name: item.name,
-                        description: item.details || "No details provided",
-                        unit_amount: {
-                            currency_code: "USD",
-                            value: item.price.toFixed(2)
-                        },
-                        quantity: item.qty || 1
-                    }))
-                    }]
-                });
-            },
-            onApprove: (data, actions) => {
+                    },
+                    items: allItems // <--- Now PayPal sees the combined list
+                }]
+            });
+        },            onApprove: (data, actions) => {
                 return actions.order.capture().then(() => {
                     const total = document.getElementById('grand-total').textContent;
                     sendPushNotification(total); // Trigger Pushover Alert
