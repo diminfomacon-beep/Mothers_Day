@@ -221,15 +221,22 @@
                     }]
                 });
             },
-            onApprove: (data, actions) => {
-                return actions.order.capture().then(() => {
-                    const total = document.getElementById('grand-total').textContent;
-                    sendPushNotification(total); // Trigger Pushover Alert
-                    sendOrderEmail();           // Trigger Email
-                    localStorage.removeItem('final_shopping_cart');
-                    window.location.href = "thank-you.html";
-                });
-            }
+           onApprove: (data, actions) => {
+            return actions.order.capture().then(async (details) => { // Added async
+                const total = document.getElementById('grand-total').textContent;
+                
+                // Use await to ensure these finish before the page changes
+                try {
+                    await sendPushNotification(total); 
+                    await sendOrderEmail();
+                } catch (err) {
+                    console.error("Notification failed", err);
+                }
+        
+                localStorage.removeItem('final_shopping_cart');
+                window.location.href = "thank-you.html";
+            });
+        }
         }).render('#paypal-button-container');
 
         renderMasterCart();
