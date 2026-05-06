@@ -49,8 +49,7 @@
 
     <div id="paypal-button-container"></div>
 
-    <script src="https://www.paypal.com/sdk/js?client-id=A>$8Ad=AZfoLkPa3ut2MSEgAqM5ZINc3mDEHejbOhfjTWiBtdgvCSuBuhQ5Eobajkyxu5cSyTBuBfmwk9mTY4Vu"></script>
-    <script>
+<script src="https://www.paypal.com/sdk/js?client-id=AZfoLkPa3ut2MSEgAqM5ZINc3mDEHejbOhfjTWiBtdgvCSuBuhQ5Eobajkyxu5cSyTBuBfmwk9mTY4Vu"></script>    <script>
        function updateQty(index, change) {
             let finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
             finalCart[index].qty = (finalCart[index].qty || 1) + change;
@@ -190,56 +189,62 @@
         }
 
         paypal.Buttons({
-            createOrder: (data, actions) => {
-                const subtotal = document.getElementById('sub-total').textContent;
-                const discount = document.getElementById('discount-amt').textContent;
-                const shipping = document.getElementById('shipping-amt').textContent;
-                const tax = document.getElementById('tax-amt').textContent;
-                const grandTotal = document.getElementById('grand-total').textContent;
-                const itemTotalAdjusted = (parseFloat(subtotal) - parseFloat(discount)).toFixed(2);
-
-                return actions.order.create({
-                    purchase_units: [{
-                        amount: {
-                            currency_code: "USD",
-                            value: grandTotal,
-                            breakdown: {
-                                item_total: { currency_code: "USD", value: itemTotalAdjusted },
-                                shipping: { currency_code: "USD", value: shipping },
-                                tax_total: { currency_code: "USD", value: tax }
-                            }
-                        }
-                        items: finalCart.map(item => ({
-                            name: item.name,
-                            description: item.details || "No details provided",
-                            unit_amount: {
-                                currency_code: "USD",
-                                value: item.price.toFixed(2)
-                            },
-                            quantity: item.qty || 1
-                        }))
-                    }]
-                });
-            },
-           onApprove: (data, actions) => {
-            return actions.order.capture().then(async (details) => { // Added async
-                const total = document.getElementById('grand-total').textContent;
-                
-                // Use await to ensure these finish before the page changes
-                try {
-                    await sendPushNotification(total); 
-                    await sendOrderEmail();
-                } catch (err) {
-                    console.error("Notification failed", err);
-                }
+    createOrder: (data, actions) => {
+        // 1. Get the cart data so we can send items to PayPal
+        const finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
         
-                localStorage.removeItem('final_shopping_cart');
-                window.location.href = "thank-you.html";
-            });
-        }
-        }).render('#paypal-button-container');
+        const subtotal = document.getElementById('sub-total').textContent;
+        const discount = document.getElementById('discount-amt').textContent;
+        const shipping = document.getElementById('shipping-amt').textContent;
+        const tax = document.getElementById('tax-amt').textContent;
+        const grandTotal = document.getElementById('grand-total').textContent;
+        
+        // PayPal requires the item_total to be the sum of items AFTER discounts
+        const itemTotalAdjusted = (parseFloat(subtotal) - parseFloat(discount)).toFixed(2);
 
-        renderMasterCart();
+        return actions.order.create({
+            purchase_units: [{
+                amount: {
+                    currency_code: "USD",
+                    value: grandTotal,
+                    breakdown: {
+                        item_total: { currency_code: "USD", value: itemTotalAdjusted },
+                        shipping: { currency_code: "USD", value: shipping },
+                        tax_total: { currency_code: "USD", value: tax }
+                    }
+                }, // <--- THIS COMMA WAS MISSING
+                items: finalCart.map(item => ({
+                    name: item.name,
+                    description: item.details || "No details provided",
+                    unit_amount: {
+                        currency_code: "USD",
+                        value: parseFloat(item.price).toFixed(2)
+                    },
+                    quantity: item.qty || 1
+                }))
+            }]
+        });
+    },
+    onApprove: (data, actions) => {
+        return actions.order.capture().then(async (details) => {
+            const total = document.getElementById('grand-total').textContent;
+            
+            // We use 'await' and 'Promise.all' to make sure notifications send 
+            // BEFORE the browser redirects to the thank-you page.
+            try {
+                await Promise.all([
+                    sendPushNotification(total),
+                    sendOrderEmail()
+                ]);
+            } catch (err) {
+                console.error("Notification error:", err);
+            }
+
+            localStorage.removeItem('final_shopping_cart');
+            window.location.href = "thank-you.html";
+        });
+    }
+}).render('#paypal-button-container');
     </script>
 </body>
 </html>
