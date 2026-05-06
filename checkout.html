@@ -209,6 +209,15 @@
                                 tax_total: { currency_code: "USD", value: tax }
                             }
                         }
+                    items: finalCart.map(item => ({
+                name: item.name,
+                description: item.details || "No details provided",
+                unit_amount: {
+                    currency_code: "USD",
+                    value: item.price.toFixed(2)
+                },
+                quantity: item.qty || 1
+            }))
                     }]
                 });
             },
