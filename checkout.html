@@ -197,6 +197,7 @@
                 const tax = document.getElementById('tax-amt').textContent;
                 const grandTotal = document.getElementById('grand-total').textContent;
                 const itemTotalAdjusted = (parseFloat(subtotal) - parseFloat(discount)).toFixed(2);
+                const finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
 
                 return actions.order.create({
                     purchase_units: [{
@@ -210,14 +211,14 @@
                             }
                         }
                     items: finalCart.map(item => ({
-                name: item.name,
-                description: item.details || "No details provided",
-                unit_amount: {
-                    currency_code: "USD",
-                    value: item.price.toFixed(2)
-                },
-                quantity: item.qty || 1
-            }))
+                        name: item.name,
+                        description: item.details || "No details provided",
+                        unit_amount: {
+                            currency_code: "USD",
+                            value: item.price.toFixed(2)
+                        },
+                        quantity: item.qty || 1
+                    }))
                     }]
                 });
             },
