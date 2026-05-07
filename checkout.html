@@ -199,12 +199,12 @@
             const b = JSON.parse(localStorage.getItem('my_bundle')) || [];
             const cb = JSON.parse(localStorage.getItem('my_custom_bundle')) || [];
         
-            // Merge everything for the email summary
             let orderSummary = "";
             
-            s.forEach(i => orderSummary += `Item: ${i.name} x${i.qty}\nDetails: ${i.details}\n\n`);
-            b.forEach(i => orderSummary += `Bundle Item: ${i.name}\nDetails/Link: ${i.message}\n\n`);
-            cb.forEach(i => orderSummary += `Custom Bundle: ${i.name}\nDetails/Link: ${i.message}\n\n`);
+            // Check both .details and .message to ensure nothing is missed
+            s.forEach(i => orderSummary += `Item: ${i.name} x${i.qty}\nDetails: ${i.details || 'None'}\n\n`);
+            b.forEach(i => orderSummary += `Bundle Item: ${i.name}\nDetails: ${i.message || 'None'}\n\n`);
+            cb.forEach(i => orderSummary += `Custom Bundle: ${i.name}\nDetails: ${i.message || 'None'}\n\n`);
         
             const templateParams = {
                 order_details: orderSummary,
@@ -213,7 +213,9 @@
                 shipping: document.getElementById('shipping-amt').textContent
             };
         
-            emailjs.send('service_ezq1fuc', 'template_ut1r5xk', templateParams);
+            emailjs.send('service_ezq1fuc', 'template_ut1r5xk', templateParams)
+                .then(() => console.log("Email Sent"))
+                .catch(err => console.error("Email Failed", err));
         }
 
         // --- UPDATED: createOrder with Discount & Detail Handling ---
