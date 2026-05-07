@@ -68,18 +68,27 @@
 
         // ... (updateQty and removeItem functions remain the same) ...
 
-        function renderMasterCart() {
+                function renderMasterCart() {
             const standardItems = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
             const bundleItems = JSON.parse(localStorage.getItem('my_bundle')) || [];
             const customBundleItems = JSON.parse(localStorage.getItem('my_custom_bundle')) || [];
-            
+        
+            // Combine all lists and move '.message' (notes/links) into '.details'
             const finalCart = [
-                ...standardItems, 
-                ...bundleItems.map(i => ({...i, details: i.message})), 
-                ...customBundleItems.map(i => ({...i, details: i.message}))
-            ];           
-            const container = document.getElementById('master-list');
-            const promoInput = document.getElementById('promo-input').value.trim().toUpperCase();
+                ...standardItems,
+                ...bundleItems.map(item => ({
+                    ...item,
+                    details: item.message || "No notes provided",
+                    qty: 1
+                })),
+                ...customBundleItems.map(item => ({
+                    ...item,
+                    details: item.message || "No notes provided",
+                    qty: 1
+                }))
+            ];
+        
+            const container = document.getElementById('master-list');            const promoInput = document.getElementById('promo-input').value.trim().toUpperCase();
             const promoMsg = document.getElementById('promo-msg');
             
             let baseTotal = 0;
@@ -186,25 +195,34 @@
         }
 
         function sendOrderEmail() {
-            const finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
-            let orderSummary = finalCart.map(item => `Item: ${item.name} x${item.qty || 1}\nDetails: ${item.details}\n\n`).join('');
+            const s = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
+            const b = JSON.parse(localStorage.getItem('my_bundle')) || [];
+            const cb = JSON.parse(localStorage.getItem('my_custom_bundle')) || [];
+        
+            // Merge everything for the email summary
+            let orderSummary = "";
+            
+            s.forEach(i => orderSummary += `Item: ${i.name} x${i.qty}\nDetails: ${i.details}\n\n`);
+            b.forEach(i => orderSummary += `Bundle Item: ${i.name}\nDetails/Link: ${i.message}\n\n`);
+            cb.forEach(i => orderSummary += `Custom Bundle: ${i.name}\nDetails/Link: ${i.message}\n\n`);
+        
             const templateParams = {
                 order_details: orderSummary,
                 grand_total: document.getElementById('grand-total').textContent,
                 discount: document.getElementById('discount-amt').textContent,
                 shipping: document.getElementById('shipping-amt').textContent
             };
+        
             emailjs.send('service_ezq1fuc', 'template_ut1r5xk', templateParams);
         }
 
         paypal.Buttons({
-            createOrder: (data, actions) => {
-            // 1. Gather items from all three locations
+        createOrder: (data, actions) => {
             const standardItems = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
             const bundleItems = JSON.parse(localStorage.getItem('my_bundle')) || [];
             const customBundleItems = JSON.parse(localStorage.getItem('my_custom_bundle')) || [];
         
-            // 2. Format them for PayPal (combining them into one array)
+            // This creates the list PayPal actually sees
             const allItems = [
                 ...standardItems.map(item => ({
                     name: item.name,
@@ -214,13 +232,13 @@
                 })),
                 ...bundleItems.map(item => ({
                     name: item.name,
-                    description: item.message || "Bundle Item",
+                    description: item.message || "Bundle Note/Image",
                     unit_amount: { currency_code: "USD", value: item.price.toFixed(2) },
-                    quantity: 1 // Bundles usually default to 1
+                    quantity: 1
                 })),
                 ...customBundleItems.map(item => ({
                     name: item.name,
-                    description: item.message || "Custom Bundle Item",
+                    description: item.message || "Bundle Note/Image",
                     unit_amount: { currency_code: "USD", value: item.price.toFixed(2) },
                     quantity: 1
                 }))
@@ -231,8 +249,6 @@
             const shipping = document.getElementById('shipping-amt').textContent;
             const tax = document.getElementById('tax-amt').textContent;
             const grandTotal = document.getElementById('grand-total').textContent;
-            
-            // PayPal needs the subtotal minus the discount
             const itemTotalAdjusted = (parseFloat(subtotal) - parseFloat(discount)).toFixed(2);
         
             return actions.order.create({
@@ -246,7 +262,7 @@
                             tax_total: { currency_code: "USD", value: tax }
                         }
                     },
-                    items: allItems // <--- Now PayPal sees the combined list
+                    items: allItems 
                 }]
             });
         },            onApprove: (data, actions) => {
