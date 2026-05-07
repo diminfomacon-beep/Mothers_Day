@@ -287,7 +287,7 @@ paypal.Buttons({
                     const total = document.getElementById('grand-total').textContent;
                     sendPushNotification(total); // Trigger Pushover Alert
                     sendOrderEmail();           // Trigger Email
-                    localStorage.removeItem('final_shopping_cart');
+                    ['final_shopping_cart', 'my_bundle', 'my_custom_bundle'].forEach(k => localStorage.removeItem(k));
                     window.location.href = "thank-you.html";
                 });
             }
