@@ -338,7 +338,7 @@ console.log("Current Vars:", params.get('vars'));
     }
     else if (itemType === 'shirts') {
         let finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
-        const selects = document.querySelectorAll('#dynamic-vars-container .shirt-select');
+        const selects = document.querySelectorAll('#addon-section .shirt-select');
         let totalAddonPrice = 0;
         let selectedDetails = "";
         selects.forEach(sel => {
