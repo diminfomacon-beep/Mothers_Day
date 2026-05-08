@@ -157,6 +157,14 @@ window.addEventListener('storage', function(event) {
         updateBundle();
         showMessage("Bundle added to cart!");
     };
+     // Add this to the bottom of your <script>
+    // This forces a refresh even if the 'storage' event doesn't fire locally
+    setInterval(() => {
+        updateBundle();
+    }, 1000); 
+    
+    // Ensure your clear button works with the new key
+    document.getElementById('clear-cart').onclick = clearBundle;
 
 
   
