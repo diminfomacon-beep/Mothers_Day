@@ -337,6 +337,31 @@ console.log("Current Vars:", params.get('vars'));
             localStorage.setItem('my_bundle', JSON.stringify(bundle));
             window.dispatchEvent(new Event('storage'));
         }
+          else if (itemType === 'custom-bundle') {
+            let customBundle = JSON.parse(localStorage.getItem('my_custom_bundle')) || [];
+            let priceInc = 0;
+            let varietyDetails = ""; 
+            
+            // 1. Get selection safely
+            const sel = (addonSelect && addonSelect.options.length > 0) ? addonSelect.options[addonSelect.selectedIndex] : null;
+        
+            if (sel && sel.value !== "" && sel.value !== "None") {
+                priceInc = parseFloat(sel.dataset.price) || 0;
+                varietyDetails = " | Variety: " + sel.value;
+            }
+            
+            // 2. Save to the key the container is looking for
+            customBundle.push({ 
+                name: itemName.replace(/_/g, ' '), 
+                price: itemPrice + priceInc, 
+                message: (finalMsg + varietyDetails).trim()
+            });
+            
+            localStorage.setItem('my_custom_bundle', JSON.stringify(customBundle));
+        
+            // 3. CRITICAL: Trigger the event so the container sees it
+            window.dispatchEvent(new Event('storage'));
+        }
 
     // --- SUCCESS ANIMATION ---
     status.textContent = ""; 
