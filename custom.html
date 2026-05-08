@@ -44,10 +44,10 @@
     <div id="status-msg"></div>
 
    <script>
+    let currentFinalPrice = 0; // <--- ADD THIS AT THE TOP
     function getBundle() {
-    // Changed from 'my_bundle' to 'my_custom_bundle'
-    return JSON.parse(localStorage.getItem('my_custom_bundle')) || [];
-}
+        return JSON.parse(localStorage.getItem('my_custom_bundle')) || [];
+    }
 
 function saveBundle(bundle) {
     // Changed from 'my_bundle' to 'my_custom_bundle'
@@ -106,6 +106,7 @@ window.addEventListener('storage', function(event) {
         else if (qualifyingItems >= 6) discount = 0.10;
         
         const finalPrice = subtotal * (1 - discount);
+        currentFinalPrice = finalPrice; // <--- ADD THIS LINE HERE
         
         summary.innerHTML = `
             <div style="font-size: 0.9em; margin-bottom: 5px;">
@@ -131,16 +132,19 @@ window.addEventListener('storage', function(event) {
 
     // --- ADD TO CART LOGIC (Moved outside of updateBundle) ---
    // --- ADD TO CART LOGIC ---
-    document.getElementById('add-to-final').onclick = function() {
-        const bundle = getBundle();
-        if (bundle.length === 0) {
-            showMessage("Bundle is empty.");
-            return;
-        }
+   document.getElementById('add-to-final').onclick = function() {
+    const bundle = getBundle();
+    if (bundle.length === 0) {
+        showMessage("Bundle is empty.");
+        return;
+    }
 
-        const finalPrice = parseFloat(document.getElementById('summary').innerText.match(/\$([\d.]+)/g).pop().replace('$', ''));
-        const finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
-        const detailedSummary = bundle.map(i => i.message ? `${i.name} [Msg: ${i.message}]` : i.name).join(", ");
+    // REPLACED THE FRAGILE MATCH LINE WITH THIS:
+    const finalPrice = currentFinalPrice; 
+
+    const finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
+    // ... (rest of your add to cart logic)
+    const detailedSummary = bundle.map(i => i.message ? `${i.name} [Msg: ${i.message}]` : i.name).join(", ");
 
         finalCart.push({
             name: "Custom Bundle", 
