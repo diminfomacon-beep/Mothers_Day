@@ -10,8 +10,9 @@
             background: #CAE4DB;
             display: flex;
             justify-content: center;
-            align-items: center;
-            height: 100vh;
+            align-items: flex-start;
+            padding-top: 40px;
+            min-height: 100vh;
             margin: 0;
             text-align: center;
         }
@@ -48,15 +49,11 @@
     <h1>Order Received!</h1>
     <p>Thank you for your purchase. We have received your custom designs and will begin working on your bundle shortly.</p>
     <p style="font-size: 0.9rem; color: #9ca3af;">A confirmation email has been sent to your PayPal email address.</p>
-    <a href="javascript:void(0)" onclick="goHome()" class="btn">Return to Shop</a>
-
-
-   <script>
-    function goHome() {
-        localStorage.removeItem('myBundle'); 
-        window.location.href = 'https://www.dimbrightideas.com/';
-    }
-</script>
+    <a href="https://www.dimbrightideas.com/" 
+       target="_top" 
+       class="btn">
+       Return to Shop
+    </a>
 
 </div>
 
