@@ -51,348 +51,191 @@
     <button id="add-btn">Loading...</button>
 </div>
 
-    <script>
-        const CLOUD_NAME = "dim_image_uploads"; 
-        const UPLOAD_PRESET = "dim_image_uploads"; 
-        const params = new URLSearchParams(window.location.search);
-        const itemName = params.get('name') || "Item";
-        const itemPrice = parseFloat(params.get('price')) || 0.00;
-        const itemType = params.get('type'); 
-console.log("Current Item Type:", itemType);
-console.log("Current Vars:", params.get('vars'));
-        
-        const addonSection = document.getElementById('addon-section');
-        const addonSelect = document.getElementById('addon-select');
-        const btn = document.getElementById('add-btn');
-        const msgInput = document.getElementById('custom-msg');
-        const charCounter = document.getElementById('char-count');
-        const inputGroup = document.querySelector('.input-group');
-        const dynamicContainer = document.getElementById('dynamic-vars-container');
+   <script>
+    const CLOUD_NAME = "dim_image_uploads"; 
+    const UPLOAD_PRESET = "dim_image_uploads"; 
+    const params = new URLSearchParams(window.location.search);
+    const itemName = params.get('name') || "Item";
+    const itemPrice = parseFloat(params.get('price')) || 0.00;
+    const itemType = params.get('type'); 
+    
+    const addonSection = document.getElementById('addon-section');
+    const addonSelect = document.getElementById('addon-select');
+    const btn = document.getElementById('add-btn');
+    const msgInput = document.getElementById('custom-msg');
+    const charCounter = document.getElementById('char-count');
 
-       // --- UI SETUP ---
-        if (itemType === 'simple') {
-            // Hide everything for Simple items
-            document.querySelector('.input-group').children[0].classList.add('hidden');
-            document.getElementById('custom-msg').classList.add('hidden');
-            document.querySelectorAll('.label-text')[0].classList.add('hidden');
-            document.querySelectorAll('.label-text')[1].classList.add('hidden');
-            document.getElementById('image-upload').classList.add('hidden');
-            addonSection.style.display = 'none';
-            btn.classList.add('btn-blue'); // Blue
-        } 
-        else if (itemType === 'premade') {
+    // --- UI SETUP ---
+    if (itemType === 'simple') {
+        document.getElementById('toggle-note').classList.add('hidden');
+        document.getElementById('toggle-upload').classList.add('hidden');
+        addonSection.style.display = 'none';
+        btn.classList.add('btn-blue');
+    } 
+    else if (itemType === 'premade') {
+        addonSection.style.display = 'block';
+        const opts = ["None", "Heart Wood Key Chain (+ $3)", "Circle Wood Key Chain (+ $3)", "Aluminum Key Chain (+ $3)", "Aluminum Bookmark (+ $4)", "Small Photo Magnet (+ $6)"];
+        addonSelect.innerHTML = opts.map(o => `<option value="${o}">${o}</option>`).join('');
+    } 
+    else if (itemType === 'shirts' || itemType === 'shirt-bundle') {
+        const varsParam = params.get('vars');
+        if (varsParam) {
             addonSection.style.display = 'block';
-            const opts = ["None", "Heart Wood Key Chain (+ $3)", "Circle Wood Key Chain (+ $3)", "Aluminum Key Chain (+ $3)", "Aluminum Bookmark (+ $4)", "Small Photo Magnet (+ $6)"];
-            opts.forEach(o => addonSelect.innerHTML += `<option value="${o}">${o}</option>`);
-            // Pink button (default, no class needed)
-        } 
-        else if (itemType === 'shirt-bundle') {
-            const varsParam = params.get('vars');
-            if (varsParam) {
-                addonSection.style.display = 'block';
-                document.getElementById('regular-add-on-wrap').classList.add('hidden');
+            document.getElementById('regular-add-on-wrap').classList.add('hidden');
+            const sets = varsParam.split('|||');
+            
+            sets.forEach((set, index) => {
+                const [header, options] = set.split(':');
+                const label = document.createElement('span');
+                label.className = 'label-text';
+                label.textContent = header + ":";
+                addonSection.appendChild(label);
                 
-                const sets = varsParam.split('|||');
-                
-                // We use 'index' to keep track of which shirt we are on
-                sets.forEach((set, index) => {
-                    const [header, options] = set.split(':');
-                    addonSection.innerHTML += `<span class="label-text">${header}:</span>`;
-                    
-                    const newSelect = document.createElement('select');
-                    newSelect.className = 'shirt-select';
-                    
-                    // This creates IDs like "color-0", "size-1", "color-2", etc.
-                    const type = header.toLowerCase().includes('color') ? 'color' : 'size';
-                    newSelect.id = `${type}-${index}`; 
-        
-                    options.split(',').forEach(opt => {
-                        const [label, price] = opt.split('|');
-                        newSelect.innerHTML += `<option value="${label}" data-price="${price}">${label} (+$${price})</option>`;
-                    });
-        
-                    addonSection.appendChild(newSelect);
-                });
-        
-                // Now we link the pairs together
-                for (let i = 0; i < sets.length; i++) {
-                    const colorMenu = document.getElementById(`color-${i}`);
-                    // We assume the Size menu is the very next item in the list
-                    const sizeMenu = document.getElementById(`size-${i+1}`); 
-                    
-                    if (colorMenu && sizeMenu) {
-                        colorMenu.addEventListener('change', function() {
-                            updateBundleSize(this.value, sizeMenu);
-                        });
-                        // Check availability immediately on load
-                        updateBundleSize(colorMenu.value, sizeMenu);
-                    }
-                }
-            }
-            btn.classList.add('btn-blue');
-        }
-        else if (itemType === 'regular') {
-            // 1. Build the menu if vars exist
-            const varsParam = params.get('vars');
-            if (varsParam) {
-                addonSection.style.display = 'block';
-                document.getElementById('select-label').textContent = "CHOOSE VARIETY:";
-                
-                const vars = varsParam.split(',');
-                vars.forEach(v => {
-                    const [label, price] = v.split('|');
-                    addonSelect.innerHTML += `<option value="${label}" data-price="${price}">${label} (+$${price})</option>`;
-                });
-            }
-            btn.classList.add('btn-blue'); // Blue
-        }
-            // --- UI SETUP ---
-        else if (itemType === 'custom-bundle') {
-            const varsParam = params.get('vars');
-            if (varsParam) {
-                addonSection.style.display = 'block';
-                document.getElementById('select-label').textContent = "SELECT VARIETY:";
-                
-                const vars = varsParam.split(',');
-                vars.forEach(v => {
-                    const [label, price] = v.split('|');
-                    // Ensure this adds to the addonSelect dropdown
-                    addonSelect.innerHTML += `<option value="${label}" data-price="${price}">${label} (+$${price})</option>`;
-                });
-            }
-            btn.classList.add('btn-blue'); // Blue
+                const newSelect = document.createElement('select');
+                newSelect.className = 'shirt-select';
+                // Unique ID based on header and index
+                const typeKey = header.toLowerCase().includes('color') ? 'color' : 'size';
+                newSelect.id = `${typeKey}-${index}`; 
 
-        }
-         else if (itemType === 'shirts') {
-            const varsParam = params.get('vars');
-            if (varsParam) {
-                addonSection.style.display = 'block';
-                document.getElementById('regular-add-on-wrap').classList.add('hidden');
-                
-                const sets = varsParam.split('|||');
-                
-                sets.forEach(set => {
-                    const [header, options] = set.split(':');
-                    
-                    addonSection.innerHTML += `<span class="label-text">${header}:</span>`;
-                    
-                    const newSelect = document.createElement('select');
-                    newSelect.id = header.toLowerCase(); // Creates 'color', 'size', etc.
-                    newSelect.className = 'shirt-select';
-        
-                    options.split(',').forEach(opt => {
-                        const [label, price] = opt.split('|');
-                        newSelect.innerHTML += `<option value="${label}" data-price="${price}">${label} (+$${price})</option>`;
-                    });
-                    
-                    // Add the select to the page FIRST
-                    addonSection.appendChild(newSelect);
+                options.split(',').forEach(opt => {
+                    const [val, price] = opt.split('|');
+                    newSelect.innerHTML += `<option value="${val}" data-price="${price}">${val} (+$${price})</option>`;
                 });
-        
-                // NOW that they are on the page, we can find 'color' and watch it
-                const colorMenu = document.getElementById('color');
-                if (colorMenu) {
-                    colorMenu.addEventListener('change', function() {
-                        updateSizeAvailability(this.value);
-                    });
-                    // Run it once immediately in case the default color is limited
-                    updateSizeAvailability(colorMenu.value);
-                }
+                addonSection.appendChild(newSelect);
+            });
+
+            // Linking logic for color/size dependencies
+            const colorMenu = addonSection.querySelector('[id^="color-"]');
+            const sizeMenu = addonSection.querySelector('[id^="size-"]');
+            if (colorMenu && sizeMenu) {
+                colorMenu.addEventListener('change', () => updateBundleSize(colorMenu.value, sizeMenu));
+                updateBundleSize(colorMenu.value, sizeMenu);
             }
-            btn.classList.add('btn-blue');
         }
-        // Now it will say "Add to Bundle" for both the original and your new custom bundle
-        btn.textContent = (itemType === 'bundle' || itemType === 'custom-bundle') ? "Add to Bundle" : "Add to Cart";
-        msgInput.oninput = function() {
-            const count = this.value.length;
-            charCounter.textContent = count + "/200";
-            charCounter.style.color = count >= 180 ? "#e75480" : "#999";
-        };
-        function updateBundleSize(selectedColor, sizeSelect) {
-            const limitedColors = [
-                "Navy Blue", "Lime Green", "Purple", "Sport Gray", 
-                "Safety Pink", "Irish Green", "Tangerine", "Sand", 
-                "Light Pink", "Sage", "Dusty Rose", "Light Blue"
-            ];
-        
-            const isLimited = limitedColors.includes(selectedColor);
-        
-            Array.from(sizeSelect.options).forEach(option => {
-                const sizeValue = option.value;
-                if (isLimited && (sizeValue === "2XL" || sizeValue === "3XL")) {
-                    option.disabled = true;
-                    if (sizeSelect.value === sizeValue) {
-                        sizeSelect.value = "S";
-                    }
-                } else {
-                    option.disabled = false;
-                }
-            });
+        btn.classList.add('btn-blue');
+    }
+    else if (itemType === 'regular' || itemType === 'custom-bundle') {
+        const varsParam = params.get('vars');
+        if (varsParam) {
+            addonSection.style.display = 'block';
+            document.getElementById('select-label').textContent = "SELECT VARIETY:";
+            const vars = varsParam.split(',');
+            addonSelect.innerHTML = vars.map(v => {
+                const [l, p] = v.split('|');
+                return `<option value="${l}" data-price="${p}">${l} (+$${p})</option>`;
+            }).join('');
         }
-        function updateSizeAvailability(selectedColor) {
-            const sizeSelect = document.getElementById('size');
-            if (!sizeSelect) return;
-        
-            // These colors only go up to XL
-            const limitedColors = [
-                "Navy Blue", "Lime Green", "Purple", "Sport Gray", 
-                "Safety Pink", "Irish Green", "Tangerine", "Sand", 
-                "Light Pink", "Sage", "Dusty Rose", "Light Blue"
-            ];
-        
-            const isLimited = limitedColors.includes(selectedColor);
-        
-            // Loop through each size option (S, M, L, XL, 2XL, 3XL)
-            Array.from(sizeSelect.options).forEach(option => {
-                const sizeValue = option.value;
-                
-                if (isLimited && (sizeValue === "2XL" || sizeValue === "3XL")) {
-                    option.disabled = true;
-                    // If the user currently has a disabled size picked, reset to 'S'
-                    if (sizeSelect.value === sizeValue) {
-                        sizeSelect.value = "S";
-                    }
-                } else {
-                    option.disabled = false;
-                }
-            });
-        }
-      btn.onclick = async function() {
+        btn.classList.add('btn-blue');
+    }
+
+    btn.textContent = (['bundle', 'custom-bundle', 'shirt-bundle'].includes(itemType)) ? "Add to Bundle" : "Add to Cart";
+
+    // --- HELPER FUNCTIONS ---
+    function updateBundleSize(color, sizeSelect) {
+        const limited = ["Navy Blue", "Lime Green", "Purple", "Sport Gray", "Safety Pink", "Irish Green", "Tangerine", "Sand", "Light Pink", "Sage", "Dusty Rose", "Light Blue"];
+        const isLimited = limited.includes(color);
+        Array.from(sizeSelect.options).forEach(opt => {
+            const forbidden = (opt.value === "2XL" || opt.value === "3XL");
+            opt.disabled = isLimited && forbidden;
+            if (isLimited && forbidden && sizeSelect.value === opt.value) sizeSelect.value = "S";
+        });
+    }
+
+    function toggleSection(id) {
+        document.getElementById(id).classList.toggle('hidden');
+    }
+
+    // --- CLICK LOGIC ---
+    btn.onclick = async function() {
         const status = document.getElementById('upload-status');
         const fileInput = document.getElementById('image-upload');
         let finalMsg = msgInput.value;
         btn.disabled = true;
-        
-        // Cloudinary Upload
+
         if (fileInput && fileInput.files.length > 0) {
             status.textContent = "Uploading...";
-            const fd = new FormData();
-            fd.append('file', fileInput.files[0]);
-            fd.append('upload_preset', UPLOAD_PRESET);
-            const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: 'POST', body: fd });
-            const data = await res.json();
-            finalMsg += (finalMsg ? " | Pic: " : "Pic: ") + data.secure_url;
+            try {
+                const fd = new FormData();
+                fd.append('file', fileInput.files[0]);
+                fd.append('upload_preset', UPLOAD_PRESET);
+                const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: 'POST', body: fd });
+                const data = await res.json();
+                finalMsg += (finalMsg ? " | Pic: " : "Pic: ") + data.secure_url;
+            } catch (e) { status.textContent = "Upload Failed"; }
         }
 
-    // --- LOGIC GATE ---
-    // --- UPDATED LOGIC GATE (Safe Version) ---
+        // --- THE LOGIC GATE ---
+        const cleanName = itemName.replace(/_/g, ' ');
         
-        // Helper to safely get variety/addon text
-        const getSelection = () => {
-            if (!addonSelect || addonSelect.options.length === 0) return null;
-            return addonSelect.options[addonSelect.selectedIndex];
-        };
-        
-        if (itemType === 'premade') {
-            let finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
+        // Group A: Main Shopping Cart
+        if (['simple', 'regular', 'premade', 'shirts'].includes(itemType)) {
+            let cart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
             let priceInc = 0;
-            const sel = addonSelect ? addonSelect.value : "None";
-            if (sel && sel !== "None") {
-                const match = sel.match(/\$\s*(\d+)/);
-                if (match) priceInc = parseFloat(match[1]);
+            let details = finalMsg;
+
+            if (itemType === 'shirts') {
+                const selects = document.querySelectorAll('.shirt-select');
+                selects.forEach(s => {
+                    const opt = s.options[s.selectedIndex];
+                    priceInc += parseFloat(opt.dataset.price) || 0;
+                    details += ` | ${opt.value}`;
+                });
+            } else {
+                const sel = addonSelect.options[addonSelect.selectedIndex];
+                if (sel && itemType !== 'simple') {
+                    priceInc = parseFloat(sel.dataset.price) || 0;
+                    if (itemType === 'premade') {
+                        const m = sel.value.match(/\$\s*(\d+)/);
+                        if (m) priceInc = parseFloat(m[1]);
+                    }
+                    details += (sel.value !== "None") ? ` | ${sel.value}` : "";
+                }
             }
-            finalCart.push({ 
-                name: itemName.replace(/_/g, ' '), 
-                price: itemPrice + priceInc, 
-                details: (finalMsg + (sel && sel !== "None" ? " | Add-on: " + sel : "")).trim(), 
-                qty: 1 
-            });
-            localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
+
+            cart.push({ name: cleanName, price: itemPrice + priceInc, details: details.trim(), qty: 1 });
+            localStorage.setItem('final_shopping_cart', JSON.stringify(cart));
         } 
         
-        else if (itemType === 'regular') {
-            let finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
-            const sel = getSelection();
-            const priceInc = sel ? (parseFloat(sel.dataset.price) || 0) : 0;
-            const varietyText = sel ? " | Variety: " + sel.value : "";
-            
-            finalCart.push({ 
-                name: itemName.replace(/_/g, ' '), 
-                price: itemPrice + priceInc, 
-                details: (finalMsg + varietyText).trim(), 
-                qty: 1 
+        // Group B: Custom/Shirt Bundle
+        else if (['custom-bundle', 'shirt-bundle'].includes(itemType)) {
+            let bundle = JSON.parse(localStorage.getItem('my_custom_bundle')) || [];
+            let priceInc = 0;
+            let details = finalMsg;
+
+            const selects = (itemType === 'shirt-bundle') ? document.querySelectorAll('.shirt-select') : [addonSelect];
+            selects.forEach(s => {
+                const opt = s.options[s.selectedIndex];
+                if (opt) {
+                    priceInc += parseFloat(opt.dataset.price) || 0;
+                    details += ` | ${opt.value}`;
+                }
             });
-            localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
+
+            bundle.push({ name: cleanName, price: itemPrice + priceInc, message: details.trim() });
+            localStorage.setItem('my_custom_bundle', JSON.stringify(bundle));
+            window.dispatchEvent(new Event('storage'));
         }
-        
-        else if (itemType === 'simple') {
-            let finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
-            // Ensure "simple" items still respect the note/photo if provided
-            finalCart.push({ 
-                name: itemName.replace(/_/g, ' '), 
-                price: itemPrice, 
-                details: finalMsg || "As-is", 
-                qty: 1 
-            });
-            localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
-        }
-        
+
+        // Group C: Standard Bundle
         else if (itemType === 'bundle') {
             let bundle = JSON.parse(localStorage.getItem('my_bundle')) || [];
-            bundle.push({ 
-                name: itemName.replace(/_/g, ' '), 
-                price: itemPrice, 
-                message: finalMsg || "No notes" 
-            });
+            bundle.push({ name: cleanName, price: itemPrice, message: finalMsg || "No notes" });
             localStorage.setItem('my_bundle', JSON.stringify(bundle));
             window.dispatchEvent(new Event('storage'));
         }
-          else if (itemType === 'custom-bundle') {
-            let customBundle = JSON.parse(localStorage.getItem('my_custom_bundle')) || [];
-            let priceInc = 0;
-            let varietyDetails = ""; 
-            
-            // 1. Get selection safely
-            const sel = (addonSelect && addonSelect.options.length > 0) ? addonSelect.options[addonSelect.selectedIndex] : null;
-        
-            if (sel && sel.value !== "" && sel.value !== "None") {
-                priceInc = parseFloat(sel.dataset.price) || 0;
-                varietyDetails = " | Variety: " + sel.value;
-            }
-            
-            // 2. Save to the key the container is looking for
-            customBundle.push({ 
-                name: itemName.replace(/_/g, ' '), 
-                price: itemPrice + priceInc, 
-                message: (finalMsg + varietyDetails).trim()
-            });
-            
-            localStorage.setItem('my_custom_bundle', JSON.stringify(customBundle));
-        
-            // 3. CRITICAL: Trigger the event so the container sees it
-            window.dispatchEvent(new Event('storage'));
-        }
 
-    // --- SUCCESS ANIMATION ---
-    status.textContent = ""; 
-    btn.textContent = "Added!";
-    btn.style.background = "#28a745";
-    
-    setTimeout(() => {
-        // Keep exactly this one, and remove the others:
-        btn.textContent = (itemType === 'bundle' || itemType === 'custom-bundle' || itemType === 'shirt-bundle') ? "Add to Bundle" : "Add to Cart";
-        btn.style.background = (itemType === 'regular' || itemType === 'simple') ? "#2F6B64" : "#e75480";
-        btn.disabled = false;
-        if(fileInput) fileInput.value = "";
-        msgInput.value = "";
-        if(addonSelect) addonSelect.value = ""; 
-        charCounter.textContent = "0/200";
-        document.getElementById('note-wrap').classList.add('hidden');
-        document.getElementById('upload-wrap').classList.add('hidden');
-    }, 1000);
-};
-       
-function toggleSection(id) {
-    const section = document.getElementById(id);
-    section.classList.toggle('hidden');
-}
-
-// Update your simple item check to hide the toggles
-if (itemType === 'simple') {
-    document.getElementById('toggle-note').classList.add('hidden');
-    document.getElementById('toggle-upload').classList.add('hidden');
-    addonSection.style.display = 'none';
-}
-    </script>
+        // Success Animation
+        status.textContent = ""; 
+        btn.textContent = "Added!";
+        btn.style.background = "#28a745";
+        setTimeout(() => {
+            btn.disabled = false;
+            btn.style.background = "";
+            btn.textContent = (['bundle', 'custom-bundle', 'shirt-bundle'].includes(itemType)) ? "Add to Bundle" : "Add to Cart";
+            msgInput.value = "";
+            if(fileInput) fileInput.value = "";
+        }, 1000);
+    };
+</script>
 </body>
 </html>
