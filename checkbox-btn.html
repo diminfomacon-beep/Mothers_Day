@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { 
+            margin: 0; 
+            padding: 5px; 
+            font-family: 'Georgia', serif; /* A more formal font for Graduation */
+            background: transparent; 
+            overflow: hidden; 
+        }
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: #1a1a1a; /* Rich Black */
+            border: 2px solid #d4af37; /* Metallic Gold */
+            border-radius: 8px; /* Sharper, more formal corners */
+            gap: 15px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .checkbox-container:hover {
+            background: #262626;
+            border-color: #f1d592; /* Brighter gold on hover */
+            transform: translateY(-1px);
+        }
+        input[type="checkbox"] {
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            /* Gold accent for the checkbox itself */
+            accent-color: #d4af37; 
+            margin: 0;
+            border: 1px solid #d4af37;
+        }
+        .info-stack { line-height: 1.4; flex-grow: 1; }
+        .item-name { 
+            font-weight: bold; 
+            color: #ffffff; /* White text for contrast */
+            font-size: 14px; 
+            display: block;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .item-vars { 
+            font-size: 11px; 
+            color: #d4af37; /* Gold for sub-details */
+            font-style: italic; 
+        }
+        .item-price { 
+            color: #d4af37; 
+            font-weight: bold; 
+            font-size: 15px; 
+            float: right; 
+        }
+    </style>
+</head>
+<body>
+
+    <div class="checkbox-container">
+        <input type="checkbox" id="bundle-toggle">
+        <div class="info-stack">
+            <span class="item-price" id="price-tag"></span>
+            <span class="item-name" id="name-tag">Loading...</span>
+            <span class="item-vars" id="vars-tag"></span>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const name = (urlParams.get('name') || 'Graduation Item').replace(/_/g, ' ');
+        const price = parseFloat(urlParams.get('price')) || 0;
+        const type = urlParams.get('type') || 'custom-bundle';
+        const vars = urlParams.get('vars') ? decodeURIComponent(urlParams.get('vars')).replace(/\|/g, ' • ') : '';
+
+        document.getElementById('name-tag').textContent = name;
+        document.getElementById('price-tag').textContent = `$${price.toFixed(2)}`;
+        document.getElementById('vars-tag').textContent = vars;
+
+        const checkbox = document.getElementById('bundle-toggle');
+        const storageKey = (type === 'custom-bundle') ? 'my_custom_bundle' : 'my_bundle';
+
+        function syncCheckbox() {
+            let cart = JSON.parse(localStorage.getItem(storageKey)) || [];
+            checkbox.checked = cart.some(item => item.name === name);
+        }
+        syncCheckbox();
+
+        checkbox.addEventListener('change', function() {
+            let cart = JSON.parse(localStorage.getItem(storageKey)) || [];
+            if (this.checked) {
+                cart.push({
+                    name: name,
+                    price: price,
+                    message: vars || "Class of 2026"
+                });
+            } else {
+                cart = cart.filter(item => item.name !== name);
+            }
+            localStorage.setItem(storageKey, JSON.stringify(cart));
+        });
+    </script>
+</body>
+</html>
