@@ -105,8 +105,9 @@
                         <div class="cart-item">
                             <div>
                                 <b>${item.name}</b><br>
-                                <small style="color:#666;">${item.details || ''}</small><br>
-                                <button onclick="removeItem(${index})" style="color:red; border:none; background:none; cursor:pointer;">[ REMOVE ]</button>
+                                <small style="color:#666;">
+                                    ${(item.details || '').replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" style="color: #e75480; text-decoration: underline;">View Photo</a>')}
+                                </small>                                <button onclick="removeItem(${index})" style="color:red; border:none; background:none; cursor:pointer;">[ REMOVE ]</button>
                             </div>
                             <div style="display:flex; align-items:center; gap:10px;">
                                 <button onclick="updateQty(${index}, -1)">-</button>
