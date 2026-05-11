@@ -146,23 +146,45 @@
     }
 
     // --- CLICK LOGIC ---
-    btn.onclick = async function() {
-        const status = document.getElementById('upload-status');
-        const fileInput = document.getElementById('image-upload');
-        let finalMsg = msgInput.value;
-        btn.disabled = true;
+    // --- CLICK LOGIC UPDATE ---
+btn.onclick = async function() {
+    const status = document.getElementById('upload-status');
+    const fileInput = document.getElementById('image-upload');
+    let finalMsg = msgInput.value;
+    btn.disabled = true;
 
-        if (fileInput && fileInput.files.length > 0) {
-            status.textContent = "Uploading...";
-            try {
-                const fd = new FormData();
-                fd.append('file', fileInput.files[0]);
-                fd.append('upload_preset', UPLOAD_PRESET);
-                const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: 'POST', body: fd });
-                const data = await res.json();
-                finalMsg += (finalMsg ? " | Pic: " : "Pic: ") + data.secure_url;
-            } catch (e) { status.textContent = "Upload Failed"; }
+    // 1. Handle Cloudinary Upload
+    if (fileInput && fileInput.files.length > 0) {
+        status.textContent = "Uploading Image...";
+        try {
+            const fd = new FormData();
+            fd.append('file', fileInput.files[0]);
+            fd.append('upload_preset', UPLOAD_PRESET);
+
+            const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { 
+                method: 'POST', 
+                body: fd 
+            });
+
+            if (!res.ok) throw new Error('Upload failed');
+
+            const data = await res.json();
+            
+            // This creates a clean "Link: https://..." entry in your notes
+            const photoLink = `Pic: ${data.secure_url}`;
+            finalMsg = finalMsg ? `${finalMsg} | ${photoLink}` : photoLink;
+            
+            status.style.color = "green";
+            status.textContent = "Upload Success!";
+        } catch (e) { 
+            status.style.color = "red";
+            status.textContent = "Upload Failed!";
+            btn.disabled = false;
+            return; // Stop the process so they can try again
         }
+    }
+
+    // ... [The rest of your logic gate for Cart/Bundle follows here]
 
         // --- THE LOGIC GATE ---
         const cleanName = itemName.replace(/_/g, ' ');
@@ -234,6 +256,7 @@
             btn.textContent = (['bundle', 'custom-bundle', 'shirt-bundle'].includes(itemType)) ? "Add to Bundle" : "Add to Cart";
             msgInput.value = "";
             if(fileInput) fileInput.value = "";
+            status.textContent = ""; // <--- Add this to clear the "Success" message
         }, 1000);
     };
 </script>
