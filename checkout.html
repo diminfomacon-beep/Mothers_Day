@@ -208,30 +208,43 @@
             });
         }
 
-        async function sendOrderEmail() {
-    // Force a re-fetch of the data right before sending
-    const standard = localStorage.getItem('final_shopping_cart');
-    const bundle = localStorage.getItem('my_bundle');
-    const custom = localStorage.getItem('my_custom_bundle');
+  async function sendOrderEmail() {
+    const s = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
+    const b = JSON.parse(localStorage.getItem('my_bundle')) || [];
+    const cb = JSON.parse(localStorage.getItem('my_custom_bundle')) || [];
 
+    // 1. Combine all items to find the image link
+    const allItems = [...s, ...b, ...cb];
+    let photoLink = "";
+
+    // Search for a Cloudinary URL in the details/message of any item
+    allItems.forEach(item => {
+        const text = (item.details || "") + (item.message || "");
+        const match = text.match(/https?:\/\/[^\s]+/);
+        if (match && !photoLink) photoLink = match[0];
+    });
+
+    // 2. Build the order list text
     let summary = "";
-    if (standard) {
-        JSON.parse(standard).forEach(i => summary += `Item: ${i.name} x${i.qty}\nDetails: ${i.details}\n\n`);
-    }
-    if (bundle) {
-        JSON.parse(bundle).forEach(i => summary += `Bundle: ${i.name}\nNotes: ${i.message}\n\n`);
-    }
+    s.forEach(i => summary += `• ${i.name} (x${i.qty})\n  Details: ${i.details || 'None'}\n\n`);
+    b.forEach(i => summary += `• Bundle: ${i.name}\n  Details: ${i.message || 'None'}\n\n`);
+    cb.forEach(i => summary += `• Custom: ${i.name}\n  Details: ${i.message || 'None'}\n\n`);
 
-    // If summary is still empty, we know LocalStorage failed
-    if (!summary) summary = "CRITICAL: No cart data found in LocalStorage at checkout.";
-
-    const params = {
-        order_details: summary,
-        grand_total: document.getElementById('grand-total').textContent,
-        customer_name: "Check PayPal/Pushover for details" // Optional helper
+    // 3. Map the data to your specific Template Variables
+    const templateParams = {
+        from_name: "Website Customer",    // Maps to {{from_name}}
+        from_email: "Check PayPal",       // Maps to {{from_email}}
+        cust_name: "Order Received",      // Maps to {{cust_name}}
+        design_image: photoLink,          // Maps to {{design_image}}
+        order_details: summary,           // Maps to {{order_details}}
+        grand_total: document.getElementById('grand-total').textContent
     };
 
-    return emailjs.send('service_ezq1fuc', 'template_ut1r5xk', params);
+    console.log("Sending to EmailJS:", templateParams);
+
+    return emailjs.send('service_ezq1fuc', 'template_ut1r5xk', templateParams)
+        .then(() => console.log("Email Sent Successfully"))
+        .catch(err => console.error("Email Failed:", err));
 }
 paypal.Buttons({
     createOrder: (data, actions) => {
