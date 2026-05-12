@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html>
 <head>
-   <script type="text/javascript" src="https://cdn.emailjs.com/sdk/4.1.0/email.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
 <script type="text/javascript">
-  (function() {
-    emailjs.init({
-      publicKey: "1LZbCPvH49G_r0ypB",
-    });
-  })();
+  // We add a check to make sure the script loaded before trying to init
+  window.onload = function() {
+    if (window.emailjs) {
+      emailjs.init({
+        publicKey: "1LZbCPvH49G_r0ypB",
+      });
+      console.log("EmailJS loaded successfully.");
+    } else {
+      console.error("EmailJS failed to load due to browser blocking.");
+    }
+  };
 </script>
    
     <style>
@@ -230,7 +237,7 @@
         .catch((err) => {
             console.error("Email failed:", err);
             // This alert is helpful for testing; you can remove it later
-            alert("Order notification error: " + err.text); 
+            console.log("Order notification error: " + err.text); 
         });
 }
         // --- UPDATED: createOrder with Discount & Detail Handling ---
@@ -297,27 +304,34 @@ paypal.Buttons({
         });
     },
     // ... onApprove remains the same
-    onApprove: (data, actions) => {
-    return actions.order.capture().then((details) => {
-        console.log("Payment Captured for: " + details.payer.name.given_name);
-        
+   onApprove: (data, actions) => {
+    return actions.order.capture().then(async (details) => {
+        console.log("Payment Captured");
         const total = document.getElementById('grand-total').textContent;
-        
-        // 1. Trigger the Alert
-        sendPushNotification(total); 
-        
-        // 2. Trigger the Email
-        console.log("Attempting to send email...");
-        sendOrderEmail(); 
-        
-        // 3. Clear Cart
+
+        // 1. Try to send notification
+        try {
+            sendPushNotification(total);
+        } catch(e) { console.log("Push failed"); }
+
+        // 2. Try to send email, but DON'T let it stop the redirect if it fails
+        if (window.emailjs) {
+            try {
+                await sendOrderEmail();
+                console.log("Email attempt finished");
+            } catch (err) {
+                console.error("Email function failed:", err);
+            }
+        } else {
+            console.error("EmailJS not defined, skipping email step.");
+        }
+
+        // 3. ALWAYS clear cart and redirect, even if email failed
         ['final_shopping_cart', 'my_bundle', 'my_custom_bundle'].forEach(k => localStorage.removeItem(k));
-        
-        // 4. Redirect
         window.location.href = "thank-you.html";
+        
     }).catch(err => {
-        console.error("PayPal Capture Error: ", err);
-        alert("Payment went through, but we had trouble saving your order. Please contact us!");
+        console.error("Capture Error:", err);
     });
 }
         }).render('#paypal-button-container');
