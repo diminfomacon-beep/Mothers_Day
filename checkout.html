@@ -1,14 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+   <script type="text/javascript" src="https://cdn.emailjs.com/sdk/4.1.0/email.min.js"></script>
 <script type="text/javascript">
-   (function(){
-      // Initialize with your Public Key
-      emailjs.init({
-        publicKey: "1LZbCPvH49G_r0ypB",
-      });
-   })();
+  (function() {
+    emailjs.init({
+      publicKey: "1LZbCPvH49G_r0ypB",
+    });
+  })();
 </script>
    
     <style>
@@ -214,18 +213,26 @@
             b.forEach(i => orderSummary += `Bundle Item: ${i.name}\nDetails: ${i.message || 'None'}\n\n`);
             cb.forEach(i => orderSummary += `Custom Bundle: ${i.name}\nDetails: ${i.message || 'None'}\n\n`);
         
-            const templateParams = {
-                order_details: orderSummary,
-                grand_total: document.getElementById('grand-total').textContent,
-                discount: document.getElementById('discount-amt').textContent,
-                shipping: document.getElementById('shipping-amt').textContent
-            };
-        
-            emailjs.send('service_ezq1fuc', 'template_ut1r5xk', templateParams)
-                .then(() => console.log("Email Sent"))
-                .catch(err => console.error("Email Failed", err));
-        }
+         
+    // ... your existing summary logic ...
 
+    const templateParams = {
+        order_details: orderSummary,
+        grand_total: document.getElementById('grand-total').textContent,
+        // ... rest of params ...
+    };
+
+    // We use the return promise so the redirect doesn't happen too early
+    return emailjs.send('service_ezq1fuc', 'template_ut1r5xk', templateParams)
+        .then((res) => {
+            console.log("Email sent!", res.status);
+        })
+        .catch((err) => {
+            console.error("Email failed:", err);
+            // This alert is helpful for testing; you can remove it later
+            alert("Order notification error: " + err.text); 
+        });
+}
         // --- UPDATED: createOrder with Discount & Detail Handling ---
 paypal.Buttons({
     createOrder: (data, actions) => {
