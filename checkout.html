@@ -291,14 +291,28 @@ paypal.Buttons({
     },
     // ... onApprove remains the same
     onApprove: (data, actions) => {
-                return actions.order.capture().then(() => {
-                    const total = document.getElementById('grand-total').textContent;
-                    sendPushNotification(total); // Trigger Pushover Alert
-                    sendOrderEmail();           // Trigger Email
-                    ['final_shopping_cart', 'my_bundle', 'my_custom_bundle'].forEach(k => localStorage.removeItem(k));
-                    window.location.href = "thank-you.html";
-                });
-            }
+    return actions.order.capture().then((details) => {
+        console.log("Payment Captured for: " + details.payer.name.given_name);
+        
+        const total = document.getElementById('grand-total').textContent;
+        
+        // 1. Trigger the Alert
+        sendPushNotification(total); 
+        
+        // 2. Trigger the Email
+        console.log("Attempting to send email...");
+        sendOrderEmail(); 
+        
+        // 3. Clear Cart
+        ['final_shopping_cart', 'my_bundle', 'my_custom_bundle'].forEach(k => localStorage.removeItem(k));
+        
+        // 4. Redirect
+        window.location.href = "thank-you.html";
+    }).catch(err => {
+        console.error("PayPal Capture Error: ", err);
+        alert("Payment went through, but we had trouble saving your order. Please contact us!");
+    });
+}
         }).render('#paypal-button-container');
 
         renderMasterCart();
