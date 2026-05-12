@@ -208,39 +208,31 @@
             });
         }
 
-        function sendOrderEmail() {
-            const s = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
-            const b = JSON.parse(localStorage.getItem('my_bundle')) || [];
-            const cb = JSON.parse(localStorage.getItem('my_custom_bundle')) || [];
-        
-            let orderSummary = "";
-            
-            // Check both .details and .message to ensure nothing is missed
-            s.forEach(i => orderSummary += `Item: ${i.name} x${i.qty}\nDetails: ${i.details || 'None'}\n\n`);
-            b.forEach(i => orderSummary += `Bundle Item: ${i.name}\nDetails: ${i.message || 'None'}\n\n`);
-            cb.forEach(i => orderSummary += `Custom Bundle: ${i.name}\nDetails: ${i.message || 'None'}\n\n`);
-        
-         
-    // ... your existing summary logic ...
+        async function sendOrderEmail() {
+    // Force a re-fetch of the data right before sending
+    const standard = localStorage.getItem('final_shopping_cart');
+    const bundle = localStorage.getItem('my_bundle');
+    const custom = localStorage.getItem('my_custom_bundle');
 
-    const templateParams = {
-        order_details: orderSummary,
+    let summary = "";
+    if (standard) {
+        JSON.parse(standard).forEach(i => summary += `Item: ${i.name} x${i.qty}\nDetails: ${i.details}\n\n`);
+    }
+    if (bundle) {
+        JSON.parse(bundle).forEach(i => summary += `Bundle: ${i.name}\nNotes: ${i.message}\n\n`);
+    }
+
+    // If summary is still empty, we know LocalStorage failed
+    if (!summary) summary = "CRITICAL: No cart data found in LocalStorage at checkout.";
+
+    const params = {
+        order_details: summary,
         grand_total: document.getElementById('grand-total').textContent,
-        // ... rest of params ...
+        customer_name: "Check PayPal/Pushover for details" // Optional helper
     };
 
-    // We use the return promise so the redirect doesn't happen too early
-    return emailjs.send('service_ezq1fuc', 'template_ut1r5xk', templateParams)
-        .then((res) => {
-            console.log("Email sent!", res.status);
-        })
-        .catch((err) => {
-            console.error("Email failed:", err);
-            // This alert is helpful for testing; you can remove it later
-            console.log("Order notification error: " + err.text); 
-        });
+    return emailjs.send('service_ezq1fuc', 'template_ut1r5xk', params);
 }
-        // --- UPDATED: createOrder with Discount & Detail Handling ---
 paypal.Buttons({
     createOrder: (data, actions) => {
         const standardItems = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
