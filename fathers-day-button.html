@@ -1,104 +1,147 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: sans-serif; padding: 10px; background: #b6d9e4; }
-        .item-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 14px; }
-        .remove-btn { color: #ff4d4d; border: none; background: none; cursor: pointer; font-size: 11px; text-decoration: underline; }
-        .price-details { text-align: right; margin-top: 15px; }
-        
-        /* New styles for the design code selection */
-        .design-selection-box { background: white; padding: 12px; border-radius: 5px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .design-selection-box label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 5px; color: #333; }
-        .design-selection-box input { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
-        
-        #add-to-final { background: #2F6B64; color: white; border: none; padding: 12px; width: 100%; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; }
-        #clear-cart { background: #999; color: white; border: none; padding: 10px; width: 100%; border-radius: 5px; cursor: pointer; margin-top: 8px; }
+        body { 
+            font-family: sans-serif; 
+            padding: 15px; 
+            background: #b6d9e4; 
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .button-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 320px;
+            box-sizing: border-box;
+        }
+        .product-info {
+            text-align: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 12px;
+        }
+        .product-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin: 0 0 5px 0;
+        }
+        .product-price {
+            font-size: 16px;
+            color: #2F6B64;
+            font-weight: bold;
+            margin: 0;
+        }
+        .design-box { 
+            margin-bottom: 15px; 
+        }
+        .design-box label { 
+            display: block; 
+            font-size: 12px; 
+            font-weight: bold; 
+            margin-bottom: 6px; 
+            color: #555; 
+        }
+        .design-box input { 
+            width: 100%; 
+            padding: 10px; 
+            box-sizing: border-box; 
+            border: 1px solid #ccc; 
+            border-radius: 4px; 
+            font-size: 14px; 
+        }
+        #add-to-cart-btn { 
+            background: #2F6B64; 
+            color: white; 
+            border: none; 
+            padding: 12px; 
+            width: 100%; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        #add-to-cart-btn:hover {
+            background: #23524b;
+        }
     </style>
 </head>
 <body>
 
-    <div class="design-selection-box">
-        <label for="design-code">Enter Chosen Design Code (from the template options):</label>
-        <input type="text" id="design-code" placeholder="e.g., FD-05" autocomplete="off">
+    <div class="button-container">
+        <!-- Displays item info dynamically pulled from your Sheet URL -->
+        <div class="product-info">
+            <p class="product-name" id="display-name">Loading Item...</p>
+            <p class="product-price" id="display-price">$0.00</p>
+        </div>
+
+        <!-- Design Code Input -->
+        <div class="design-box">
+            <label for="design-code">Enter Chosen Design Style Code:</label>
+            <input type="text" id="design-code" placeholder="e.g., FD-05" autocomplete="off">
+        </div>
+
+        <!-- Action Button -->
+        <button id="add-to-cart-btn">Add to Cart</button>
     </div>
 
-    <div id="bundle-list"></div>
-    <div class="price-details" id="summary"></div>
-    <button id="add-to-final">Add Bundle to Cart</button>
-    <button id="clear-cart">Clear Bundle</button>
-
     <script>
-        function updateBundle() {
-            const bundle = JSON.parse(localStorage.getItem('my_bundle')) || [];
-            const list = document.getElementById('bundle-list');
-            const summary = document.getElementById('summary');
-            let subtotal = 0;
+        // 1. Grab data out of the URL parameters coming from Google Sheets
+        const urlParams = new URLSearchParams(window.location.search);
+        const rawName = urlParams.get('name') || 'Custom Item';
+        const rawPrice = parseFloat(urlParams.get('price')) || 0.00;
+        const rawVars = urlParams.get('vars') ? decodeURIComponent(urlParams.get('vars')) : '';
 
-            list.innerHTML = bundle.map((item, i) => {
-                subtotal += item.price;
-                // Display the design code next to the item if it exists
-                const designText = item.designCode ? ` [Design: ${item.designCode}]` : '';
-                return `<div class="item-row">
-                    <span>${item.name} (${item.details || ''})${designText} - $${item.price.toFixed(2)}</span>
-                    <button class="remove-btn" onclick="removeItem(${i})">Remove</button>
-                </div>`;
-            }).join('');
+        // Clean up formatting for display
+        const itemName = rawName.replace(/_/g, ' ');
 
-            summary.innerHTML = `<strong>Total: $${subtotal.toFixed(2)}</strong>`;
-        }
+        // 2. Inject item details into the UI
+        document.getElementById('display-name').textContent = itemName;
+        document.getElementById('display-price').textContent = `$${rawPrice.toFixed(2)}`;
 
-        function removeItem(i) {
-            let bundle = JSON.parse(localStorage.getItem('my_bundle')) || [];
-            bundle.splice(i, 1);
-            localStorage.setItem('my_bundle', JSON.stringify(bundle));
-            updateBundle();
-        }
-
-        document.getElementById('add-to-final').onclick = () => {
-            const bundle = JSON.parse(localStorage.getItem('my_bundle')) || [];
-            if (bundle.length === 0) return;
-
-            // Grab the design code the user typed in
+        // 3. Handle Cart Pushing on Click
+        document.getElementById('add-to-cart-btn').onclick = () => {
             const chosenDesign = document.getElementById('design-code').value.trim();
             
-            // Optional: Require them to type a code before proceeding
+            // Force them to input a design style code
             if (!chosenDesign) {
-                alert("Please enter your chosen design code from the options above before adding to the cart!");
+                alert("Please look at the template and type your chosen design style code first!");
                 return;
             }
 
+            // Combine spreadsheet details with the user's input style choice
+            let finalDetails = '';
+            if (rawVars) {
+                finalDetails = `${rawVars} | Design: ${chosenDesign}`;
+            } else {
+                finalDetails = `Design Style: ${chosenDesign}`;
+            }
+
+            // Grab the final shopping cart
             let finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
             
-            // Build details string that combines item names and the chosen design style
-            const itemNames = bundle.map(i => i.name).join(", ");
-            const bundleDetails = `Items: ${itemNames} | Design Style: ${chosenDesign}`;
-
+            // Push the item as its own clean line-item
             finalCart.push({ 
-                name: "Father's Day Custom Bundle", 
-                price: bundle.reduce((a, b) => a + b.price, 0), 
-                details: bundleDetails, 
+                name: itemName, 
+                price: rawPrice, 
+                details: finalDetails, 
                 qty: 1 
             });
 
+            // Save and redirect to your cart page
             localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
-            localStorage.removeItem('my_bundle');
-            
-            // Clear input box for next time
-            document.getElementById('design-code').value = '';
-            
-            updateBundle();
-            window.location.href = '/cart'; // Adjust to your cart page
+            window.location.href = '/cart'; // Adjust path if your cart page is located elsewhere
         };
-
-        document.getElementById('clear-cart').onclick = () => { 
-            localStorage.removeItem('my_bundle'); 
-            document.getElementById('design-code').value = '';
-            updateBundle(); 
-        };
-        
-        window.addEventListener('storage', updateBundle);
-        updateBundle();
     </script>
 </body>
 </html>
