@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Father's Day Product Option Selector</title>
     <style>
         body { 
             font-family: sans-serif; 
@@ -13,6 +14,8 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            min-height: 100vh;
+            box-sizing: border-box;
         }
         .button-container {
             background: white;
@@ -41,7 +44,7 @@
             font-weight: bold;
             margin: 0;
         }
-        /* Styles for the Dynamic Dropdowns and Input Box */
+        /* Styles for Input and Dropdown Fields */
         .input-group { 
             margin-bottom: 15px; 
         }
@@ -61,6 +64,17 @@
             border-radius: 4px; 
             font-size: 14px; 
             background-color: white;
+        }
+        .static-variant-text {
+            font-size: 13px; 
+            color: #666; 
+            margin: 5px 0; 
+            font-style: italic; 
+            text-align: center;
+            background: #f9f9f9;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px dashed #ddd;
         }
         #add-to-cart-btn { 
             background: #2F6B64; 
@@ -87,100 +101,124 @@
             <p class="product-price" id="display-price">$0.00</p>
         </div>
 
-        <!-- Container where dropdowns will be built dynamically -->
         <div id="dynamic-variants-container"></div>
 
-        <!-- Design Code Input -->
         <div class="input-group">
             <label for="design-code">Enter Chosen Design Style Code:</label>
             <input type="text" id="design-code" placeholder="e.g., FD-05" autocomplete="off">
         </div>
 
-        <!-- Action Button -->
         <button id="add-to-cart-btn">Add to Cart</button>
     </div>
 
     <script>
-        // 1. Grab data out of the URL parameters coming from Google Sheets
+        // 1. Pull core variables out of the Google Sheet macro generated link
         const urlParams = new URLSearchParams(window.location.search);
         const rawName = urlParams.get('name') || 'Custom Item';
         const rawPrice = parseFloat(urlParams.get('price')) || 0.00;
         const rawVars = urlParams.get('vars') ? decodeURIComponent(urlParams.get('vars')) : '';
 
+        // Format raw names passed with underscores back to clean text
         const itemName = rawName.replace(/_/g, ' ');
 
-        // Inject core details
+        // Inject elements into visible HTML tags
         document.getElementById('display-name').textContent = itemName;
         document.getElementById('display-price').textContent = `$${rawPrice.toFixed(2)}`;
 
-        // 2. Parse rawVars string and dynamically create dropdown menus
-        // Expected format: "Size: Small, Medium, Large | Color: Black, White" or "Size: S, M, L"
+        // 2. Parse variant values into proper Dropdowns vs Layout text blocks
         const variantContainer = document.getElementById('dynamic-variants-container');
-        
+
         if (rawVars && rawVars.trim() !== "") {
-            // Split options by the pipe character | or comma if it's multiple categories
+            // Split options by custom breaking symbols like pipes, semicolons or standard lines
             const categories = rawVars.split(/[|;\n]/); 
             
             categories.forEach(cat => {
-                if (!cat.includes(':')) return;
-                
-                const parts = cat.split(':');
-                const labelText = parts[0].trim();
-                const optionsText = parts[1].trim();
-                const optionsArray = optionsText.split(',').map(o => o.trim());
+                cat = cat.trim();
+                if (!cat) return;
 
-                // Create the element structure for a dropdown selection group
                 const groupDiv = document.createElement('div');
                 groupDiv.className = 'input-group';
 
-                const label = document.createElement('label');
-                label.textContent = labelText + ":";
+                // Condition A: If it has structured format 'Category: Opt1, Opt2' -> Generate Dropdown Select Menu
+                if (cat.includes(':')) {
+                    const parts = cat.split(':');
+                    const labelText = parts[0].trim();
+                    const optionsText = parts[1].trim();
+                    const optionsArray = optionsText.split(',').map(o => o.trim());
+
+                    const label = document.createElement('label');
+                    label.textContent = labelText + ":";
+                    
+                    const select = document.createElement('select');
+                    select.className = 'variant-selector';
+                    select.dataset.variantName = labelText;
+
+                    optionsArray.forEach(opt => {
+                        const optionElement = document.createElement('option');
+                        optionElement.value = opt;
+                        optionElement.textContent = opt;
+                        select.appendChild(optionElement);
+                    });
+
+                    groupDiv.appendChild(label);
+                    groupDiv.appendChild(select);
+                } 
+                // Condition B: Fallback system. If formatting is plain text, render it safely so it doesn't break
+                else {
+                    const staticText = document.createElement('p');
+                    staticText.className = 'static-variant-text';
+                    staticText.textContent = cat;
+                    
+                    // Invisible tracking field to carry layout configuration values over to final local storage checkout array
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.className = 'variant-selector-static';
+                    hiddenInput.value = cat;
+
+                    groupDiv.appendChild(staticText);
+                    groupDiv.appendChild(hiddenInput);
+                }
                 
-                const select = document.createElement('select');
-                select.className = 'variant-selector';
-                select.dataset.variantName = labelText;
-
-                optionsArray.forEach(opt => {
-                    const optionElement = document.createElement('option');
-                    optionElement.value = opt;
-                    optionElement.textContent = opt;
-                    select.appendChild(optionElement);
-                });
-
-                groupDiv.appendChild(label);
-                groupDiv.appendChild(select);
                 variantContainer.appendChild(groupDiv);
             });
         }
 
-        // 3. Handle Cart Pushing on Click
+        // 3. Logic to package variants and user designs together on checkout fire event
         document.getElementById('add-to-cart-btn').onclick = () => {
             const chosenDesign = document.getElementById('design-code').value.trim();
             
+            // Halt checkout and require design validation input
             if (!chosenDesign) {
                 alert("Please look at the template and type your chosen design style code first!");
                 return;
             }
 
-            // Gather up what choices the customer actually made in the generated dropdowns
             let selectedVariants = [];
+            
+            // Loop through and extract selections from active select inputs
             const dropdowns = document.querySelectorAll('.variant-selector');
             dropdowns.forEach(dropdown => {
                 selectedVariants.push(`${dropdown.dataset.variantName}: ${dropdown.value}`);
             });
 
-            // Combine dropdown selections with the design style code selection
-            let finalDetails = selectedVariants.join(', ');
+            // Loop through and extract from plain-text fallbacks
+            const statics = document.querySelectorAll('.variant-selector-static');
+            statics.forEach(staticInp => {
+                selectedVariants.push(staticInp.value);
+            });
+
+            // Format dynamic selections and custom user Canva code choices together smoothly
+            let finalDetails = selectedVariants.filter(Boolean).join(', ');
             if (finalDetails) {
                 finalDetails += ` | Design: ${chosenDesign}`;
             } else {
                 finalDetails = `Design Style: ${chosenDesign}`;
             }
 
-            // Grab the final shopping cart array from localStorage
+            // Retrieve active cart array or establish clean line instance 
             let finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
             
-            // Push the item as its own clean line-item configuration
+            // Final storage insertion item package
             finalCart.push({ 
                 name: itemName, 
                 price: rawPrice, 
@@ -188,7 +226,7 @@
                 qty: 1 
             });
 
-            // Save and redirect out to your main shopping cart page
+            // Commit modifications to cache storage matrix and relocate user view context forward
             localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
             window.location.href = '/cart'; 
         };
