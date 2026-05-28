@@ -33,7 +33,14 @@
             font-size: 18px;
             font-weight: bold;
             color: #333;
-            margin: 0 0 5px 0;
+            margin: 0 0 3px 0;
+        }
+        /* Style for the product varieties */
+        .product-vars {
+            font-size: 13px;
+            color: #666;
+            margin: 0 0 8px 0;
+            font-style: italic;
         }
         .product-price {
             font-size: 16px;
@@ -79,19 +86,16 @@
 <body>
 
     <div class="button-container">
-        <!-- Displays item info dynamically pulled from your Sheet URL -->
         <div class="product-info">
             <p class="product-name" id="display-name">Loading Item...</p>
-            <p class="product-price" id="display-price">$0.00</p>
+            <p class="product-vars" id="display-vars"></p> <p class="product-price" id="display-price">$0.00</p>
         </div>
 
-        <!-- Design Code Input -->
         <div class="design-box">
             <label for="design-code">Enter Chosen Design Style Code:</label>
             <input type="text" id="design-code" placeholder="e.g., FD-05" autocomplete="off">
         </div>
 
-        <!-- Action Button -->
         <button id="add-to-cart-btn">Add to Cart</button>
     </div>
 
@@ -108,6 +112,13 @@
         // 2. Inject item details into the UI
         document.getElementById('display-name').textContent = itemName;
         document.getElementById('display-price').textContent = `$${rawPrice.toFixed(2)}`;
+        
+        // Dynamic Check: Only display variant options text if they actually exist in the link
+        if (rawVars) {
+            document.getElementById('display-vars').textContent = rawVars;
+        } else {
+            document.getElementById('display-vars').style.display = 'none';
+        }
 
         // 3. Handle Cart Pushing on Click
         document.getElementById('add-to-cart-btn').onclick = () => {
@@ -140,7 +151,7 @@
 
             // Save and redirect to your cart page
             localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
-            window.location.href = '/cart'; // Adjust path if your cart page is located elsewhere
+            window.location.href = '/cart'; 
         };
     </script>
 </body>
