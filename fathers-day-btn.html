@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Father's Day Product Option Selector</title>
+
     <style>
         body { 
             font-family: sans-serif; 
@@ -17,65 +18,54 @@
             min-height: 100vh;
             box-sizing: border-box;
         }
+
         .button-container {
-            /*background: white;*/
             padding: 20px;
-           /*border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);*/
             width: 100%;
             max-width: 320px;
             box-sizing: border-box;
         }
+
         .product-info {
             text-align: center;
             margin-bottom: 15px;
             border-bottom: 1px solid #eee;
             padding-bottom: 12px;
         }
+
         .product-name {
             font-size: 18px;
             font-weight: bold;
             color: #333;
             margin: 0 0 8px 0;
         }
+
         .product-price {
             font-size: 16px;
             color: #2F6B64;
             font-weight: bold;
             margin: 0;
         }
-        /* Styles for Input and Dropdown Fields */
-        .input-group { 
-            margin-bottom: 15px; 
-        }
+
+        .input-group { margin-bottom: 15px; }
+
         .input-group label { 
             display: block; 
             font-size: 12px; 
             font-weight: bold; 
             margin-bottom: 6px; 
             color: #555; 
-            text-transform: capitalize;
         }
-        .input-group select, .input-group input { 
+
+        .input-group select,
+        .input-group input { 
             width: 100%; 
             padding: 10px; 
-            box-sizing: border-box; 
             border: 1px solid #ccc; 
             border-radius: 4px; 
             font-size: 14px; 
-            background-color: white;
         }
-        .static-variant-text {
-            font-size: 13px; 
-            color: #666; 
-            margin: 5px 0; 
-            font-style: italic; 
-            text-align: center;
-            background: #f9f9f9;
-            padding: 8px;
-            border-radius: 4px;
-            border: 1px dashed #ddd;
-        }
+
         #add-to-cart-btn { 
             background: #2b7bf5; 
             color: white; 
@@ -85,85 +75,58 @@
             border-radius: 5px; 
             cursor: pointer; 
             font-weight: bold; 
-            font-size: 14px;
-            transition: background 0.2s;
-        }
-        #add-to-cart-btn:hover {
-            background: #2b68c4;
         }
     </style>
 </head>
+
 <body>
 
-    <div class="button-container">
-        <div class="product-info">
-            <p class="product-name" id="display-name">Loading Item...</p>
-            <p class="product-price" id="display-price">$0.00</p>
-        </div>
+<div class="button-container">
 
-        <div id="dynamic-variants-container"></div>
-
-        <div class="input-group">
-            <label for="design-code">Enter Chosen Design Style Code:</label>
-            <input type="text" id="design-code" placeholder="e.g., FD-05" autocomplete="off">
-        </div>
-
-        <button id="add-to-cart-btn">Add to Cart</button>
+    <div class="product-info">
+        <p class="product-name" id="display-name">Loading Item...</p>
+        <p class="product-price" id="display-price">$0.00</p>
     </div>
 
-    <script>
+    <div id="dynamic-variants-container"></div>
 
-    // =========================
-    // URL VARIABLES
-    // =========================
+    <div class="input-group">
+        <label>Design Code:</label>
+        <input type="text" id="design-code" placeholder="e.g. FD-05">
+    </div>
 
-    const urlParams = new URLSearchParams(window.location.search);
+    <button id="add-to-cart-btn">Add to Cart</button>
 
-    const rawName =
-        urlParams.get('name') || 'Custom Item';
+</div>
 
-   const rawPrice = Number(
-        (urlParams.get('price') || "0")
-            .replace(/,/g, '')
-    );
+<script>
 
-    const rawVars =
-        urlParams.get('vars')
-        ? decodeURIComponent(
-            urlParams.get('vars')
-          ).replace(/\+/g, ' ').trim()
-        : '';
+const urlParams = new URLSearchParams(window.location.search);
 
-    // =========================
-    // PRODUCT DISPLAY
-    // =========================
+const rawName = urlParams.get('name') || 'Custom Item';
 
-    const itemName =
-        rawName.replace(/_/g, ' ');
+const rawPrice = Number(
+    (urlParams.get('price') || "0").replace(/,/g,'')
+);
 
-    document.getElementById(
-        'display-name'
-    ).textContent = itemName;
+const rawVars = urlParams.get('vars')
+    ? decodeURIComponent(urlParams.get('vars')).replace(/\+/g,' ').trim()
+    : '';
 
-    document.getElementById(
-        'display-price'
-    ).textContent =
-        `$${rawPrice.toFixed(2)}`;
+const itemName = rawName.replace(/_/g,' ');
 
-    // =========================
-    // VARIANT CONTAINER
-    // =========================
+document.getElementById('display-name').textContent = itemName;
 
-    const variantContainer =
-        document.getElementById(
-            'dynamic-variants-container'
-        );
+document.getElementById('display-price').textContent = `$${rawPrice.toFixed(2)}`;
 
-    // =========================
-    // PARSE VARIANTS
-    // =========================
+const variantContainer = document.getElementById('dynamic-variants-container');
 
-    if (rawVars && rawVars !== '') {
+
+// =========================
+// VARIANT PARSER (FIXED)
+// =========================
+
+if (rawVars) {
 
     const categories = rawVars.split('|||');
 
@@ -178,7 +141,6 @@
         let labelText = "Options";
         let optionsText = cat;
 
-        // CASE 1: Named category (Color:, Size:, Print:)
         if (cat.includes(':')) {
             const parts = cat.split(/:(.+)/);
             labelText = parts[0].trim();
@@ -188,13 +150,11 @@
         const rawOptions = optionsText.split(',');
 
         const label = document.createElement('label');
-        label.textContent = labelText + ":";
+        label.textContent = labelText;
 
         const select = document.createElement('select');
         select.className = 'variant-selector';
         select.dataset.variantName = labelText;
-
-        let hasValidOptions = false;
 
         rawOptions.forEach(opt => {
 
@@ -202,141 +162,87 @@
             if (!opt) return;
 
             const pieces = opt.split('|');
-            const optionName = pieces[0]?.trim();
 
-            if (!optionName) return;
+            const name = pieces[0]?.trim();
+            if (!name) return;
 
-            const optionPrice = parseFloat(pieces[1]) || 0;
+            const price = parseFloat(pieces[1]) || 0;
 
-            const optionElement = document.createElement('option');
-            optionElement.value = optionName;
-            optionElement.dataset.priceModifier = optionPrice;
+            const option = document.createElement('option');
+            option.value = name;
+            option.dataset.priceModifier = price;
 
-            optionElement.textContent =
-                optionPrice > 0
-                    ? `${optionName} (+$${optionPrice})`
-                    : optionName;
+            option.textContent = price > 0
+                ? `${name} (+$${price})`
+                : name;
 
-            select.appendChild(optionElement);
-            hasValidOptions = true;
+            select.appendChild(option);
         });
 
-        // ONLY append dropdown if it has real options
-        if (hasValidOptions) {
-            groupDiv.appendChild(label);
-            groupDiv.appendChild(select);
-        } else {
-            // fallback safety
-            const fallback = document.createElement('p');
-            fallback.textContent = cat;
-            groupDiv.appendChild(fallback);
-        }
-
+        groupDiv.appendChild(label);
+        groupDiv.appendChild(select);
         variantContainer.appendChild(groupDiv);
     });
 }
-    // =========================
-    // ADD TO CART
-    // =========================
 
-    document.getElementById(
-        'add-to-cart-btn'
-    ).onclick = () => {
 
-        const chosenDesign =
-            document.getElementById(
-                'design-code'
-            ).value.trim();
+// =========================
+// ADD TO CART (FIXED SAFE)
+// =========================
 
-        if(!chosenDesign){
+document.getElementById('add-to-cart-btn').onclick = () => {
 
-            alert(
-                "Please enter your chosen design style code first!"
-            );
+    const chosenDesign =
+        document.getElementById('design-code').value.trim();
 
-            return;
-        }
+    if (!chosenDesign) {
+        alert("Enter design code");
+        return;
+    }
 
-        let selectedVariants = [];
+    let selectedVariants = [];
 
-       let totalPrice = isNaN(rawPrice) ? 0 : rawPrice;
+    let totalPrice = Number.isFinite(rawPrice) ? rawPrice : 0;
 
-        // DROPDOWNS
+    const dropdowns = document.querySelectorAll('.variant-selector');
 
-        const dropdowns = document.querySelectorAll('.variant-selector') || [];
+    dropdowns.forEach(dropdown => {
 
-        dropdowns.forEach(dropdown => {
+        const opt = dropdown.options[dropdown.selectedIndex];
+        if (!opt) return;
 
-            const selectedOption =
-                dropdown.options[
-                    dropdown.selectedIndex
-                ];
+        const modifier = parseFloat(opt.dataset.priceModifier) || 0;
 
-            const modifier =
-                parseFloat(
-                    selectedOption.dataset.priceModifier
-                ) || 0;
+        totalPrice += modifier;
 
-            totalPrice += modifier;
-
-            selectedVariants.push(
-                `${dropdown.dataset.variantName}: ${selectedOption.value}`
-            );
-
-        });
-
-        // STATICS
-
-        const statics =
-            document.querySelectorAll(
-                '.variant-selector-static'
-            );
-
-        statics.forEach(staticInp => {
-
-            selectedVariants.push(
-                staticInp.value
-            );
-
-        });
-
-        // FINAL DETAILS
-
-        let finalDetails =
-            selectedVariants.join(', ');
-
-        finalDetails +=
-            ` | Design: ${chosenDesign}`;
-
-        // CART
-
-        let finalCart =
-            JSON.parse(
-                localStorage.getItem(
-                    'final_shopping_cart'
-                )
-            ) || [];
-        if (!itemName || totalPrice === 0) {
-            alert("Product failed to load properly. Please refresh.");
-            return;
-        }
-        finalCart.push({
-            name: itemName || "Custom Item",
-            price: Number(totalPrice) || 0,
-            details: finalDetails || "No options selected",
-            qty: 1
-        });
-
-        localStorage.setItem(
-            'final_shopping_cart',
-            JSON.stringify(finalCart)
+        selectedVariants.push(
+            `${dropdown.dataset.variantName}: ${opt.value}`
         );
+    });
 
-        window.location.href =
-            '/cart';
+    const finalDetails =
+        selectedVariants.join(', ') +
+        ` | Design: ${chosenDesign}`;
 
-    };
+    let finalCart =
+        JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
+
+    finalCart.push({
+        name: itemName,
+        price: parseFloat(totalPrice) || 0,
+        details: finalDetails,
+        qty: 1
+    });
+
+    localStorage.setItem(
+        'final_shopping_cart',
+        JSON.stringify(finalCart)
+    );
+
+    window.location.href = '/cart';
+};
 
 </script>
+
 </body>
 </html>
