@@ -184,87 +184,89 @@
             // Example:
             // Color:Black|0,White|0
             // =========================
-
+            if(cat.includes(':') || cat.includes(',')){
+                let labelText = "Options";
+            let optionsText = cat;
+            
+            // If category exists
             if(cat.includes(':')){
-
+            
                 const parts =
                     cat.split(/:(.+)/);
-
-                const labelText =
+            
+                labelText =
                     parts[0].trim();
-
-                const optionsText =
+            
+                optionsText =
                     parts[1].trim();
-
-                // Split options by commas ONLY
-                const rawOptions =
-                    optionsText.split(',');
-
-                const label =
+            }
+            
+            const rawOptions =
+                optionsText.split(',');
+            
+            const label =
+                document.createElement(
+                    'label'
+                );
+            
+            label.textContent =
+                labelText + ":";
+            
+            const select =
+                document.createElement(
+                    'select'
+                );
+            
+            select.className =
+                'variant-selector';
+            
+            select.dataset.variantName =
+                labelText;
+            
+            rawOptions.forEach(opt => {
+            
+                opt = opt.trim();
+            
+                if(!opt) return;
+            
+                const pieces =
+                    opt.split('|');
+            
+                const optionName =
+                    pieces[0]
+                    ? pieces[0].trim()
+                    : '';
+            
+                const optionPrice =
+                    parseFloat(
+                        pieces[1]
+                    ) || 0;
+            
+                const optionElement =
                     document.createElement(
-                        'label'
+                        'option'
                     );
-
-                label.textContent =
-                    labelText + ":";
-
-                const select =
-                    document.createElement(
-                        'select'
-                    );
-
-                select.className =
-                    'variant-selector';
-
-                select.dataset.variantName =
-                    labelText;
-
-                rawOptions.forEach(opt => {
-
-                    opt = opt.trim();
-
-                    if(!opt) return;
-
-                    // Split option name and price
-                    const pieces =
-                        opt.split('|');
-
-                    const optionName =
-                        pieces[0]
-                        ? pieces[0].trim()
-                        : '';
-
-                    const optionPrice =
-                        parseFloat(
-                            pieces[1]
-                        ) || 0;
-
-                    const optionElement =
-                        document.createElement(
-                            'option'
-                        );
-
-                    optionElement.value =
-                        optionName;
-
-                    optionElement.dataset.priceModifier =
-                        optionPrice;
-
-                    optionElement.textContent =
-                        optionPrice > 0
-                        ? `${optionName} (+$${optionPrice})`
-                        : optionName;
-
-                    select.appendChild(
-                        optionElement
-                    );
-
-                });
-
-                groupDiv.appendChild(label);
-
-                groupDiv.appendChild(select);
-
+            
+                optionElement.value =
+                    optionName;
+            
+                optionElement.dataset.priceModifier =
+                    optionPrice;
+            
+                optionElement.textContent =
+                    optionPrice > 0
+                    ? `${optionName} (+$${optionPrice})`
+                    : optionName;
+            
+                select.appendChild(
+                    optionElement
+                );
+            
+            });
+            
+            groupDiv.appendChild(label);
+            
+            groupDiv.appendChild(select);
             }
 
             // =========================
