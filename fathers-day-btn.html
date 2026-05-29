@@ -161,163 +161,78 @@
     // PARSE VARIANTS
     // =========================
 
-    if(rawVars && rawVars !== ''){
+    if (rawVars && rawVars !== '') {
 
-        // Split ONLY by triple pipes
-        const categories =
-            rawVars.split('|||');
+    const categories = rawVars.split('|||');
 
-        categories.forEach(cat => {
+    categories.forEach(cat => {
 
-            cat = cat.trim();
+        cat = cat.trim();
+        if (!cat) return;
 
-            if(!cat) return;
+        const groupDiv = document.createElement('div');
+        groupDiv.className = 'input-group';
 
-            const groupDiv =
-                document.createElement('div');
+        let labelText = "Options";
+        let optionsText = cat;
 
-            groupDiv.className =
-                'input-group';
+        // CASE 1: Named category (Color:, Size:, Print:)
+        if (cat.includes(':')) {
+            const parts = cat.split(/:(.+)/);
+            labelText = parts[0].trim();
+            optionsText = parts[1].trim();
+        }
 
-            // =========================
-            // DROPDOWN CATEGORY
-            // Example:
-            // Color:Black|0,White|0
-            // =========================
-            if(cat.includes(':') || cat.includes(',')){
-                let labelText = "Options";
-            let optionsText = cat;
-            
-            // If category exists
-            if(cat.includes(':')){
-            
-                const parts =
-                    cat.split(/:(.+)/);
-            
-                labelText =
-                    parts[0].trim();
-            
-                optionsText =
-                    parts[1].trim();
-            }
-            
-            const rawOptions =
-                optionsText.split(',');
-            
-            const label =
-                document.createElement(
-                    'label'
-                );
-            
-            label.textContent =
-                labelText + ":";
-            
-            const select =
-                document.createElement(
-                    'select'
-                );
-            
-            select.className =
-                'variant-selector';
-            
-            select.dataset.variantName =
-                labelText;
-            
-            rawOptions.forEach(opt => {
-            
-                opt = opt.trim();
-            
-                if(!opt) return;
-            
-                const pieces =
-                    opt.split('|');
-            
-                const optionName =
-                    pieces[0]
-                    ? pieces[0].trim()
-                    : '';
-            
-                const optionPrice =
-                    parseFloat(
-                        pieces[1]
-                    ) || 0;
-            
-                const optionElement =
-                    document.createElement(
-                        'option'
-                    );
-            
-                optionElement.value =
-                    optionName;
-            
-                optionElement.dataset.priceModifier =
-                    optionPrice;
-            
-                optionElement.textContent =
-                    optionPrice > 0
+        const rawOptions = optionsText.split(',');
+
+        const label = document.createElement('label');
+        label.textContent = labelText + ":";
+
+        const select = document.createElement('select');
+        select.className = 'variant-selector';
+        select.dataset.variantName = labelText;
+
+        let hasValidOptions = false;
+
+        rawOptions.forEach(opt => {
+
+            opt = opt.trim();
+            if (!opt) return;
+
+            const pieces = opt.split('|');
+            const optionName = pieces[0]?.trim();
+
+            if (!optionName) return;
+
+            const optionPrice = parseFloat(pieces[1]) || 0;
+
+            const optionElement = document.createElement('option');
+            optionElement.value = optionName;
+            optionElement.dataset.priceModifier = optionPrice;
+
+            optionElement.textContent =
+                optionPrice > 0
                     ? `${optionName} (+$${optionPrice})`
                     : optionName;
-            
-                select.appendChild(
-                    optionElement
-                );
-            
-            });
-            
-            groupDiv.appendChild(label);
-            
-            groupDiv.appendChild(select);
-            }
 
-            // =========================
-            // STATIC TEXT
-            // =========================
-
-            else{
-
-                const staticText =
-                    document.createElement(
-                        'p'
-                    );
-
-                staticText.className =
-                    'static-variant-text';
-
-                staticText.textContent =
-                    cat;
-
-                const hiddenInput =
-                    document.createElement(
-                        'input'
-                    );
-
-                hiddenInput.type =
-                    'hidden';
-
-                hiddenInput.className =
-                    'variant-selector-static';
-
-                hiddenInput.value =
-                    cat;
-
-                groupDiv.appendChild(
-                    staticText
-                );
-
-                groupDiv.appendChild(
-                    hiddenInput
-                );
-
-            }
-
-            variantContainer.appendChild(
-                groupDiv
-            );
-
+            select.appendChild(optionElement);
+            hasValidOptions = true;
         });
 
-    }
+        // ONLY append dropdown if it has real options
+        if (hasValidOptions) {
+            groupDiv.appendChild(label);
+            groupDiv.appendChild(select);
+        } else {
+            // fallback safety
+            const fallback = document.createElement('p');
+            fallback.textContent = cat;
+            groupDiv.appendChild(fallback);
+        }
 
+        variantContainer.appendChild(groupDiv);
+    });
+}
     // =========================
     // ADD TO CART
     // =========================
