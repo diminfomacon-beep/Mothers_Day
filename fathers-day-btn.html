@@ -122,8 +122,10 @@
     const rawName =
         urlParams.get('name') || 'Custom Item';
 
-    const rawPrice =
-        parseFloat(urlParams.get('price')) || 0;
+   const rawPrice = Number(
+        (urlParams.get('price') || "0")
+            .replace(/,/g, '')
+    );
 
     const rawVars =
         urlParams.get('vars')
@@ -257,14 +259,11 @@
 
         let selectedVariants = [];
 
-        let totalPrice = rawPrice;
+       let totalPrice = isNaN(rawPrice) ? 0 : rawPrice;
 
         // DROPDOWNS
 
-        const dropdowns =
-            document.querySelectorAll(
-                '.variant-selector'
-            );
+        const dropdowns = document.querySelectorAll('.variant-selector') || [];
 
         dropdowns.forEach(dropdown => {
 
@@ -317,17 +316,15 @@
                     'final_shopping_cart'
                 )
             ) || [];
-
+        if (!itemName || totalPrice === 0) {
+            alert("Product failed to load properly. Please refresh.");
+            return;
+        }
         finalCart.push({
-
-            name:itemName,
-
-            price:totalPrice,
-
-            details:finalDetails,
-
-            qty:1
-
+            name: itemName || "Custom Item",
+            price: Number(totalPrice) || 0,
+            details: finalDetails || "No options selected",
+            qty: 1
         });
 
         localStorage.setItem(
