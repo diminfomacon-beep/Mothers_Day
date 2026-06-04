@@ -61,16 +61,13 @@
             font-size: 14px; 
             background-color: white;
         }
-        .static-variant-text {
-            font-size: 13px; 
-            color: #666; 
-            margin: 5px 0; 
-            font-style: italic; 
+        #error-msg {
+            color: #dc3545;
+            font-size: 13px;
+            font-weight: bold;
             text-align: center;
-            background: #f9f9f9;
-            padding: 8px;
-            border-radius: 4px;
-            border: 1px dashed #ddd;
+            margin-bottom: 12px;
+            display: none;
         }
         #add-to-cart-btn { 
             background: #2b7bf5; 
@@ -104,6 +101,8 @@
             <input type="text" id="design-code" placeholder="e.g., FD-05" autocomplete="off">
         </div>
 
+        <div id="error-msg"></div>
+
         <button id="add-to-cart-btn">Add to Cart</button>
     </div>
 
@@ -112,49 +111,27 @@
     // =========================
     // URL VARIABLES
     // =========================
-
     const urlParams = new URLSearchParams(window.location.search);
-
     const rawName = urlParams.get('name') || "Father's Day Box";
-
-    const rawPrice = Number(
-        (urlParams.get('price') || "0")
-            .replace(/,/g, '')
-    );
-
-    const rawVars =
-        urlParams.get('vars')
-        ? decodeURIComponent(
-            urlParams.get('vars')
-          ).replace(/\+/g, ' ').trim()
-        : '';
+    const rawPrice = Number((urlParams.get('price') || "0").replace(/,/g, ''));
+    const rawVars = urlParams.get('vars') ? decodeURIComponent(urlParams.get('vars')).replace(/\+/g, ' ').trim() : '';
 
     // =========================
     // PRODUCT DISPLAY
     // =========================
-
     const itemName = rawName.replace(/_/g, ' ');
-
     document.getElementById('display-name').textContent = itemName;
-
     document.getElementById('display-price').textContent = `$${rawPrice.toFixed(2)}`;
-
-    // =========================
-    // VARIANT CONTAINER
-    // =========================
-
-    const variantContainer = document.getElementById('dynamic-variants-container');
 
     // =========================
     // PARSE VARIANTS
     // =========================
+    const variantContainer = document.getElementById('dynamic-variants-container');
 
     if (rawVars && rawVars !== '') {
-
         const categories = rawVars.split('|||');
 
         categories.forEach(cat => {
-
             cat = cat.trim();
             if (!cat) return;
 
@@ -164,7 +141,6 @@
             let labelText = "Options";
             let optionsText = cat;
 
-            // CASE 1: Named category (Color:, Size:, Print:)
             if (cat.includes(':')) {
                 const parts = cat.split(/:(.+)/);
                 labelText = parts[0].trim();
@@ -172,7 +148,6 @@
             }
 
             const rawOptions = optionsText.split(',');
-
             const label = document.createElement('label');
             label.textContent = labelText + ":";
 
@@ -183,26 +158,19 @@
             let hasValidOptions = false;
 
             rawOptions.forEach(opt => {
-
                 opt = opt.trim();
                 if (!opt) return;
 
                 const pieces = opt.split('|');
                 const optionName = pieces[0]?.trim();
-
                 if (!optionName) return;
 
                 const optionPrice = parseFloat(pieces[1]) || 0;
-
                 const optionElement = document.createElement('option');
                 optionElement.value = optionName;
                 optionElement.dataset.priceModifier = optionPrice;
 
-                optionElement.textContent =
-                    optionPrice > 0
-                        ? `${optionName} (+$${optionPrice})`
-                        : optionName;
-
+                optionElement.textContent = optionPrice > 0 ? `${optionName} (+$${optionPrice})` : optionName;
                 select.appendChild(optionElement);
                 hasValidOptions = true;
             });
@@ -210,26 +178,24 @@
             if (hasValidOptions) {
                 groupDiv.appendChild(label);
                 groupDiv.appendChild(select);
-            } else {
-                const fallback = document.createElement('p');
-                fallback.textContent = cat;
-                groupDiv.appendChild(fallback);
+                variantContainer.appendChild(groupDiv);
             }
-
-            variantContainer.appendChild(groupDiv);
         });
     }
 
     // =========================
     // ADD TO CART & REDIRECT
     // =========================
-
     document.getElementById('add-to-cart-btn').onclick = () => {
+        const errorEl = document.getElementById('error-msg');
+        errorEl.style.display = "none"; // Reset error view
 
         const chosenDesign = document.getElementById('design-code').value.trim();
 
+        // Check for empty Design Field
         if (!chosenDesign) {
-            alert("Please enter your chosen design style code first!");
+            errorEl.textContent = "Please enter your chosen design style code first!";
+            errorEl.style.display = "block";
             return;
         }
 
@@ -240,7 +206,6 @@
 
         // DROPDOWNS
         const dropdowns = document.querySelectorAll('.variant-selector') || [];
-
         dropdowns.forEach(dropdown => {
             const selectedOption = dropdown.options[dropdown.selectedIndex];
             const modifier = parseFloat(selectedOption.dataset.priceModifier) || 0;
@@ -250,11 +215,9 @@
             totalPrice += modifier;
             selectedVariants.push(`${categoryName}: ${chosenVal}`);
 
-            // Group into variety/addons based on standard naming conventions
             if (categoryName.toLowerCase() === 'variety' || categoryName.toLowerCase() === 'size' || categoryName.toLowerCase() === 'type') {
                 varietyValue = chosenVal;
             } else {
-                // Collect other choices here (e.g. Color, Wrapping, Cards)
                 if (addonsValue) {
                     addonsValue += `, ${chosenVal}`;
                 } else {
@@ -263,39 +226,48 @@
             }
         });
 
-        // STATICS
-        const statics = document.querySelectorAll('.variant-selector-static');
-        statics.forEach(staticInp => {
-            selectedVariants.push(staticInp.value);
-        });
-
         // BUILD SYSTEM DETAILS FOR CHECKOUT SCRIPT DISPLAY
         let finalDetails = selectedVariants.join(', ');
-        finalDetails += ` | Design: ${chosenDesign}`;
+        if (finalDetails) {
+            finalDetails += ` | Design: ${chosenDesign}`;
+        } else {
+            finalDetails = `Design: ${chosenDesign}`;
+        }
 
-        if (!itemName || totalPrice === 0) {
-            alert("Product failed to load properly. Please refresh.");
+        // Safety verification if product data fails to load entirely
+        if (!itemName) {
+            errorEl.textContent = "Product configuration error. Please refresh.";
+            errorEl.style.display = "block";
             return;
         }
 
-        // PULL EXISTING CART
-        let finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
+        // PULL EXISTING CART FROM LOCALSTORAGE
+        let finalCart = [];
+        try {
+            finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
+        } catch(e) {
+            console.error("Storage read issue:", e);
+        }
 
-        // STRUCTURING OBJECT COMPATIBLE WITH PAYPAL/EMAIL BREAKDOWNS
+        // ADD OBJECT MATCHING CHECKOUT EXPECTATIONS
         finalCart.push({
-            name: itemName || "Custom Item",
+            name: itemName,
             price: Number(totalPrice) || 0,
-            details: finalDetails || "No options selected",
-            variety: varietyValue || "",
-            addons: addonsValue || "",
+            details: finalDetails,
+            variety: varietyValue,
+            addons: addonsValue,
             qty: 1
         });
 
         // SAVE BACK TO STORAGE
-        localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
+        try {
+            localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
+        } catch(e) {
+            console.error("Storage write issue:", e);
+        }
 
-        // ROUTING STRAIGHT TO YOUR CHECKOUT PAGE FILE
-        // Adjust "checkout.html" below if your checkout file has a different path/name
+        // REDIRECT TARGET ON GITHUB PAGES
+        // Points to checkout.html sitting right next to it in your repo
         window.location.href = "checkout.html";
     };
 
