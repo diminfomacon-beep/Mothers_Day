@@ -84,6 +84,10 @@
         #add-to-cart-btn:hover {
             background: #2b68c4;
         }
+        /* Style for when the item is successfully added */
+        #add-to-cart-btn.success {
+            background: #28a745 !important;
+        }
     </style>
 </head>
 <body>
@@ -186,13 +190,13 @@
     // =========================
     // ADD TO CART & REDIRECT
     // =========================
-    document.getElementById('add-to-cart-btn').onclick = () => {
+    document.getElementById('add-to-cart-btn').onclick = function() {
+        const btn = this;
         const errorEl = document.getElementById('error-msg');
-        errorEl.style.display = "none"; // Reset error view
+        errorEl.style.display = "none"; 
 
         const chosenDesign = document.getElementById('design-code').value.trim();
 
-        // Check for empty Design Field
         if (!chosenDesign) {
             errorEl.textContent = "Please enter your chosen design style code first!";
             errorEl.style.display = "block";
@@ -204,7 +208,6 @@
         let varietyValue = "";
         let addonsValue = "";
 
-        // DROPDOWNS
         const dropdowns = document.querySelectorAll('.variant-selector') || [];
         dropdowns.forEach(dropdown => {
             const selectedOption = dropdown.options[dropdown.selectedIndex];
@@ -226,7 +229,6 @@
             }
         });
 
-        // BUILD SYSTEM DETAILS FOR CHECKOUT SCRIPT DISPLAY
         let finalDetails = selectedVariants.join(', ');
         if (finalDetails) {
             finalDetails += ` | Design: ${chosenDesign}`;
@@ -234,22 +236,17 @@
             finalDetails = `Design: ${chosenDesign}`;
         }
 
-        // Safety verification if product data fails to load entirely
         if (!itemName) {
             errorEl.textContent = "Product configuration error. Please refresh.";
             errorEl.style.display = "block";
             return;
         }
 
-        // PULL EXISTING CART FROM LOCALSTORAGE
         let finalCart = [];
         try {
             finalCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
-        } catch(e) {
-            console.error("Storage read issue:", e);
-        }
+        } catch(e) {}
 
-        // ADD OBJECT MATCHING CHECKOUT EXPECTATIONS
         finalCart.push({
             name: itemName,
             price: Number(totalPrice) || 0,
@@ -259,16 +256,32 @@
             qty: 1
         });
 
-        // SAVE BACK TO STORAGE
         try {
             localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
-        } catch(e) {
-            console.error("Storage write issue:", e);
-        }
+        } catch(e) {}
 
-        // REDIRECT TARGET ON GITHUB PAGES
-        // Points to checkout.html sitting right next to it in your repo
-        window.location.href = "checkout.html";
+        // --- GOOGLE SITES FIX & TEXT TRANSITION ---
+        
+        // 1. Instantly switch button to "Added!" green state
+        btn.textContent = "Added!";
+        btn.classList.add('success');
+        btn.disabled = true;
+
+        // 2. Clear input field ready for next action
+        document.getElementById('design-code').value = "";
+
+        // 3. Reset the button back to its standard look after 2 seconds
+        setTimeout(() => {
+            btn.textContent = "Add to Cart";
+            btn.classList.remove('success');
+            btn.disabled = false;
+        }, 2000);
+
+        // 4. Force Google Sites window to load checkout page globally
+        // Change the URL below to match the real production domain address of your checkout page
+        setTimeout(() => {
+            window.top.location.href = "https://diminfomacon-beep.github.io/Mothers_Day/checkout.html";
+        }, 800);
     };
 
 </script>
