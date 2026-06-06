@@ -187,6 +187,64 @@
         });
     }
 
+    // ==========================================
+    // LIVE PRICE UPDATER
+    // ==========================================
+    function updateLivePriceDisplay() {
+        let currentTotal = isNaN(rawPrice) ? 0 : rawPrice;
+        const dropdowns = document.querySelectorAll('.variant-selector');
+        dropdowns.forEach(dropdown => {
+            const selectedOption = dropdown.options[dropdown.selectedIndex];
+            if (selectedOption) {
+                const modifier = parseFloat(selectedOption.dataset.priceModifier) || 0;
+                currentTotal += modifier;
+            }
+        });
+        document.getElementById('display-price').textContent = `$${currentTotal.toFixed(2)}`;
+    }
+
+    // Assign price recalculation listener to all generated selectors
+    document.querySelectorAll('.variant-selector').forEach(select => {
+        select.addEventListener('change', updateLivePriceDisplay);
+    });
+    // Run once immediately on page build to catch baseline calculations
+    updateLivePriceDisplay();
+
+    // ==========================================
+    // SILENT CART DATA CLEANER & FIXER
+    // ==========================================
+    (function cleanOldCartData() {
+        try {
+            let cart = JSON.parse(localStorage.getItem('final_shopping_cart'));
+            if (Array.isArray(cart)) {
+                let isCorrupted = false;
+
+                cart.forEach(item => {
+                    if (!item || typeof item !== 'object' || !item.name) {
+                        isCorrupted = true;
+                    }
+                });
+
+                if (isCorrupted) {
+                    localStorage.removeItem('final_shopping_cart');
+                    console.log("Corrupted legacy cart wiped cleanly.");
+                } else {
+                    cart.forEach(item => {
+                        if (item.qty === undefined || isNaN(item.qty)) {
+                            item.qty = 1;
+                        }
+                        if (item.price === undefined || isNaN(item.price)) {
+                            item.price = 0;
+                        }
+                    });
+                    localStorage.setItem('final_shopping_cart', JSON.stringify(cart));
+                }
+            }
+        } catch (e) {
+            localStorage.removeItem('final_shopping_cart');
+        }
+    })();
+
     // =========================
     // ADD TO CART & REDIRECT
     // =========================
@@ -259,8 +317,6 @@
         try {
             localStorage.setItem('final_shopping_cart', JSON.stringify(finalCart));
         } catch(e) {}
-
-        // --- GOOGLE SITES FIX & TEXT TRANSITION ---
         
         // 1. Instantly switch button to "Added!" green state
         btn.textContent = "Added!";
@@ -278,7 +334,6 @@
         }, 2000);
 
         // 4. Force Google Sites window to load checkout page globally
-        // Change the URL below to match the real production domain address of your checkout page
         setTimeout(() => {
             window.top.location.href = "https://diminfomacon-beep.github.io/Mothers_Day/checkout.html";
         }, 800);
