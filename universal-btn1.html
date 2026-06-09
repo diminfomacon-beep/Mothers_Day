@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dynamic Item Embed</title>
+    <title>Dynamic Custom Catalog Item</title>
     <style>
         :root {
             --primary: #395763;
@@ -28,13 +28,12 @@
         h3 { margin-top: 0; color: #333; margin-bottom: 5px; font-size: 16px; }
         p { font-size: 12px; color: #666; margin: 0 0 10px 0; }
         .input-group { display: flex; flex-direction: column; gap: 8px; width: 100%; }
-        .label-row { display: flex; justify-content: space-between; align-items: flex-end; width: 100%; }
-        .label-text { font-size: 11px; color: #000; font-weight: bold; }
+        .label-text { font-size: 11px; color: #000; font-weight: bold; margin-top: 2px; }
         
         input[type="text"], input[type="file"], select { 
             padding: 8px; border-radius: 10px; border: 1px solid #ddd; font-size: 13px; outline: none; width: 100%; box-sizing: border-box; 
         }
-        .button-row { display: flex; gap: 10px; margin-top: 12px; }
+        .button-row { display: flex; gap: 10px; margin-top: 15px; }
         .action-btn { 
             flex: 1; padding: 12px; font-weight: bold; border-radius: 10px; border: none; cursor: pointer; transition: 0.2s; color: white; text-align: center; font-size: 13px;
         }
@@ -50,8 +49,8 @@
 <body>
 
 <div class="product-card">
-    <h3 id="display-name">Loading Item...</h3>
-    <p id="display-desc">Customize details below before saving to your checkout card pool.</p>
+    <h3 id="display-name">Loading Product...</h3>
+    <p>Customize details below before adding to your shopping pool.</p>
     
     <div class="input-group">
         <label class="label-text">Design Code (Optional):</label>
@@ -73,23 +72,8 @@
             <div id="upload-status" class="status"></div>
         </div>
         
-        <!-- Dropdown variant selectors controlled by Sheet URL settings -->
-        <div id="variety-block" class="hidden">
-            <span class="label-text" id="select-label">Options Matrix:</span>
-            <select id="variant-select" onchange="applyDynamicLogic()"></select>
-        </div>
-
-        <div id="size-block" class="hidden">
-            <span class="label-text">Garment Size Selection:</span>
-            <select id="size-select">
-                <option value="S" data-price="0.00">Small (+$0.00)</option>
-                <option value="M" data-price="0.00">Medium (+$0.00)</option>
-                <option value="L" data-price="0.00">Large (+$0.00)</option>
-                <option value="XL" data-price="0.00">X-Large (+$0.00)</option>
-                <option value="2XL" data-price="3.50">2X-Large (+$3.50)</option>
-                <option value="3XL" data-price="4.50">3X-Large (+$4.50)</option>
-            </select>
-        </div>
+        <!-- Target area where dynamic dropdowns from sheets are built -->
+        <div id="dynamic-dropdowns-container"></div>
     </div>
 
     <div class="button-row">
@@ -103,58 +87,75 @@
     const UPLOAD_PRESET = "dim_image_uploads"; 
     let uploadedImageUrl = "";
 
-    // Parse information fed directly via Google Sheet URLs
+    // Parse parameters out of Google Sheets generated link
     const params = new URLSearchParams(window.location.search);
-    const modeType = params.get('type') || "regular"; // regular, custom-bundle, shirts, shirt-bundle
     const baseName = params.get('name') ? params.get('name').replace(/_/g, ' ') : "Custom Product";
     const basePrice = parseFloat(params.get('price')) || 0.00;
+    const rawVars = params.get('vars') || "";
 
-    // Set UI Header elements
     document.getElementById('display-name').textContent = baseName + ` ($${basePrice.toFixed(2)})`;
 
-    // Configure variation dropdown layouts depending on item category parameter
-    const selectWrap = document.getElementById('variety-block');
-    const variantSelect = document.getElementById('variant-select');
-    const selectLabel = document.getElementById('select-label');
-
-    if (modeType === "regular" || modeType === "custom-bundle") {
-        selectWrap.classList.remove('hidden');
-        selectLabel.textContent = "Select Item Variety & Add-On:";
-        variantSelect.innerHTML = `
-            <option value="None" data-price="0.00">Standard Base Item (+$0.00)</option>
-            <option value="Heart Wood Key Chain" data-price="3.00">Heart Wood Key Chain (+ $3.00)</option>
-            <option value="Circle Wood Key Chain" data-price="3.00">Circle Wood Key Chain (+ $3.00)</option>
-            <option value="Aluminum Key Chain" data-price="3.00">Aluminum Key Chain (+ $3.00)</option>
-            <option value="Aluminum Bookmark" data-price="4.00">Aluminum Bookmark (+ $4.00)</option>
-            <option value="Small Photo Magnet" data-price="6.00">Small Photo Magnet (+ $6.00)</option>
-        `;
-    } else if (modeType === "shirts" || modeType === "shirt-bundle") {
-        selectWrap.classList.remove('hidden');
-        document.getElementById('size-block').classList.remove('hidden');
-        selectLabel.textContent = "Garment Base Color:";
-        variantSelect.innerHTML = `
-            <option value="Classic Black" data-price="0.00">Classic Black (+$0.00)</option>
-            <option value="Navy Blue" data-price="0.00">Navy Blue (+$0.00)</option>
-            <option value="Sage" data-price="2.00">Sage Accent Variant (+$2.00)</option>
-            <option value="Dusty Rose" data-price="2.00">Dusty Rose Accent Variant (+$2.00)</option>
-        `;
+    // --- PARSE AND BUILD SHEET VARIETIES ---
+    const dropdownContainer = document.getElementById('dynamic-dropdowns-container');
+    
+    if (rawVars.trim() !== "") {
+        // Split option groups by |||
+        const groups = rawVars.split('|||');
+        
+        groups.forEach((group, index) => {
+            if (!group.trim()) return;
+            
+            let labelText = "Option:";
+            let optionsString = group;
+            
+            // Check if there is a group header like "Size:"
+            if (group.includes(':')) {
+                const parts = group.split(':');
+                labelText = parts[0].trim();
+                optionsString = parts[1];
+            }
+            
+            // Split items inside group by comma
+            const items = optionsString.split(',');
+            
+            if (items.length > 0) {
+                // Create element label
+                const lbl = document.createElement('label');
+                lbl.className = "label-text";
+                lbl.textContent = labelText + ":";
+                
+                // Create select dropdown menu
+                const sel = document.createElement('select');
+                sel.className = "dynamic-option-menu";
+                sel.dataset.groupName = labelText;
+                
+                items.forEach(item => {
+                    if (!item.trim()) return;
+                    let valName = item.trim();
+                    let priceModifier = 0;
+                    
+                    // Separate text from price modification values using |
+                    if (item.includes('|')) {
+                        const itemParts = item.split('|');
+                        valName = itemParts[0].trim();
+                        priceModifier = parseFloat(itemParts[1]) || 0;
+                    }
+                    
+                    const opt = document.createElement('option');
+                    opt.value = valName;
+                    opt.dataset.price = priceModifier;
+                    opt.textContent = valName + (priceModifier > 0 ? ` (+$${priceModifier.toFixed(2)})` : '');
+                    sel.appendChild(opt);
+                });
+                
+                dropdownContainer.appendChild(lbl);
+                dropdownContainer.appendChild(sel);
+            }
+        });
     }
 
     function toggleSection(id) {
         document.getElementById(id).classList.toggle('hidden');
-    }
-
-    function applyDynamicLogic() {
-        if (modeType !== "shirts" && modeType !== "shirt-bundle") return;
-        const color = variantSelect.value;
-        const sizeSelect = document.getElementById('size-select');
-        const limitedColors = ["Sage", "Dusty Rose"];
-        
-        Array.from(sizeSelect.options).forEach(opt => {
-            const isLargeSize = (opt.value === "2XL" || opt.value === "3XL");
-            opt.disabled = limitedColors.includes(color) && isLargeSize;
-            if (opt.disabled && sizeSelect.value === opt.value) sizeSelect.value = "S";
-        });
     }
 
     async function uploadImage() {
@@ -198,21 +199,20 @@
             finalMessage += (finalMessage ? ` | Pic: ${uploadedImageUrl}` : `Pic: ${uploadedImageUrl}`);
         }
 
-        let customAddonCost = 0;
-        if (modeType === 'regular' || modeType === 'custom-bundle') {
-            const chosenOpt = variantSelect.options[variantSelect.selectedIndex];
-            customAddonCost += parseFloat(chosenOpt.dataset.price) || 0;
-            if (chosenOpt.value !== "None") finalMessage += ` | Style: ${chosenOpt.value}`;
-        } else if (modeType === 'shirts' || modeType === 'shirt-bundle') {
-            const sizeEl = document.getElementById('size-select');
-            const optC = variantSelect.options[variantSelect.selectedIndex];
-            const optS = sizeEl.options[sizeEl.selectedIndex];
+        // Loop dynamic drops to calculate combined options and total add-on cost
+        let totalAddonCost = 0;
+        const optionMenus = document.querySelectorAll('.dynamic-option-menu');
+        
+        optionMenus.forEach(menu => {
+            const groupName = menu.dataset.groupName;
+            const selectedOpt = menu.options[menu.selectedIndex];
+            const addedCost = parseFloat(selectedOpt.dataset.price) || 0;
             
-            customAddonCost += (parseFloat(optC.dataset.price) || 0) + (parseFloat(optS.dataset.price) || 0);
-            finalMessage += ` | Opt: ${optC.value}, Size ${optS.value}`;
-        }
+            totalAddonCost += addedCost;
+            finalMessage += ` | ${groupName}: ${selectedOpt.value}`;
+        });
 
-        const finalUnitPrice = basePrice + customAddonCost;
+        const finalUnitPrice = basePrice + totalAddonCost;
 
         if (targetPool === 'cart') {
             let cart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
@@ -235,14 +235,14 @@
             alert("Added to bundle savings pool!");
         }
 
-        // Complete data reset after submission
+        // Reset UI Form Elements
         document.getElementById('design-input').value = "";
         document.getElementById('msg-input').value = "";
         document.getElementById('file-input').value = "";
         uploadedImageUrl = "";
-        document.getElementById('upload-status').textContent = "";
+        if(document.getElementById('upload-status')) document.getElementById('upload-status').textContent = "";
         
-        // Open the primary Checkout view in a separate browser tab context
+        // Redirect out of iframe to the Checkout interface
         window.open('https://diminfomacon-beep.github.io/Mothers_Day/checkout.html', '_blank');
     }
 </script>
