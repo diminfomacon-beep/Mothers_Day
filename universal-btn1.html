@@ -3,82 +3,246 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Processing Selection...</title>
+    <title>Dynamic Item Embed</title>
     <style>
         :root {
-            --accent: #2F6B64;
+            --primary: #395763;
             --secondary: #e75480;
+            --accent: #2F6B64;
+            --bg-light: #CAE4DB;
         }
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background: transparent;
-            overflow: hidden;
+        body { 
+            font-family: sans-serif; 
+            margin: 0; 
+            padding: 10px; 
+            background: transparent; 
         }
-        .button-row {
-            display: flex;
-            gap: 10px;
-            width: 100%;
-            padding: 5px;
+        .product-card {
+            background: white;
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
             box-sizing: border-box;
+            width: 100%;
         }
-        .action-btn {
-            flex: 1;
-            padding: 12px;
-            font-weight: bold;
-            font-size: 13px;
-            border-radius: 10px;
-            border: none;
-            cursor: pointer;
-            color: white;
-            text-align: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            white-space: nowrap;
+        h3 { margin-top: 0; color: #333; margin-bottom: 5px; font-size: 16px; }
+        p { font-size: 12px; color: #666; margin: 0 0 10px 0; }
+        .input-group { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+        .label-row { display: flex; justify-content: space-between; align-items: flex-end; width: 100%; }
+        .label-text { font-size: 11px; color: #000; font-weight: bold; }
+        
+        input[type="text"], input[type="file"], select { 
+            padding: 8px; border-radius: 10px; border: 1px solid #ddd; font-size: 13px; outline: none; width: 100%; box-sizing: border-box; 
+        }
+        .button-row { display: flex; gap: 10px; margin-top: 12px; }
+        .action-btn { 
+            flex: 1; padding: 12px; font-weight: bold; border-radius: 10px; border: none; cursor: pointer; transition: 0.2s; color: white; text-align: center; font-size: 13px;
         }
         .btn-cart { background-color: var(--accent); }
         .btn-bundle { background-color: var(--secondary); }
+        
+        .toggle-container { display: flex; gap: 8px; margin-top: 2px; }
+        .toggle-btn { flex: 1; padding: 6px; font-size: 11px; background-color: var(--bg-light); border: 1px solid #b9d4cb; border-radius: 8px; cursor: pointer; }
+        .status { font-size: 11px; font-weight: bold; margin-top: 4px; text-align: center; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <div class="button-row">
-        <button class="action-btn btn-cart" onclick="handleAction('cart')">Add to Cart</button>
-        <button class="action-btn btn-bundle" onclick="handleAction('bundle')">Add to Bundle</button>
+<div class="product-card">
+    <h3 id="display-name">Loading Item...</h3>
+    <p id="display-desc">Customize details below before saving to your checkout card pool.</p>
+    
+    <div class="input-group">
+        <label class="label-text">Design Code (Optional):</label>
+        <input type="text" id="design-input" placeholder="e.g., FD-2026">
+
+        <div class="toggle-container">
+            <button type="button" class="toggle-btn" onclick="toggleSection('note-wrap')">Add Note</button>
+            <button type="button" class="toggle-btn" onclick="toggleSection('upload-wrap')">Upload Photo</button>
+        </div>
+
+        <div id="note-wrap" class="hidden">
+            <span class="label-text">Custom Text Notes:</span>
+            <input type="text" id="msg-input" maxlength="200" placeholder="Type additions or custom phrases...">
+        </div>
+
+        <div id="upload-wrap" class="hidden">
+            <span class="label-text">Upload Custom Photo/Artwork:</span>
+            <input type="file" id="file-input" accept="image/*" onchange="uploadImage()">
+            <div id="upload-status" class="status"></div>
+        </div>
+        
+        <!-- Dropdown variant selectors controlled by Sheet URL settings -->
+        <div id="variety-block" class="hidden">
+            <span class="label-text" id="select-label">Options Matrix:</span>
+            <select id="variant-select" onchange="applyDynamicLogic()"></select>
+        </div>
+
+        <div id="size-block" class="hidden">
+            <span class="label-text">Garment Size Selection:</span>
+            <select id="size-select">
+                <option value="S" data-price="0.00">Small (+$0.00)</option>
+                <option value="M" data-price="0.00">Medium (+$0.00)</option>
+                <option value="L" data-price="0.00">Large (+$0.00)</option>
+                <option value="XL" data-price="0.00">X-Large (+$0.00)</option>
+                <option value="2XL" data-price="3.50">2X-Large (+$3.50)</option>
+                <option value="3XL" data-price="4.50">3X-Large (+$4.50)</option>
+            </select>
+        </div>
     </div>
 
-<script>
-    // Extract query details from the Google Sheet URL context
-    const params = new URLSearchParams(window.location.search);
-    const itemName = params.get('name') ? params.get('name').replace(/_/g, ' ') : "Custom Item";
-    const itemPrice = parseFloat(params.get('price')) || 0.00;
-    const itemVars = params.get('vars') || "Standard specifications";
+    <div class="button-row">
+        <button class="action-btn btn-cart" onclick="addItem('cart')">Add to Cart</button>
+        <button class="action-btn btn-bundle" onclick="addItem('bundle')">Add to Bundle</button>
+    </div>
+</div>
 
-    function handleAction(targetPool) {
+<script>
+    const CLOUD_NAME = "dpsmcu07f"; 
+    const UPLOAD_PRESET = "dim_image_uploads"; 
+    let uploadedImageUrl = "";
+
+    // Parse information fed directly via Google Sheet URLs
+    const params = new URLSearchParams(window.location.search);
+    const modeType = params.get('type') || "regular"; // regular, custom-bundle, shirts, shirt-bundle
+    const baseName = params.get('name') ? params.get('name').replace(/_/g, ' ') : "Custom Product";
+    const basePrice = parseFloat(params.get('price')) || 0.00;
+
+    // Set UI Header elements
+    document.getElementById('display-name').textContent = baseName + ` ($${basePrice.toFixed(2)})`;
+
+    // Configure variation dropdown layouts depending on item category parameter
+    const selectWrap = document.getElementById('variety-block');
+    const variantSelect = document.getElementById('variant-select');
+    const selectLabel = document.getElementById('select-label');
+
+    if (modeType === "regular" || modeType === "custom-bundle") {
+        selectWrap.classList.remove('hidden');
+        selectLabel.textContent = "Select Item Variety & Add-On:";
+        variantSelect.innerHTML = `
+            <option value="None" data-price="0.00">Standard Base Item (+$0.00)</option>
+            <option value="Heart Wood Key Chain" data-price="3.00">Heart Wood Key Chain (+ $3.00)</option>
+            <option value="Circle Wood Key Chain" data-price="3.00">Circle Wood Key Chain (+ $3.00)</option>
+            <option value="Aluminum Key Chain" data-price="3.00">Aluminum Key Chain (+ $3.00)</option>
+            <option value="Aluminum Bookmark" data-price="4.00">Aluminum Bookmark (+ $4.00)</option>
+            <option value="Small Photo Magnet" data-price="6.00">Small Photo Magnet (+ $6.00)</option>
+        `;
+    } else if (modeType === "shirts" || modeType === "shirt-bundle") {
+        selectWrap.classList.remove('hidden');
+        document.getElementById('size-block').classList.remove('hidden');
+        selectLabel.textContent = "Garment Base Color:";
+        variantSelect.innerHTML = `
+            <option value="Classic Black" data-price="0.00">Classic Black (+$0.00)</option>
+            <option value="Navy Blue" data-price="0.00">Navy Blue (+$0.00)</option>
+            <option value="Sage" data-price="2.00">Sage Accent Variant (+$2.00)</option>
+            <option value="Dusty Rose" data-price="2.00">Dusty Rose Accent Variant (+$2.00)</option>
+        `;
+    }
+
+    function toggleSection(id) {
+        document.getElementById(id).classList.toggle('hidden');
+    }
+
+    function applyDynamicLogic() {
+        if (modeType !== "shirts" && modeType !== "shirt-bundle") return;
+        const color = variantSelect.value;
+        const sizeSelect = document.getElementById('size-select');
+        const limitedColors = ["Sage", "Dusty Rose"];
+        
+        Array.from(sizeSelect.options).forEach(opt => {
+            const isLargeSize = (opt.value === "2XL" || opt.value === "3XL");
+            opt.disabled = limitedColors.includes(color) && isLargeSize;
+            if (opt.disabled && sizeSelect.value === opt.value) sizeSelect.value = "S";
+        });
+    }
+
+    async function uploadImage() {
+        const fileInput = document.getElementById('file-input');
+        const statusEl = document.getElementById('upload-status');
+        if (!fileInput.files.length) return;
+
+        statusEl.style.color = "orange";
+        statusEl.textContent = "Uploading asset...";
+
+        const fd = new FormData();
+        fd.append('file', fileInput.files[0]);
+        fd.append('upload_preset', UPLOAD_PRESET);
+
+        try {
+            const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+                method: 'POST',
+                body: fd
+            });
+            if (!res.ok) throw new Error();
+            const data = await res.json();
+            uploadedImageUrl = data.secure_url;
+            statusEl.style.color = "green";
+            statusEl.textContent = "Upload Success!";
+        } catch (e) {
+            statusEl.style.color = "red";
+            statusEl.textContent = "Upload failed.";
+            fileInput.value = "";
+        }
+    }
+
+    function addItem(targetPool) {
+        let finalMessage = "";
+        const dCode = document.getElementById('design-input').value.trim();
+        if(dCode) finalMessage += `Design: ${dCode}`;
+
+        const textNote = document.getElementById('msg-input').value.trim();
+        if(textNote) finalMessage += (finalMessage ? ` | Note: ${textNote}` : `Note: ${textNote}`);
+
+        if(uploadedImageUrl) {
+            finalMessage += (finalMessage ? ` | Pic: ${uploadedImageUrl}` : `Pic: ${uploadedImageUrl}`);
+        }
+
+        let customAddonCost = 0;
+        if (modeType === 'regular' || modeType === 'custom-bundle') {
+            const chosenOpt = variantSelect.options[variantSelect.selectedIndex];
+            customAddonCost += parseFloat(chosenOpt.dataset.price) || 0;
+            if (chosenOpt.value !== "None") finalMessage += ` | Style: ${chosenOpt.value}`;
+        } else if (modeType === 'shirts' || modeType === 'shirt-bundle') {
+            const sizeEl = document.getElementById('size-select');
+            const optC = variantSelect.options[variantSelect.selectedIndex];
+            const optS = sizeEl.options[sizeEl.selectedIndex];
+            
+            customAddonCost += (parseFloat(optC.dataset.price) || 0) + (parseFloat(optS.dataset.price) || 0);
+            finalMessage += ` | Opt: ${optC.value}, Size ${optS.value}`;
+        }
+
+        const finalUnitPrice = basePrice + customAddonCost;
+
         if (targetPool === 'cart') {
             let cart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
             cart.push({
-                name: itemName,
-                price: itemPrice,
-                details: itemVars,
+                name: baseName,
+                price: finalUnitPrice,
+                details: finalMessage || "Standard specifications",
                 qty: 1
             });
             localStorage.setItem('final_shopping_cart', JSON.stringify(cart));
+            alert("Added to regular shopping cart!");
         } else {
             let bundle = JSON.parse(localStorage.getItem('my_custom_bundle')) || [];
             bundle.push({
-                name: itemName,
-                price: itemPrice,
-                message: itemVars
+                name: baseName,
+                price: finalUnitPrice,
+                message: finalMessage || "Bundle item specification"
             });
             localStorage.setItem('my_custom_bundle', JSON.stringify(bundle));
+            alert("Added to bundle savings pool!");
         }
 
-        // Seamlessly route them to your dedicated checkout interface in a new window tab
+        // Complete data reset after submission
+        document.getElementById('design-input').value = "";
+        document.getElementById('msg-input').value = "";
+        document.getElementById('file-input').value = "";
+        uploadedImageUrl = "";
+        document.getElementById('upload-status').textContent = "";
+        
+        // Open the primary Checkout view in a separate browser tab context
         window.open('https://diminfomacon-beep.github.io/Mothers_Day/checkout.html', '_blank');
     }
 </script>
