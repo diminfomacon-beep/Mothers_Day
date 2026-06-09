@@ -200,7 +200,6 @@
     let lastStorageString = "";
 
     function renderWidgetBundle() {
-        // Fetch matching array data shared by bundle action clicks
         let bundleItems = JSON.parse(localStorage.getItem('my_custom_bundle')) || [];
         const container = document.getElementById('bundle-items-container');
         
@@ -219,21 +218,20 @@
         let runningSubtotal = 0;
 
         bundleItems.forEach((item, index) => {
-            // Track fallback quantites safely
             if (!item.qty) item.qty = 1;
 
             const isFreeItem = parseFloat(item.price) === 0;
             const lineTotal = item.price * item.qty;
 
-            // Only items priced over $0.00 qualify for discount logic tracking
+            // Only items priced over $0.00 qualify for tier calculations
             if (!isFreeItem) {
                 qualifyingCount += item.qty;
             }
 
             runningSubtotal += lineTotal;
 
-            // Clean image links for rendering
-            let cleanDetails = item.message || "Standard specifications";
+            // Target fallback descriptions safely regardless of property name choice
+            let cleanDetails = item.message || item.details || "Standard specifications";
             cleanDetails = cleanDetails.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" style="color:var(--primary); font-weight:bold;">View Image</a>');
 
             htmlString += `
@@ -275,7 +273,6 @@
 
         document.getElementById('smart-tip').innerHTML = tipMessage;
 
-        // Calculate and display financials
         const discountTotal = runningSubtotal * discountPct;
         const finalGrandTotal = runningSubtotal - discountTotal;
 
@@ -305,7 +302,7 @@
         renderWidgetBundle();
     }
 
-    // --- REALTIME IFRAME COUPLING LISTENER ---
+    // --- REALTIME IFRAME STORAGE COUPLING ---
     setInterval(() => {
         const checkRaw = localStorage.getItem('my_custom_bundle') || "[]";
         if (checkRaw !== lastStorageString) {
@@ -314,7 +311,6 @@
         }
     }, 800);
 
-    // Initial population loop execution
     renderWidgetBundle();
 </script>
 </body>
