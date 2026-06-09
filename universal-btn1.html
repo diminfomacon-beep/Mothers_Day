@@ -29,6 +29,20 @@
         input[type="text"], input[type="file"], select { 
             padding: 8px; border-radius: 10px; border: 1px solid #ddd; font-size: 13px; outline: none; width: 100%; box-sizing: border-box; 
         }
+        
+        /* Error Alert Styling */
+        .error-text {
+            color: #dc3545;
+            font-size: 11px;
+            font-weight: bold;
+            margin-top: -4px;
+            display: none;
+        }
+        input.input-error {
+            border-color: #dc3545 !important;
+            background-color: #fff8f8;
+        }
+
         .button-row { display: flex; gap: 10px; margin-top: 12px; }
         .action-btn { 
             flex: 1; padding: 12px; font-weight: bold; border-radius: 10px; border: none; cursor: pointer; transition: 0.2s; color: white; text-align: center; font-size: 13px;
@@ -47,7 +61,8 @@
 <div class="product-card">
     <div class="input-group">
         <label class="label-text">Design Code (Optional):</label>
-        <input type="text" id="design-input" placeholder="e.g., FD-2026">
+        <input type="text" id="design-input" placeholder="e.g., FD-24" style="text-transform: uppercase;">
+        <div id="design-error" class="error-text">⚠️ Invalid Format! Use AA-00 (e.g., FD-24)</div>
 
         <div class="toggle-container">
             <button type="button" class="toggle-btn" onclick="toggleSection('note-wrap')">Add Note</button>
@@ -167,8 +182,28 @@
     }
 
     function addItem(targetPool) {
+        const designInput = document.getElementById('design-input');
+        const designError = document.getElementById('design-error');
+        const dCode = designInput.value.trim().toUpperCase();
+
+        // Reset previous validation styles
+        designInput.classList.remove('input-error');
+        designError.style.display = "none";
+
+        // --- VALIDATION LOGIC FOR AA-00 (OPTIONAL / CAN BE BLANK) ---
+        if (dCode !== "") {
+            // Regex details: 2 letters, 1 dash, 2 digits
+            const formatRegex = /^[A-Z]{2}-\d{2}$/; 
+            
+            if (!formatRegex.test(dCode)) {
+                designInput.classList.add('input-error');
+                designError.style.display = "block";
+                designInput.focus();
+                return; // Stop function execution immediately
+            }
+        }
+
         let finalMessage = "";
-        const dCode = document.getElementById('design-input').value.trim();
         if(dCode) finalMessage += `Design: ${dCode}`;
 
         const textNote = document.getElementById('msg-input').value.trim();
@@ -223,7 +258,7 @@
             clickedBtn.style.opacity = "1";
             clickedBtn.disabled = false;
             
-            document.getElementById('design-input').value = "";
+            designInput.value = "";
             document.getElementById('msg-input').value = "";
             document.getElementById('file-input').value = "";
             uploadedImageUrl = "";
