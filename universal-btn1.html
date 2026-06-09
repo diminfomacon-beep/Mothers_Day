@@ -14,26 +14,22 @@
         body { 
             font-family: sans-serif; 
             margin: 0; 
-            padding: 10px; 
+            padding: 0; 
             background: transparent; 
         }
         .product-card {
-            background: white;
-            padding: 15px;
-            border-radius: 15px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            background: transparent;
+            padding: 0px;
             box-sizing: border-box;
             width: 100%;
         }
-        h3 { margin-top: 0; color: #333; margin-bottom: 5px; font-size: 16px; }
-        p { font-size: 12px; color: #666; margin: 0 0 10px 0; }
         .input-group { display: flex; flex-direction: column; gap: 8px; width: 100%; }
         .label-text { font-size: 11px; color: #000; font-weight: bold; margin-top: 2px; }
         
         input[type="text"], input[type="file"], select { 
             padding: 8px; border-radius: 10px; border: 1px solid #ddd; font-size: 13px; outline: none; width: 100%; box-sizing: border-box; 
         }
-        .button-row { display: flex; gap: 10px; margin-top: 15px; }
+        .button-row { display: flex; gap: 10px; margin-top: 12px; }
         .action-btn { 
             flex: 1; padding: 12px; font-weight: bold; border-radius: 10px; border: none; cursor: pointer; transition: 0.2s; color: white; text-align: center; font-size: 13px;
         }
@@ -49,9 +45,6 @@
 <body>
 
 <div class="product-card">
-    <h3 id="display-name">Loading Product...</h3>
-    <p>Customize details below before adding to your shopping pool.</p>
-    
     <div class="input-group">
         <label class="label-text">Design Code (Optional):</label>
         <input type="text" id="design-input" placeholder="e.g., FD-2026">
@@ -90,8 +83,6 @@
     const baseName = params.get('name') ? params.get('name').replace(/_/g, ' ') : "Custom Product";
     const basePrice = parseFloat(params.get('price')) || 0.00;
     const rawVars = params.get('vars') || "";
-
-    document.getElementById('display-name').textContent = baseName + ` ($${basePrice.toFixed(2)})`;
 
     const dropdownContainer = document.getElementById('dynamic-dropdowns-container');
     
@@ -201,7 +192,6 @@
 
         const finalUnitPrice = basePrice + totalAddonCost;
 
-        // Visual feedback variables
         const clickedBtn = targetPool === 'cart' ? document.getElementById('cart-btn') : document.getElementById('bundle-btn');
         const originalText = clickedBtn.textContent;
 
@@ -224,7 +214,6 @@
             localStorage.setItem('my_custom_bundle', JSON.stringify(bundle));
         }
 
-        // --- VISUAL SUCCESS FEEDBACK & CLEAN AUTO-RESET ---
         clickedBtn.textContent = "✓ Added!";
         clickedBtn.style.opacity = "0.7";
         clickedBtn.disabled = true;
@@ -234,14 +223,12 @@
             clickedBtn.style.opacity = "1";
             clickedBtn.disabled = false;
             
-            // Clear out form text boxes and custom image paths for the next entry
             document.getElementById('design-input').value = "";
             document.getElementById('msg-input').value = "";
             document.getElementById('file-input').value = "";
             uploadedImageUrl = "";
             if(document.getElementById('upload-status')) document.getElementById('upload-status').textContent = "";
             
-            // Reset dropdown select values to default position
             optionMenus.forEach(menu => menu.selectedIndex = 0);
         }, 2000);
     }
