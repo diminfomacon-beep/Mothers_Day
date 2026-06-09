@@ -72,13 +72,12 @@
             <div id="upload-status" class="status"></div>
         </div>
         
-        <!-- Target area where dynamic dropdowns from sheets are built -->
         <div id="dynamic-dropdowns-container"></div>
     </div>
 
     <div class="button-row">
-        <button class="action-btn btn-cart" onclick="addItem('cart')">Add to Cart</button>
-        <button class="action-btn btn-bundle" onclick="addItem('bundle')">Add to Bundle</button>
+        <button id="cart-btn" class="action-btn btn-cart" onclick="addItem('cart')">Add to Cart</button>
+        <button id="bundle-btn" class="action-btn btn-bundle" onclick="addItem('bundle')">Add to Bundle</button>
     </div>
 </div>
 
@@ -87,7 +86,6 @@
     const UPLOAD_PRESET = "dim_image_uploads"; 
     let uploadedImageUrl = "";
 
-    // Parse parameters out of Google Sheets generated link
     const params = new URLSearchParams(window.location.search);
     const baseName = params.get('name') ? params.get('name').replace(/_/g, ' ') : "Custom Product";
     const basePrice = parseFloat(params.get('price')) || 0.00;
@@ -95,36 +93,27 @@
 
     document.getElementById('display-name').textContent = baseName + ` ($${basePrice.toFixed(2)})`;
 
-    // --- PARSE AND BUILD SHEET VARIETIES ---
     const dropdownContainer = document.getElementById('dynamic-dropdowns-container');
     
     if (rawVars.trim() !== "") {
-        // Split option groups by |||
         const groups = rawVars.split('|||');
-        
         groups.forEach((group, index) => {
             if (!group.trim()) return;
-            
             let labelText = "Option:";
             let optionsString = group;
             
-            // Check if there is a group header like "Size:"
             if (group.includes(':')) {
                 const parts = group.split(':');
                 labelText = parts[0].trim();
                 optionsString = parts[1];
             }
             
-            // Split items inside group by comma
             const items = optionsString.split(',');
-            
             if (items.length > 0) {
-                // Create element label
                 const lbl = document.createElement('label');
                 lbl.className = "label-text";
                 lbl.textContent = labelText + ":";
                 
-                // Create select dropdown menu
                 const sel = document.createElement('select');
                 sel.className = "dynamic-option-menu";
                 sel.dataset.groupName = labelText;
@@ -134,7 +123,6 @@
                     let valName = item.trim();
                     let priceModifier = 0;
                     
-                    // Separate text from price modification values using |
                     if (item.includes('|')) {
                         const itemParts = item.split('|');
                         valName = itemParts[0].trim();
@@ -199,7 +187,6 @@
             finalMessage += (finalMessage ? ` | Pic: ${uploadedImageUrl}` : `Pic: ${uploadedImageUrl}`);
         }
 
-        // Loop dynamic drops to calculate combined options and total add-on cost
         let totalAddonCost = 0;
         const optionMenus = document.querySelectorAll('.dynamic-option-menu');
         
@@ -214,6 +201,10 @@
 
         const finalUnitPrice = basePrice + totalAddonCost;
 
+        // Visual feedback variables
+        const clickedBtn = targetPool === 'cart' ? document.getElementById('cart-btn') : document.getElementById('bundle-btn');
+        const originalText = clickedBtn.textContent;
+
         if (targetPool === 'cart') {
             let cart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
             cart.push({
@@ -223,7 +214,6 @@
                 qty: 1
             });
             localStorage.setItem('final_shopping_cart', JSON.stringify(cart));
-            alert("Added to regular shopping cart!");
         } else {
             let bundle = JSON.parse(localStorage.getItem('my_custom_bundle')) || [];
             bundle.push({
@@ -232,18 +222,28 @@
                 message: finalMessage || "Bundle item specification"
             });
             localStorage.setItem('my_custom_bundle', JSON.stringify(bundle));
-            alert("Added to bundle savings pool!");
         }
 
-        // Reset UI Form Elements
-        document.getElementById('design-input').value = "";
-        document.getElementById('msg-input').value = "";
-        document.getElementById('file-input').value = "";
-        uploadedImageUrl = "";
-        if(document.getElementById('upload-status')) document.getElementById('upload-status').textContent = "";
-        
-        // Redirect out of iframe to the Checkout interface
-        window.open('https://diminfomacon-beep.github.io/Mothers_Day/checkout1.html', '_blank');
+        // --- VISUAL SUCCESS FEEDBACK & CLEAN AUTO-RESET ---
+        clickedBtn.textContent = "✓ Added!";
+        clickedBtn.style.opacity = "0.7";
+        clickedBtn.disabled = true;
+
+        setTimeout(() => {
+            clickedBtn.textContent = originalText;
+            clickedBtn.style.opacity = "1";
+            clickedBtn.disabled = false;
+            
+            // Clear out form text boxes and custom image paths for the next entry
+            document.getElementById('design-input').value = "";
+            document.getElementById('msg-input').value = "";
+            document.getElementById('file-input').value = "";
+            uploadedImageUrl = "";
+            if(document.getElementById('upload-status')) document.getElementById('upload-status').textContent = "";
+            
+            // Reset dropdown select values to default position
+            optionMenus.forEach(menu => menu.selectedIndex = 0);
+        }, 2000);
     }
 </script>
 </body>
