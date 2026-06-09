@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Processing Selection...</title>
+    <style>
+        :root {
+            --accent: #2F6B64;
+            --secondary: #e75480;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: transparent;
+            overflow: hidden;
+        }
+        .button-row {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+        .action-btn {
+            flex: 1;
+            padding: 12px;
+            font-weight: bold;
+            font-size: 13px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            color: white;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            white-space: nowrap;
+        }
+        .btn-cart { background-color: var(--accent); }
+        .btn-bundle { background-color: var(--secondary); }
+    </style>
+</head>
+<body>
+
+    <div class="button-row">
+        <button class="action-btn btn-cart" onclick="handleAction('cart')">Add to Cart</button>
+        <button class="action-btn btn-bundle" onclick="handleAction('bundle')">Add to Bundle</button>
+    </div>
+
+<script>
+    // Extract query details from the Google Sheet URL context
+    const params = new URLSearchParams(window.location.search);
+    const itemName = params.get('name') ? params.get('name').replace(/_/g, ' ') : "Custom Item";
+    const itemPrice = parseFloat(params.get('price')) || 0.00;
+    const itemVars = params.get('vars') || "Standard specifications";
+
+    function handleAction(targetPool) {
+        if (targetPool === 'cart') {
+            let cart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
+            cart.push({
+                name: itemName,
+                price: itemPrice,
+                details: itemVars,
+                qty: 1
+            });
+            localStorage.setItem('final_shopping_cart', JSON.stringify(cart));
+        } else {
+            let bundle = JSON.parse(localStorage.getItem('my_custom_bundle')) || [];
+            bundle.push({
+                name: itemName,
+                price: itemPrice,
+                message: itemVars
+            });
+            localStorage.setItem('my_custom_bundle', JSON.stringify(bundle));
+        }
+
+        // Seamlessly route them to your dedicated checkout interface in a new window tab
+        window.open('https://diminfomacon-beep.github.io/Mothers_Day/checkout.html', '_blank');
+    }
+</script>
+</body>
+</html>
