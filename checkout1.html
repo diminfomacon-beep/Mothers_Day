@@ -204,4 +204,189 @@
             // Shipping Logic
             const deliveryType = document.querySelector('input[name="delivery"]:checked').value;
             const selectedRegion = document.getElementById('ship-region').value;
-            let
+            let shippingCost = 0;
+
+            if (deliveryType === 'shipping') {
+                document.getElementById('shipping-options').style.display = 'block';
+                if (selectedRegion === "US") {
+                    shippingCost = 9.50;
+                } else if (selectedRegion === "CA") {
+                    shippingCost = totalQty >= 8 ? 75.00 : (totalQty >= 4 ? 40.00 : 25.00);
+                } else {
+                    shippingCost = totalQty >= 8 ? 135.00 : (totalQty >= 4 ? 95.00 : 65.00);
+                }
+            } else {
+                document.getElementById('shipping-options').style.display = 'none';
+            }
+
+            let finalTaxableBase = runningSubtotal - promoDiscountAmt;
+            if (finalTaxableBase < 0) finalTaxableBase = 0;
+            
+            let tax = finalTaxableBase * 0.04;
+            let grandTotal = finalTaxableBase + shippingCost + tax;
+
+            document.getElementById('sub-total').textContent = baseTotal.toFixed(2);
+            
+            if (bundleDiscountAmt > 0) {
+                document.getElementById('bundle-discount-row').style.display = "block";
+                document.getElementById('bundle-discount-amt').textContent = bundleDiscountAmt.toFixed(2);
+            } else {
+                document.getElementById('bundle-discount-row').style.display = "none";
+            }
+            
+            document.getElementById('promo-discount-amt').textContent = promoDiscountAmt.toFixed(2);
+            document.getElementById('shipping-amt').textContent = shippingCost.toFixed(2);
+            document.getElementById('tax-amt').textContent = tax.toFixed(2);
+            document.getElementById('grand-total').textContent = grandTotal.toFixed(2);
+
+            return grandTotal.toFixed(2);
+        }
+
+        function sendPushNotification(total) {
+            fetch("https://api.pushover.net/1/messages.json", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams({
+                    token: "au8jzsjjx9wz4dxvgc95h9nj86mzgz", 
+                    user: "ueb3ouifx46g56n7by3rfh198nmagb",   
+                    title: "New Sale! 💰",
+                    message: "You just received an order for $" + total,
+                    priority: 1
+                })
+            });
+        }
+
+        async function sendOrderEmail() {
+            const s = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
+            const cb = JSON.parse(localStorage.getItem('my_custom_bundle')) || [];
+            const allItems = [...s, ...cb];
+            let photoLink = "";
+
+            allItems.forEach(item => {
+                const text = (item.details || "") + (item.message || "");
+                const match = text.match(/https?:\/\/[^\s]+/);
+                if (match && !photoLink) photoLink = match[0];
+            });
+
+            let summary = "";
+            s.forEach(i => summary += `• ${i.name} (x${i.qty})\n  Details: ${i.details || 'None'}\n\n`);
+            cb.forEach(i => summary += `• Bundle Item: ${i.name}\n  Details: ${i.message || 'None'}\n\n`);
+
+            const templateParams = {
+                from_name: "Website Customer",    
+                from_email: "Check PayPal",       
+                cust_name: "Order Received",      
+                design_image: photoLink,          
+                order_details: summary,           
+                grand_total: document.getElementById('grand-total').textContent
+            };
+
+            return emailjs.send('service_ezq1fuc', 'template_ut1r5xk', templateParams)
+                .then(() => console.log("Email Sent Successfully"))
+                .catch(err => console.error("Email Failed:", err));
+        }
+
+        paypal.Buttons({
+            createOrder: (data, actions) => {
+                const standardItems = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
+                const customBundleItems = JSON.parse(localStorage.getItem('my_custom_bundle')) || [];
+
+                let allItems = [];
+
+                standardItems.forEach(item => {
+                    allItems.push({
+                        name: item.name,
+                        description: (item.details || "Standard Item").substring(0, 127),
+                        unit_amount: { currency_code: "USD", value: item.price.toFixed(2) },
+                        quantity: item.qty || 1
+                    });
+                });
+
+                customBundleItems.forEach(item => {
+                    allItems.push({
+                        name: `Bundle: ${item.name}`,
+                        description: (item.message || "Bundle Line Item").substring(0, 127),
+                        unit_amount: { currency_code: "USD", value: item.price.toFixed(2) },
+                        quantity: 1
+                    });
+                });
+
+                const subtotal = parseFloat(document.getElementById('sub-total').textContent);
+                const bundleDiscount = parseFloat(document.getElementById('bundle-discount-amt').textContent) || 0;
+                const promoDiscount = parseFloat(document.getElementById('promo-discount-amt').textContent) || 0;
+                const totalDeductions = bundleDiscount + promoDiscount;
+
+                if (totalDeductions > 0) {
+                    allItems.push({
+                        name: "Total Applied Reductions",
+                        description: "Bundle multi-tier scaling metrics and coupon savings",
+                        unit_amount: { currency_code: "USD", value: (-totalDeductions).toFixed(2) },
+                        quantity: 1
+                    });
+                }
+
+                const shipping = document.getElementById('shipping-amt').textContent;
+                const tax = document.getElementById('tax-amt').textContent;
+                const grandTotal = document.getElementById('grand-total').textContent;
+
+                return actions.order.create({
+                    purchase_units: [{
+                        amount: {
+                            currency_code: "USD",
+                            value: grandTotal,
+                            breakdown: {
+                                item_total: { currency_code: "USD", value: (subtotal - totalDeductions).toFixed(2) },
+                                shipping: { currency_code: "USD", value: shipping },
+                                tax_total: { currency_code: "USD", value: tax }
+                            }
+                        },
+                        items: allItems 
+                    }]
+                });
+            },
+            onApprove: (data, actions) => {
+                return actions.order.capture().then(async (details) => {
+                    const total = document.getElementById('grand-total').textContent;
+
+                    try { sendPushNotification(total); } catch(e) {}
+
+                    if (window.emailjs) {
+                        try { await sendOrderEmail(); } catch (err) {}
+                    }
+
+                    ['final_shopping_cart', 'my_bundle', 'my_custom_bundle'].forEach(k => localStorage.removeItem(k));
+                    window.location.href = "thank-you.html";
+                });
+            }
+        }).render('#paypal-button-container');
+
+        // --- GOOGLE SITES / IFRAME STORAGE INTEGRATION ---
+        function processIncomingUrlParameters() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const action = urlParams.get('action');
+            const name = urlParams.get('name');
+            const price = parseFloat(urlParams.get('price'));
+            const details = urlParams.get('details') || "Standard Specifications";
+
+            if (action && name && !isNaN(price)) {
+                if (action === 'add-cart') {
+                    let cart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
+                    cart.push({ name: name, price: price, details: details, qty: 1 });
+                    localStorage.setItem('final_shopping_cart', JSON.stringify(cart));
+                } else if (action === 'add-bundle') {
+                    let bundle = JSON.parse(localStorage.getItem('my_custom_bundle')) || [];
+                    bundle.push({ name: name, price: price, message: details });
+                    localStorage.setItem('my_custom_bundle', JSON.stringify(bundle));
+                }
+                
+                // Instantly wipe query data out of address bar so refreshing won't log duplicates
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        }
+
+        // Initialize engine steps
+        processIncomingUrlParameters();
+        renderMasterCart();
+    </script>
+</body>
+</html>
