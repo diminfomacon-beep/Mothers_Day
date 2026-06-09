@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grab & Go Direct Button</title>
+    <style>
+        :root {
+            --accent: #2F6B64; /* Matches your core theme color */
+        }
+        body { 
+            font-family: sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            background: transparent; 
+            overflow: hidden;
+        }
+        .button-row { 
+            width: 100%; 
+            box-sizing: border-box; 
+        }
+        .btn-cart { 
+            width: 100%;
+            padding: 12px; 
+            font-weight: bold; 
+            border-radius: 10px; 
+            border: none; 
+            cursor: pointer; 
+            transition: 0.2s; 
+            color: white; 
+            text-align: center; 
+            font-size: 13px;
+            background-color: var(--accent);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .btn-cart:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+
+<div class="button-row">
+    <button id="cart-btn" class="btn-cart" onclick="addGrabAndGoItem()">Add to Cart</button>
+</div>
+
+<script>
+    // Grab the setup parameters from the Google Sites embed link
+    const params = new URLSearchParams(window.location.search);
+    const itemName = params.get('name') ? params.get('name').replace(/_/g, ' ') : "Grab & Go Item";
+    const itemPrice = parseFloat(params.get('price')) || 0.00;
+
+    function addGrabAndGoItem() {
+        const clickedBtn = document.getElementById('cart-btn');
+        
+        // Read the main cart array from storage
+        let cart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
+        
+        // Push the item as an instant standard purchase item
+        cart.push({
+            name: itemName,
+            price: itemPrice,
+            details: "Grab & Go (Ready to Ship As-Is)",
+            qty: 1
+        });
+        
+        // Save back to master local storage
+        localStorage.setItem('final_shopping_cart', JSON.stringify(cart));
+
+        // Temporary success visual feedback
+        clickedBtn.textContent = "✓ Added!";
+        clickedBtn.style.backgroundColor = "#28a745"; // Success green flash
+        clickedBtn.disabled = true;
+
+        setTimeout(() => {
+            clickedBtn.textContent = "Add to Cart";
+            clickedBtn.style.backgroundColor = "var(--accent)";
+            clickedBtn.disabled = false;
+        }, 1500);
+    }
+</script>
+</body>
+</html>
