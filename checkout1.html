@@ -9,6 +9,9 @@
         window.onload = function() {
             if (window.emailjs) {
                 emailjs.init({ publicKey: "1LZbCPvH49G_r0ypB" });
+                console.log("EmailJS loaded successfully.");
+            } else {
+                console.error("EmailJS failed to load due to browser blocking.");
             }
         };
     </script>
@@ -27,7 +30,7 @@
             border: 1px solid rgba(0,0,0,0.05);
         }
         .bundle-color-1 { background-color: #fff3f6; } /* Soft Rose */
-        .bundle-color-2 { background-color: #f0f7f4; } /* Soft Mint Mint */
+        .bundle-color-2 { background-color: #f0f7f4; } /* Soft Mint */
         .bundle-color-3 { background-color: #f4f7fa; } /* Soft Slate Blue */
         .bundle-color-4 { background-color: #fbf7f0; } /* Soft Cream Gold */
         
@@ -118,7 +121,6 @@
                 totalQty += qty;
 
                 if (item.isPackagedBundle) {
-                    // Choose alternating pastel container background styles
                     const colorIndex = ((item.bundleIndexNumber - 1) % 4) + 1; 
                     const subItemsRaw = item.details.split(' || ');
                     
@@ -142,7 +144,6 @@
                             ${subItemsHtml}
                         </div>`;
                 } else {
-                    // Render standard single catalog additions
                     let cleanDetails = (item.details || '').replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" style="color: #395763; text-decoration: underline;">View Photo</a>');
                     htmlString += `
                         <div class="cart-item">
@@ -163,26 +164,56 @@
 
             container.innerHTML = htmlString;
 
-            // Promo engine operations
+            // --- Fixed #5: Restored flat-rate discount configuration and floor logic ---
             const promoInput = document.getElementById('promo-input').value.trim().toUpperCase();
             const promoMsg = document.getElementById('promo-msg');
             let promoDiscountAmt = 0;
-            const validPromos = { "MOTHERSDAY": 0.10, "VIP20": 0.20 };
+            const validPromos = { 
+                "MOTHERSDAY": { type: "percent", value: 0.10 },
+                "VIP20": { type: "percent", value: 0.20 },
+                "SAVE10": { type: "flat", value: 10.00 }
+            };
 
-            if (promoInput && validPromos[promoInput]) {
-                promoDiscountAmt = baseTotal * validPromos[promoInput];
-                promoMsg.style.color = "#28a745"; promoMsg.textContent = "Promo Code applied!";
-                document.getElementById('promo-discount-row').style.display = "block";
-            } else if (promoInput) {
-                promoMsg.style.color = "#dc3545"; promoMsg.textContent = "Invalid code.";
+            if (promoInput !== "") {
+                if (validPromos[promoInput]) {
+                    const promo = validPromos[promoInput];
+                    promoDiscountAmt = promo.type === "percent" ? baseTotal * promo.value : promo.value;
+                    if (promoDiscountAmt > baseTotal) promoDiscountAmt = baseTotal; // Protection floor logic
+                    
+                    promoMsg.style.color = "#28a745"; 
+                    promoMsg.textContent = "Promo Code applied!";
+                    document.getElementById('promo-discount-row').style.display = "block";
+                } else {
+                    promoMsg.style.color = "#dc3545"; 
+                    promoMsg.textContent = "Invalid or expired code.";
+                    document.getElementById('promo-discount-row').style.display = "none";
+                }
+            } else {
+                promoMsg.textContent = "";
                 document.getElementById('promo-discount-row').style.display = "none";
             }
 
-            // Shipping computations
+            // --- Fixed #2: Restored scaled shipping calculations for Canada & International ---
             const deliveryType = document.querySelector('input[name="delivery"]:checked').value;
-            let shippingCost = (deliveryType === 'shipping' && document.getElementById('ship-region').value === "US") ? 9.50 : 0;
-            if (deliveryType === 'shipping') document.getElementById('shipping-options').style.display = 'block';
-            else document.getElementById('shipping-options').style.display = 'none';
+            let shippingCost = 0;
+
+            if (deliveryType === 'shipping') {
+                document.getElementById('shipping-options').style.display = 'block';
+                const selectedRegion = document.getElementById('ship-region').value;
+                if (selectedRegion === "US") {
+                    shippingCost = 9.50;
+                } else if (selectedRegion === "CA") {
+                    if (totalQty >= 8) shippingCost = 75.00;
+                    else if (totalQty >= 4) shippingCost = 40.00;
+                    else shippingCost = 25.00;
+                } else if (selectedRegion === "INTL") {
+                    if (totalQty >= 8) shippingCost = 135.00;
+                    else if (totalQty >= 4) shippingCost = 95.00;
+                    else shippingCost = 65.00;
+                }
+            } else {
+                document.getElementById('shipping-options').style.display = 'none';
+            }
 
             let finalTaxable = Math.max(0, baseTotal - promoDiscountAmt);
             let tax = finalTaxable * 0.04;
@@ -195,12 +226,61 @@
             document.getElementById('grand-total').textContent = grandTotal.toFixed(2);
         }
 
+        // --- Fixed #1: Restored Pushover backend logic ---
+        function sendPushNotification(total) {
+            fetch("https://api.pushover.net/1/messages.json", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams({
+                    token: "au8jzsjjx9wz4dxvgc95h9nj86mzgz", 
+                    user: "ueb3ouifx46g56n7by3rfh198nmagb",   
+                    title: "New Sale! 💰",
+                    message: "You just received an order for $" + total,
+                    priority: 1
+                })
+            });
+        }
+
+        // --- Fixed #1: Restored EmailJS item parsing logic ---
+        async function sendOrderEmail() {
+            const cartItems = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
+            let photoLink = "";
+
+            cartItems.forEach(item => {
+                const text = (item.details || "");
+                const match = text.match(/https?:\/\/[^\s]+/);
+                if (match && !photoLink) photoLink = match[0];
+            });
+
+            let summary = "";
+            cartItems.forEach(i => {
+                summary += `• ${i.name} (x${i.qty})\n  Details: ${i.details || 'None'}\n\n`;
+            });
+
+            const templateParams = {
+                from_name: "Website Customer",    
+                from_email: "Check PayPal",       
+                cust_name: "Order Received",      
+                design_image: photoLink,          
+                order_details: summary,           
+                grand_total: document.getElementById('grand-total').textContent
+            };
+
+            console.log("Sending to EmailJS:", templateParams);
+
+            return emailjs.send('service_ezq1fuc', 'template_ut1r5xk', templateParams)
+                .then(() => console.log("Email Sent Successfully"))
+                .catch(err => console.error("Email Failed:", err));
+        }
+
         paypal.Buttons({
             createOrder: (data, actions) => {
                 const cartItems = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
+                
+                // --- Fixed #4: Injected variety and addons into the PayPal item descriptions ---
                 let allItems = cartItems.map(item => ({
                     name: item.name,
-                    description: (item.details || "Store Item").substring(0, 127),
+                    description: `${item.variety || ''} ${item.addons || ''} ${(item.details || "Store Item")}`.trim().substring(0, 127),
                     unit_amount: { currency_code: "USD", value: item.price.toFixed(2) },
                     quantity: item.qty || 1
                 }));
@@ -231,6 +311,26 @@
             },
             onApprove: (data, actions) => {
                 return actions.order.capture().then(async () => {
+                    console.log("Payment Captured");
+                    const total = document.getElementById('grand-total').textContent;
+
+                    // --- Fixed #1: Re-implemented push and email dispatch steps during execution ---
+                    try {
+                        sendPushNotification(total);
+                    } catch(e) { console.log("Push failed"); }
+
+                    if (window.emailjs) {
+                        try {
+                            await sendOrderEmail();
+                            console.log("Email attempt finished");
+                        } catch (err) {
+                            console.error("Email function failed:", err);
+                        }
+                    } else {
+                        console.error("EmailJS not defined, skipping email step.");
+                    }
+
+                    // Always clear cart components and perform route update
                     ['final_shopping_cart', 'my_custom_bundle'].forEach(k => localStorage.removeItem(k));
                     window.location.href = "thank-you.html";
                 });
