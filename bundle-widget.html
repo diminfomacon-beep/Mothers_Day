@@ -12,188 +12,54 @@
             --bg-light: #CAE4DB;
             --light-gray: #f9f9f9;
         }
-        body {
-            font-family: sans-serif;
-            margin: 0;
-            padding: 15px;
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            color: #333;
-        }
-        .bundle-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid var(--secondary);
-            padding-bottom: 10px;
-            margin-bottom: 15px;
-        }
-        .bundle-header h2 {
-            margin: 0;
-            font-size: 18px;
-            color: var(--primary);
-        }
-        .item-count-badge {
-            background: var(--secondary);
-            color: white;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 13px;
-        }
-        .smart-tip-box {
-            background: #fff5f7;
-            border-left: 4px solid var(--secondary);
-            padding: 10px;
-            border-radius: 4px;
-            font-size: 13px;
-            margin-bottom: 15px;
-            font-weight: 500;
-        }
-        .bundle-list {
-            max-height: 240px;
-            overflow-y: auto;
-            margin-bottom: 15px;
-        }
-        .bundle-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid #eee;
-            font-size: 13px;
-        }
-        .item-info {
-            flex: 1;
-            padding-right: 10px;
-        }
-        .item-title {
-            font-weight: bold;
-            color: #222;
-        }
-        .item-meta {
-            font-size: 11px;
-            color: #666;
-            margin-top: 2px;
-            line-height: 1.3;
-        }
-        .qty-controls {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-right: 15px;
-        }
-        .qty-btn {
-            background: #eee;
-            border: none;
-            width: 24px;
-            height: 24px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .qty-btn:hover { background: #ddd; }
-        .remove-link {
-            color: #dc3545;
-            background: none;
-            border: none;
-            font-size: 11px;
-            cursor: pointer;
-            text-decoration: underline;
-            padding: 0;
-            margin-top: 4px;
-            display: inline-block;
-        }
-        .item-price {
-            font-weight: bold;
-            min-width: 65px;
-            text-align: right;
-        }
-        .pricing-summary {
-            background: var(--light-gray);
-            padding: 12px;
-            border-radius: 10px;
-            font-size: 13px;
-        }
-        .price-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 6px;
-        }
-        .price-row:last-child { margin-bottom: 0; }
+        body { font-family: sans-serif; margin: 0; padding: 15px; background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); color: #333; }
+        .bundle-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--secondary); padding-bottom: 10px; margin-bottom: 15px; }
+        .bundle-header h2 { margin: 0; font-size: 18px; color: var(--primary); }
+        .item-count-badge { background: var(--secondary); color: white; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 13px; }
+        .smart-tip-box { background: #fff5f7; border-left: 4px solid var(--secondary); padding: 10px; border-radius: 4px; font-size: 13px; margin-bottom: 15px; font-weight: 500; }
+        .bundle-list { max-height: 200px; overflow-y: auto; margin-bottom: 15px; }
+        .bundle-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; font-size: 13px; }
+        .item-info { flex: 1; padding-right: 10px; }
+        .item-title { font-weight: bold; color: #222; }
+        .item-meta { font-size: 11px; color: #666; margin-top: 2px; line-height: 1.3; }
+        .qty-controls { display: flex; align-items: center; gap: 8px; margin-right: 15px; }
+        .qty-btn { background: #eee; border: none; width: 24px; height: 24px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .remove-link { color: #dc3545; background: none; border: none; font-size: 11px; cursor: pointer; text-decoration: underline; padding: 0; margin-top: 4px; }
+        .item-price { font-weight: bold; min-width: 65px; text-align: right; }
+        .pricing-summary { background: var(--light-gray); padding: 12px; border-radius: 10px; font-size: 13px; }
+        .price-row { display: flex; justify-content: space-between; margin-bottom: 6px; }
         .discount-text { color: var(--secondary); font-weight: bold; }
-        .grand-total-row {
-            border-top: 2px dashed #ccc;
-            padding-top: 8px;
-            margin-top: 8px;
-            font-size: 15px;
-            font-weight: bold;
-            color: var(--accent);
-        }
-        .action-row {
-            margin-top: 15px;
-            display: flex;
-            gap: 10px;
-        }
-        .checkout-btn {
-            flex: 1;
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 10px;
-            font-weight: bold;
-            cursor: pointer;
-            text-align: center;
-            text-decoration: none;
-            font-size: 14px;
-        }
-        .checkout-btn:hover { opacity: 0.9; }
-        .empty-msg {
-            text-align: center;
-            color: #888;
-            padding: 30px 10px;
-            font-size: 14px;
-            margin: 0;
-        }
+        .grand-total-row { border-top: 2px dashed #ccc; padding-top: 8px; margin-top: 8px; font-size: 15px; font-weight: bold; color: var(--accent); }
+        .action-row { margin-top: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .commit-bundle-btn { background: var(--secondary); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; text-align: center; font-size: 14px; }
+        .commit-bundle-btn:disabled { background: #ccc; cursor: not-allowed; }
+        .empty-msg { text-align: center; color: #888; padding: 30px 10px; font-size: 14px; margin: 0; }
+        .success-banner { background: #e6f4ea; color: #137333; border: 1px solid #137333; padding: 10px; border-radius: 8px; font-size: 13px; text-align: center; font-weight: bold; display: none; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
+<div id="success-flash" class="success-banner">📦 Bundle packaged and added to main cart successfully! Ready to build another.</div>
+
 <div class="bundle-header">
-    <h2>📦 Your Custom Bundle Pool</h2>
+    <h2>📦 Current Bundle Crate Builder</h2>
     <div id="badge-count" class="item-count-badge">0 Items</div>
 </div>
 
-<div id="smart-tip" class="smart-tip-box">
-    Add your first item to start unlocked tier savings!
-</div>
+<div id="smart-tip" class="smart-tip-box">Add items to unlock volume discount tiers!</div>
 
 <div class="bundle-list" id="bundle-items-container">
-    <p class="empty-msg">Your bundle pool is empty. Click "Add to Bundle" on products above to start building!</p>
+    <p class="empty-msg">Your bundle builder is empty. Click "Add to Bundle" on custom items above!</p>
 </div>
 
 <div class="pricing-summary">
-    <div class="price-row">
-        <span>Subtotal (Qualifying Items):</span>
-        <span>$<span id="sum-subtotal">0.00</span></span>
-    </div>
-    <div class="price-row">
-        <span>Bundle Discount Amount:</span>
-        <span class="discount-text">-$<span id="sum-discount">0.00</span></span>
-    </div>
-    <div class="price-row grand-total-row">
-        <span>Final Pool Total:</span>
-        <span>$<span id="sum-grandtotal">0.00</span></span>
-    </div>
+    <div class="price-row"><span>Subtotal (Qualifying):</span><span>$<span id="sum-subtotal">0.00</span></span></div>
+    <div class="price-row"><span>Bundle Discount Savings:</span><span class="discount-text">-$<span id="sum-discount">0.00</span></span></div>
+    <div class="price-row grand-total-row"><span>Bundle Total Price:</span><span>$<span id="sum-grandtotal">0.00</span></span></div>
 </div>
 
 <div class="action-row">
-    <a href="https://diminfomacon-beep.github.io/Mothers_Day/checkout1.html" target="_blank" class="checkout-btn">Proceed to Secure Checkout Page →</a>
+    <button id="commit-btn" class="commit-bundle-btn" onclick="packageBundleToCart()" disabled>Lock In & Add Bundle to Cart 🛒</button>
 </div>
 
 <script>
@@ -202,42 +68,39 @@
     function renderWidgetBundle() {
         let bundleItems = JSON.parse(localStorage.getItem('my_custom_bundle')) || [];
         const container = document.getElementById('bundle-items-container');
+        const commitBtn = document.getElementById('commit-btn');
         
         if (bundleItems.length === 0) {
-            container.innerHTML = '<p class="empty-msg">Your bundle pool is empty. Click "Add to Bundle" on products above to start building!</p>';
+            container.innerHTML = '<p class="empty-msg">Your bundle builder is empty. Click "Add to Bundle" on custom items above!</p>';
             document.getElementById('badge-count').textContent = "0 Items";
             document.getElementById('sum-subtotal').textContent = "0.00";
             document.getElementById('sum-discount').textContent = "0.00";
             document.getElementById('sum-grandtotal').textContent = "0.00";
             document.getElementById('smart-tip').innerHTML = "💡 Add items to unlock volume discount tiers!";
+            commitBtn.disabled = true;
             return;
         }
 
+        commitBtn.disabled = false;
         let htmlString = "";
         let qualifyingCount = 0;
         let runningSubtotal = 0;
 
         bundleItems.forEach((item, index) => {
             if (!item.qty) item.qty = 1;
-
             const isFreeItem = parseFloat(item.price) === 0;
+            if (!isFreeItem) qualifyingCount += item.qty;
+            
             const lineTotal = item.price * item.qty;
-
-            // Only items priced over $0.00 qualify for tier calculations
-            if (!isFreeItem) {
-                qualifyingCount += item.qty;
-            }
-
             runningSubtotal += lineTotal;
 
-            // Target fallback descriptions safely regardless of property name choice
-            let cleanDetails = item.message || item.details || "Standard specifications";
+            let cleanDetails = item.message || item.details || "Standard specs";
             cleanDetails = cleanDetails.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" style="color:var(--primary); font-weight:bold;">View Image</a>');
 
             htmlString += `
                 <div class="bundle-item">
                     <div class="item-info">
-                        <div class="item-title">${item.name} ${isFreeItem ? '<span style="color:green; font-size:10px;">(Free Item)</span>' : ''}</div>
+                        <div class="item-title">${item.name} ${isFreeItem ? '<span style="color:green; font-size:10px;">(Free)</span>' : ''}</div>
                         <div class="item-meta">${cleanDetails}</div>
                         <button class="remove-link" onclick="deleteBundleItem(${index})">Remove</button>
                     </div>
@@ -247,28 +110,25 @@
                         <button class="qty-btn" onclick="adjustBundleQty(${index}, 1)">+</button>
                     </div>
                     <div class="item-price">$${lineTotal.toFixed(2)}</div>
-                </div>
-            `;
+                </div>`;
         });
 
         container.innerHTML = htmlString;
         document.getElementById('badge-count').textContent = `${qualifyingCount} Qualifying Item${qualifyingCount !== 1 ? 's' : ''}`;
 
-        // --- DYNAMIC TIER CONFIGURATION ---
         let discountPct = 0;
         let tipMessage = "";
-
         if (qualifyingCount < 6) {
             discountPct = 0;
             const shortBy = 6 - qualifyingCount;
-            tipMessage = `🎉 <strong>Smart Tip:</strong> Add <strong>${shortBy} more</strong> qualifying item${shortBy !== 1 ? 's' : ''} to unlock a <strong>10% Discount</strong> across your whole bundle!`;
+            tipMessage = `🎉 <strong>Tip:</strong> Add <strong>${shortBy} more</strong> item${shortBy !== 1 ? 's' : ''} to unlock <strong>10% off</strong> this whole bundle!`;
         } else if (qualifyingCount >= 6 && qualifyingCount <= 10) {
             discountPct = 0.10;
             const shortBy = 11 - qualifyingCount;
-            tipMessage = `🔥 <strong>Tier 1 Unlocked (10% Off)!</strong> Add <strong>${shortBy} more</strong> item${shortBy !== 1 ? 's' : ''} to reach Tier 2 for a massive <strong>15% Discount</strong>!`;
+            tipMessage = `🔥 <strong>Tier 1 Unlocked (10% Off)!</strong> Add <strong>${shortBy} more</strong> to score a massive <strong>15% Discount</strong>!`;
         } else {
             discountPct = 0.15;
-            tipMessage = `🚀 <strong>Maximum Savings Activated (15% Off)!</strong> You've unlocked our top bundle discount rate!`;
+            tipMessage = `🚀 <strong>Maximum Savings Activated (15% Off)!</strong>`;
         }
 
         document.getElementById('smart-tip').innerHTML = tipMessage;
@@ -283,14 +143,8 @@
 
     function adjustBundleQty(index, offset) {
         let bundleItems = JSON.parse(localStorage.getItem('my_custom_bundle')) || [];
-        if (!bundleItems[index]) return;
-
         bundleItems[index].qty = (bundleItems[index].qty || 1) + offset;
-        
-        if (bundleItems[index].qty <= 0) {
-            bundleItems.splice(index, 1);
-        }
-        
+        if (bundleItems[index].qty <= 0) bundleItems.splice(index, 1);
         localStorage.setItem('my_custom_bundle', JSON.stringify(bundleItems));
         renderWidgetBundle();
     }
@@ -302,7 +156,48 @@
         renderWidgetBundle();
     }
 
-    // --- REALTIME IFRAME STORAGE COUPLING ---
+    function packageBundleToCart() {
+        let currentBundleItems = JSON.parse(localStorage.getItem('my_custom_bundle')) || [];
+        if (currentBundleItems.length === 0) return;
+
+        let mainCart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
+        
+        // Count existing packaged bundles in the main cart to give it a progressive label number
+        let bundleCount = 1;
+        mainCart.forEach(item => {
+            if (item.isPackagedBundle) bundleCount++;
+        });
+
+        const finalPrice = parseFloat(document.getElementById('sum-grandtotal').textContent);
+        
+        // Construct detailed manifestation of inner items for checkout rendering
+        let itemDescriptions = [];
+        currentBundleItems.forEach(i => {
+            itemDescriptions.push(`${i.name} (x${i.qty || 1}) [${i.message || i.details || 'Standard specs'}]`);
+        });
+
+        // Push the compiled bundle directly into the primary cart array as an unique entity
+        mainCart.push({
+            name: `Bundle Pack #${bundleCount}`,
+            price: finalPrice,
+            qty: 1,
+            details: itemDescriptions.join(' || '),
+            isPackagedBundle: true,
+            bundleIndexNumber: bundleCount // Used to generate unique alternating background colors
+        });
+
+        localStorage.setItem('final_shopping_cart', JSON.stringify(mainCart));
+        
+        // Wipe current temporary build window out completely
+        localStorage.removeItem('my_custom_bundle');
+        renderWidgetBundle();
+
+        // Flash a notification banner to the user
+        const banner = document.getElementById('success-flash');
+        banner.style.display = 'block';
+        setTimeout(() => { banner.style.display = 'none'; }, 3500);
+    }
+
     setInterval(() => {
         const checkRaw = localStorage.getItem('my_custom_bundle') || "[]";
         if (checkRaw !== lastStorageString) {
