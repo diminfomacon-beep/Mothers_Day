@@ -285,14 +285,20 @@
                     quantity: item.qty || 1
                 }));
 
-                const promoDiscount = parseFloat(document.getElementById('promo-discount-amt').textContent) || 0;
+               /*const promoDiscount = parseFloat(document.getElementById('promo-discount-amt').textContent) || 0;
                 if (promoDiscount > 0) {
                     allItems.push({
                         name: "Coupon Discount",
                         unit_amount: { currency_code: "USD", value: (-promoDiscount).toFixed(2) },
                         quantity: 1
                     });
-                }
+                }*/
+                purchase_units: [{
+                    amount: {
+                        currency_code: "USD",
+                        value: document.getElementById('grand-total').textContent
+                    }
+                }]
 
                 return actions.order.create({
                     purchase_units: [{
@@ -336,7 +342,25 @@
                 });
             }
         }).render('#paypal-button-container');
+        onError: function(err) {
+    console.error("PAYPAL ERROR:", err);
+},
 
+onCancel: function(data) {
+    console.log("PAYPAL CANCELLED:", data);
+},
+        createOrder: function(data, actions) {
+    console.log("Create Order Started");
+    
+    return actions.order.create({
+        purchase_units: [{
+            amount: {
+                currency_code: "USD",
+                value: "1.00"
+            }
+        }]
+    });
+},
         renderMasterCart();
     </script>
 </body>
