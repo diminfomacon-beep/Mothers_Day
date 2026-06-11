@@ -164,7 +164,7 @@
 
             container.innerHTML = htmlString;
 
-            // --- Fixed #5: Restored flat-rate discount configuration and floor logic ---
+            // --- Fixed Promo Configuration ---
             const promoInput = document.getElementById('promo-input').value.trim().toUpperCase();
             const promoMsg = document.getElementById('promo-msg');
             let promoDiscountAmt = 0;
@@ -178,7 +178,7 @@
                 if (validPromos[promoInput]) {
                     const promo = validPromos[promoInput];
                     promoDiscountAmt = promo.type === "percent" ? baseTotal * promo.value : promo.value;
-                    if (promoDiscountAmt > baseTotal) promoDiscountAmt = baseTotal; // Protection floor logic
+                    if (promoDiscountAmt > baseTotal) promoDiscountAmt = baseTotal; 
                     
                     promoMsg.style.color = "#28a745"; 
                     promoMsg.textContent = "Promo Code applied!";
@@ -193,7 +193,7 @@
                 document.getElementById('promo-discount-row').style.display = "none";
             }
 
-            // --- Fixed #2: Restored scaled shipping calculations for Canada & International ---
+            // --- Scaled Shipping Setup ---
             const deliveryType = document.querySelector('input[name="delivery"]:checked').value;
             let shippingCost = 0;
 
@@ -226,7 +226,7 @@
             document.getElementById('grand-total').textContent = grandTotal.toFixed(2);
         }
 
-        // --- Fixed #1: Restored Pushover backend logic ---
+        // --- Notifications ---
         function sendPushNotification(total) {
             fetch("https://api.pushover.net/1/messages.json", {
                 method: "POST",
@@ -241,7 +241,7 @@
             });
         }
 
-        // --- Fixed #1: Restored EmailJS item parsing logic ---
+        // --- Email Parsing and Delivery ---
         async function sendOrderEmail() {
             const cartItems = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
             let photoLink = "";
@@ -273,11 +273,14 @@
                 .catch(err => console.error("Email Failed:", err));
         }
 
+        // --- Consolidated PayPal Integration ---
         paypal.Buttons({
             createOrder: (data, actions) => {
+                console.log("Create Order Started");
                 const cartItems = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
+                const promoDiscount = parseFloat(document.getElementById('promo-discount-amt').textContent) || 0;
                 
-                // --- Fixed #4: Injected variety and addons into the PayPal item descriptions ---
+                // Parse individual items for PayPal window details
                 let allItems = cartItems.map(item => ({
                     name: item.name,
                     description: `${item.variety || ''} ${item.addons || ''} ${(item.details || "Store Item")}`.trim().substring(0, 127),
@@ -285,30 +288,30 @@
                     quantity: item.qty || 1
                 }));
 
-               /*const promoDiscount = parseFloat(document.getElementById('promo-discount-amt').textContent) || 0;
+                // Handle coupon adjustments smoothly if active
                 if (promoDiscount > 0) {
                     allItems.push({
-                        name: "Coupon Discount",
+                        name: "Coupon Discount Adjustment",
+                        description: "Applied Promotional Discount",
                         unit_amount: { currency_code: "USD", value: (-promoDiscount).toFixed(2) },
                         quantity: 1
                     });
-                }*/
-                purchase_units: [{
-                    amount: {
-                        currency_code: "USD",
-                        value: document.getElementById('grand-total').textContent
-                    }
-                }]
+                }
+
+                const calculatedSubtotal = parseFloat(document.getElementById('sub-total').textContent) || 0;
+                const shippingAmt = document.getElementById('shipping-amt').textContent;
+                const taxAmt = document.getElementById('tax-amt').textContent;
+                const grandTotal = document.getElementById('grand-total').textContent;
 
                 return actions.order.create({
                     purchase_units: [{
                         amount: {
                             currency_code: "USD",
-                            value: document.getElementById('grand-total').textContent,
+                            value: grandTotal,
                             breakdown: {
-                                item_total: { currency_code: "USD", value: (parseFloat(document.getElementById('sub-total').textContent) - promoDiscount).toFixed(2) },
-                                shipping: { currency_code: "USD", value: document.getElementById('shipping-amt').textContent },
-                                tax_total: { currency_code: "USD", value: document.getElementById('tax-amt').textContent }
+                                item_total: { currency_code: "USD", value: (calculatedSubtotal - promoDiscount).toFixed(2) },
+                                shipping: { currency_code: "USD", value: shippingAmt },
+                                tax_total: { currency_code: "USD", value: taxAmt }
                             }
                         },
                         items: allItems 
@@ -320,10 +323,9 @@
                     console.log("Payment Captured");
                     const total = document.getElementById('grand-total').textContent;
 
-                    // --- Fixed #1: Re-implemented push and email dispatch steps during execution ---
                     try {
                         sendPushNotification(total);
-                    } catch(e) { console.log("Push failed"); }
+                    } catch(e) { console.log("Push failed", e); }
 
                     if (window.emailjs) {
                         try {
@@ -336,31 +338,19 @@
                         console.error("EmailJS not defined, skipping email step.");
                     }
 
-                    // Always clear cart components and perform route update
                     ['final_shopping_cart', 'my_custom_bundle'].forEach(k => localStorage.removeItem(k));
                     window.location.href = "thank-you.html";
                 });
+            },
+            onCancel: function(data) {
+                console.log("PAYPAL CANCELLED:", data);
+            },
+            onError: function(err) {
+                console.error("PAYPAL ERROR:", err);
             }
         }).render('#paypal-button-container');
-        onError: function(err) {
-    console.error("PAYPAL ERROR:", err);
-},
 
-onCancel: function(data) {
-    console.log("PAYPAL CANCELLED:", data);
-},
-        createOrder: function(data, actions) {
-    console.log("Create Order Started");
-    
-    return actions.order.create({
-        purchase_units: [{
-            amount: {
-                currency_code: "USD",
-                value: "1.00"
-            }
-        }]
-    });
-},
+        // Initial setup run
         renderMasterCart();
     </script>
 </body>
