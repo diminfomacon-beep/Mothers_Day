@@ -2,7 +2,7 @@
   <div id="countdown-title" style="font-size: 30px; color:rgb(6, 6, 122)">HURRY!!!⏳FATHER'S DAY IS ALMOST HERE!⌛</div>
   <div id="countdown-title" style="font-size: 30px; color:rgb(6, 6, 122)">JUNE 21, 2026</div>
   <div id="countdown-title" style="font-size: 25px; color:rgb(32, 82, 129)">😥DON'T WAIT FOR THE LAST MINUTE⏱️</div>
-  <div id="countdown-title" style="font-size: 20px; color:rgb(122, 6, 12)">🎁Order By June 14, 2026 for guaranteed delivery📦</div>
+  <div id="countdown-title" style="font-size: 20px; color:rgb(122, 6, 12)">🎁Father's Day is in:📦</div>
   <div id="countdown" style="color:ffffff;">
     <div><span id="days">0</span><small>Days</small></div>
     <div><span id="hours">0</span><small>Hours</small></div>
@@ -51,7 +51,7 @@
 
 <script>
 // 🔥 SET YOUR LAUNCH DATE HERE
-const launchDate = new Date("June 14, 2026 00:00:00").getTime();
+const launchDate = new Date("June 21, 2026 00:00:00").getTime();
 
 const timer = setInterval(function() {
   const now = new Date().getTime();
@@ -59,7 +59,7 @@ const timer = setInterval(function() {
 
   if (distance < 0) {
     clearInterval(timer);
-    document.getElementById("countdown-container").innerHTML = "Still accepting order, ontime delivery no longer guaranteed";
+    document.getElementById("countdown-container").innerHTML = "Father's Day is here. Happy Father's Day to all the Dads";
     return;
   }
 
