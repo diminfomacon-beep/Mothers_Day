@@ -7,7 +7,7 @@
     <style>
         :root {
             --primary: #395763;
-            --accent: #2F6B64; /* Matches your core theme color */
+            --accent: #2F6B64;
         }
         body { 
             font-family: sans-serif; 
@@ -77,10 +77,8 @@
 <body>
 
 <div class="container">
-    <!-- Dynamic Variety Dropdowns Container -->
     <div id="dynamic-dropdowns-container"></div>
 
-    <!-- Live Dynamic Price Display -->
     <div class="price-container">
         <span>Price:</span>
         <span id="price-display" class="price-amount">$0.00</span>
@@ -92,7 +90,6 @@
 </div>
 
 <script>
-    // Grab the setup parameters from the Google Sites embed link
     const params = new URLSearchParams(window.location.search);
     const itemName = params.get('name') ? params.get('name').replace(/_/g, ' ') : "Grab & Go Item";
     const basePrice = parseFloat(params.get('price')) || 0.00;
@@ -100,7 +97,6 @@
 
     const dropdownContainer = document.getElementById('dynamic-dropdowns-container');
 
-    // Calculate total price based on selected variety modifiers
     function calculateTotalPrice() {
         let totalAddonCost = 0;
         const optionMenus = document.querySelectorAll('.dynamic-option-menu');
@@ -115,64 +111,62 @@
         return basePrice + totalAddonCost;
     }
 
-    // Update displayed price label
     function updatePriceDisplay() {
         const currentPrice = calculateTotalPrice();
         document.getElementById('price-display').textContent = `$${currentPrice.toFixed(2)}`;
     }
 
-    // Parse URL variety parameter and dynamically build dropdowns
+    // Parse rawVars generated from Google Sheets (Col A + Col B + Col C)
     if (rawVars.trim() !== "") {
-        const groups = rawVars.split('|||');
-        groups.forEach((group) => {
-            if (!group.trim()) return;
-            let labelText = "Option:";
-            let optionsString = group;
-            
-            if (group.includes(':')) {
-                const parts = group.split(':');
-                labelText = parts[0].trim();
-                optionsString = parts[1];
-            }
-            
-            const items = optionsString.split(',');
-            if (items.length > 0) {
-                const lbl = document.createElement('label');
-                lbl.className = "label-text";
-                lbl.textContent = labelText + ":";
-                
-                const sel = document.createElement('select');
-                sel.className = "dynamic-option-menu";
-                sel.dataset.groupName = labelText;
-                
-                // Recalculate price whenever option selection changes
-                sel.addEventListener('change', updatePriceDisplay);
+        // Strip out leading Column A (Item Name) and Column B (Price) text prefix
+        let optionsOnlyString = rawVars;
 
-                items.forEach(item => {
-                    if (!item.trim()) return;
-                    let valName = item.trim();
-                    let priceModifier = 0;
-                    
-                    if (item.includes('|')) {
-                        const itemParts = item.split('|');
-                        valName = itemParts[0].trim();
-                        priceModifier = parseFloat(itemParts[1]) || 0;
-                    }
-                    
-                    const opt = document.createElement('option');
-                    opt.value = valName;
-                    opt.dataset.price = priceModifier;
-                    opt.textContent = valName + (priceModifier > 0 ? ` (+$${priceModifier.toFixed(2)})` : '');
-                    sel.appendChild(opt);
-                });
-                
-                dropdownContainer.appendChild(lbl);
-                dropdownContainer.appendChild(sel);
+        // Locates where the first option begins (looks for where "|price" appears)
+        const firstPipeIndex = rawVars.indexOf('|');
+        if (firstPipeIndex !== -1) {
+            const prePipe = rawVars.substring(0, firstPipeIndex);
+            // Find where options start after the concatenated Col A + Col B prefix
+            const match = prePipe.match(/^.*?(\d+(\.\d+)?)(.*)$/);
+            if (match && match[3]) {
+                optionsOnlyString = match[3] + rawVars.substring(firstPipeIndex);
             }
-        });
+        }
+
+        const items = optionsOnlyString.split(',');
+        if (items.length > 0) {
+            const lbl = document.createElement('label');
+            lbl.className = "label-text";
+            lbl.textContent = "Select Variety:";
+            
+            const sel = document.createElement('select');
+            sel.className = "dynamic-option-menu";
+            sel.dataset.groupName = "Variety";
+            
+            sel.addEventListener('change', updatePriceDisplay);
+
+            items.forEach(item => {
+                if (!item.trim()) return;
+                let valName = item.trim();
+                let priceModifier = 0;
+                
+                if (item.includes('|')) {
+                    const itemParts = item.split('|');
+                    valName = itemParts[0].trim();
+                    priceModifier = parseFloat(itemParts[1]) || 0;
+                }
+                
+                const opt = document.createElement('option');
+                opt.value = valName;
+                opt.dataset.price = priceModifier;
+                opt.textContent = valName + (priceModifier > 0 ? ` (+$${priceModifier.toFixed(2)})` : '');
+                sel.appendChild(opt);
+            });
+            
+            dropdownContainer.appendChild(lbl);
+            dropdownContainer.appendChild(sel);
+        }
     }
 
-    // Initialize display with base price
     updatePriceDisplay();
 
     function addGrabAndGoItem() {
@@ -192,10 +186,8 @@
 
         const finalUnitPrice = calculateTotalPrice();
         
-        // Read the main cart array from storage
         let cart = JSON.parse(localStorage.getItem('final_shopping_cart')) || [];
         
-        // Push the item with computed price and selected options
         cart.push({
             name: itemName,
             price: finalUnitPrice,
@@ -203,10 +195,8 @@
             qty: 1
         });
         
-        // Save back to local storage
         localStorage.setItem('final_shopping_cart', JSON.stringify(cart));
 
-        // Visual feedback
         clickedBtn.textContent = "✓ Added!";
         clickedBtn.style.backgroundColor = "#28a745";
         clickedBtn.disabled = true;
