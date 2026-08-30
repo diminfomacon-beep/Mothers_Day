@@ -2,8 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Product Price Checker</title>
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Price Checker">
+
+  <link id="manifest-placeholder" rel="manifest">
+
+  <link rel="icon" id="favicon-placeholder" type="image/svg+xml">
+  <link rel="apple-touch-icon" id="apple-icon-placeholder">
+
   <style>
     :root {
       --bg-color: #f4f6f9;
@@ -22,12 +32,13 @@
       margin: 0;
       padding: 0;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
     }
 
     body {
       background-color: var(--bg-color);
       color: var(--text-color);
-      padding: 20px;
+      padding: 16px;
     }
 
     .container {
@@ -36,28 +47,30 @@
     }
 
     header {
-      margin-bottom: 20px;
+      margin-bottom: 16px;
     }
 
     h1 {
-      font-size: 1.8rem;
+      font-size: 1.6rem;
     }
 
     .controls {
       display: flex;
-      gap: 12px;
-      margin-bottom: 20px;
+      gap: 10px;
+      margin-bottom: 16px;
       flex-wrap: wrap;
     }
 
     .search-bar {
       flex: 2;
-      min-width: 250px;
+      min-width: 200px;
       padding: 10px 14px;
       border: 1px solid var(--border-color);
       border-radius: 8px;
       font-size: 1rem;
       outline: none;
+      background-color: white;
+      -webkit-appearance: none;
     }
 
     .search-bar:focus {
@@ -66,18 +79,18 @@
 
     .filter-select {
       flex: 1;
-      min-width: 180px;
+      min-width: 140px;
       padding: 10px 14px;
       border: 1px solid var(--border-color);
       border-radius: 8px;
-      font-size: 1rem;
+      font-size: 0.95rem;
       background-color: white;
       outline: none;
       cursor: pointer;
     }
 
     .stats {
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       color: var(--subtext-color);
       margin-bottom: 12px;
     }
@@ -106,7 +119,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 14px 18px;
+      padding: 14px 16px;
       cursor: pointer;
       user-select: none;
       background-color: var(--card-bg);
@@ -119,17 +132,17 @@
     .header-left {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       flex-wrap: wrap;
     }
 
     .product-title {
-      font-size: 1rem;
+      font-size: 0.95rem;
       font-weight: 600;
     }
 
     .type-badge {
-      font-size: 0.7rem;
+      font-size: 0.65rem;
       font-weight: 700;
       text-transform: uppercase;
       padding: 2px 8px;
@@ -149,17 +162,17 @@
     .header-right {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
     }
 
     .total-price {
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       font-weight: 700;
       color: var(--accent-color);
     }
 
     .chevron {
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       color: var(--subtext-color);
       transition: transform 0.2s ease;
     }
@@ -170,7 +183,7 @@
 
     .product-details {
       display: none;
-      padding: 16px 18px;
+      padding: 14px 16px;
       border-top: 1px solid var(--border-color);
       background-color: #fafafa;
     }
@@ -239,6 +252,39 @@
   </div>
 
   <script>
+    // --- APP ICON & MANIFEST SETUP FOR IOS/ANDROID ---
+    const svgIcon = `
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+        <rect width="512" height="512" rx="110" fill="#2563eb"/>
+        <path d="M160 190h192M160 256h192M160 322h120" stroke="#ffffff" stroke-width="32" stroke-linecap="round"/>
+        <circle cx="360" cy="322" r="28" fill="#059669"/>
+      </svg>
+    `.trim();
+
+    const iconDataUrl = "data:image/svg+xml;base64," + btoa(svgIcon);
+
+    document.getElementById('favicon-placeholder').setAttribute('href', iconDataUrl);
+    document.getElementById('apple-icon-placeholder').setAttribute('href', iconDataUrl);
+
+    const manifestData = {
+      name: "Product Price Checker",
+      short_name: "PriceChecker",
+      start_url: "./",
+      display: "standalone",
+      background_color: "#f4f6f9",
+      theme_color: "#2563eb",
+      icons: [{
+        src: iconDataUrl,
+        sizes: "512x512",
+        type: "image/svg+xml",
+        purpose: "any maskable"
+      }]
+    };
+
+    const manifestBlob = new Blob([JSON.stringify(manifestData)], { type: 'application/json' });
+    document.getElementById('manifest-placeholder').setAttribute('href', URL.createObjectURL(manifestBlob));
+
+    // --- DATA & LOGIC ---
     const rawData = [
       // --- CUSTOMIZABLE PRODUCTS ---
       {
