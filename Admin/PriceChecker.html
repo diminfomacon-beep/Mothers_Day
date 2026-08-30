@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Price Checker</title>
+  <style>
+    :root {
+      --bg-color: #f4f6f9;
+      --card-bg: #ffffff;
+      --text-color: #333333;
+      --accent-color: #2563eb;
+      --accent-hover: #1d4ed8;
+      --border-color: #e5e7eb;
+      --subtext-color: #6b7280;
+      --badge-custom: #059669;
+      --badge-premade: #7c3aed;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    header {
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 8px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .search-bar {
+      flex: 2;
+      min-width: 250px;
+      padding: 10px 14px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    .search-bar:focus {
+      border-color: var(--accent-color);
+    }
+
+    .filter-select {
+      flex: 1;
+      min-width: 180px;
+      padding: 10px 14px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 1rem;
+      background-color: white;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .stats {
+      font-size: 0.9rem;
+      color: var(--subtext-color);
+      margin-bottom: 16px;
+    }
+
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+    }
+
+    .product-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .product-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+
+    .product-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-right: 8px;
+    }
+
+    .type-badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 12px;
+      color: white;
+      white-space: nowrap;
+      margin-bottom: 8px;
+      display: inline-block;
+    }
+
+    .badge-customizable {
+      background-color: var(--badge-custom);
+    }
+
+    .badge-premade {
+      background-color: var(--badge-premade);
+    }
+
+    .base-price {
+      font-size: 0.85rem;
+      color: var(--subtext-color);
+      white-space: nowrap;
+    }
+
+    .variants-container {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 8px;
+      margin-bottom: 16px;
+    }
+
+    .variant-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .variant-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--subtext-color);
+      text-transform: uppercase;
+    }
+
+    select.variant-select {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      background-color: #fafafa;
+      font-size: 0.9rem;
+    }
+
+    .total-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 12px;
+      border-top: 1px solid var(--border-color);
+      margin-top: 12px;
+    }
+
+    .total-label {
+      font-weight: 600;
+    }
+
+    .total-price {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--accent-color);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>Product Price Checker</h1>
+    </header>
+
+    <div class="controls">
+      <input type="text" id="searchInput" class="search-bar" placeholder="Search products, designs, sizes, colors...">
+      
+      <select id="typeFilter" class="filter-select">
+        <option value="all">All Product Types</option>
+        <option value="customizable">Customizable Items</option>
+        <option value="premade">Premade Items</option>
+      </select>
+
+      <select id="addonFilter" class="filter-select">
+        <option value="all">All Options</option>
+        <option value="with-addons">Has Variety/Options</option>
+        <option value="no-addons">Base Price Only</option>
+      </select>
+    </div>
+
+    <div class="stats" id="productCount">Showing 0 products</div>
+
+    <div class="product-grid" id="productGrid"></div>
+  </div>
+
+  <script>
+    const rawData = [
+      // --- CUSTOMIZABLE PRODUCTS ---
+      {
+        type: "customizable",
+        name: "Adult Polyester Graphic T-Shirt",
+        price: 15,
+        variants: [
+          { name: "Size", options: [ { name: "S", price: 0 }, { name: "M", price: 0 }, { name: "L", price: 0 }, { name: "XL", price: 0 }, { name: "2XL", price: 0 }, { name: "3XL", price: 0 } ] },
+          { name: "Print", options: [ { name: "Pocket Logo", price: 0 }, { name: "Large Front", price: 3 }, { name: "Large Back", price: 3 }, { name: "Pocket Logo and Large Back", price: 5 }, { name: "Large Front and Large Back", price: 7 } ] }
+        ]
+      },
+      {
+        type: "customizable",
+        name: "Adult Cotton Short Sleeve T-Shirt",
+        price: 15,
+        variants: [
+          { name: "Color", options: [ { name: "Black", price: 0 }, { name: "White", price: 0 }, { name: "Royal Blue", price: 0 }, { name: "Sand", price: 0 }, { name: "Yellow", price: 0 }, { name: "Violet", price: 0 }, { name: "Red", price: 0 }, { name: "Navy Blue", price: 0 }, { name: "Lime Green", price: 0 }, { name: "Purple", price: 0 }, { name: "Sport Gray", price: 0 }, { name: "Safety Pink", price: 0 }, { name: "Irish Green", price: 0 }, { name: "Tangerine", price: 0 }, { name: "Light Pink", price: 0 }, { name: "Sage", price: 0 }, { name: "Dusty Rose", price: 0 }, { name: "Light Blue", price: 0 } ] },
+          { name: "Size", options: [ { name: "S", price: 0 }, { name: "M", price: 0 }, { name: "L", price: 0 }, { name: "XL", price: 0 }, { name: "2XL", price: 0 }, { name: "3XL", price: 0 } ] },
+          { name: "Print", options: [ { name: "Pocket Logo", price: 0 }, { name: "Large Front", price: 3 }, { name: "Large Back", price: 3 }, { name: "Pocket Logo and Large Back", price: 5 }, { name: "Large Front and Large Back", price: 7 } ] }
+        ]
+      },
+      {
+        type: "customizable",
+        name: "20oz Skinny Tumbler",
+        price: 15,
+        variants: [
+          { name: "Style & Design", options: [ { name: "Monogram White", price: 0 }, { name: "Monogram Holographic", price: 5 }, { name: "Monogram Metallic Glitter", price: 3 }, { name: "Monogram Glow Green", price: 4 }, { name: "Monogram Glow Blue", price: 4 }, { name: "Monogram Glow Red", price: 4 }, { name: "Monogram Loving Lime", price: 2 }, { name: "Monogram Sweet Sunshine", price: 2 }, { name: "Monogram Playful Petals", price: 2 }, { name: "Monogram Cupids Crush", price: 2 }, { name: "Full Design White", price: 8 }, { name: "Full Design Holographic", price: 12 }, { name: "Full Design Metallic Glitter", price: 11 }, { name: "Full Design Glow Green", price: 11 }, { name: "Full Design Glow Blue", price: 11 }, { name: "Full Design Glow Red", price: 11 }, { name: "Full Design Loving Lime", price: 10 }, { name: "Full Design Sweet Sunshine", price: 10 }, { name: "Full Design Playful Petals", price: 10 }, { name: "Full Design Cupids Crush", price: 10 } ] }
+        ]
+      },
+      {
+        type: "customizable",
+        name: "20oz Skinny Ombre Tumbler",
+        price: 17,
+        variants: [
+          { name: "Style & Color", options: [ { name: "Monogram Sugar Plum", price: 0 }, { name: "Monogram Mulled Wine", price: 0 }, { name: "Monogram Cranberry Spice", price: 0 }, { name: "Monogram Silent Night", price: 0 }, { name: "Monogram Winter Sky", price: 0 }, { name: "Monogram Icy Wonderland", price: 0 }, { name: "Monogram Peppermint Cream", price: 0 }, { name: "Full Design Sugar Plum", price: 8 }, { name: "Full Design Mulled Wine", price: 8 }, { name: "Full Design Cranberry Spice", price: 8 }, { name: "Full Design Silent Night", price: 8 }, { name: "Full Design Winter Sky", price: 8 }, { name: "Full Design Icy Wonderland", price: 8 }, { name: "Full Design Peppermint Cream", price: 8 } ] }
+        ]
+      },
+      {
+        type: "customizable",
+        name: "20oz Snow Globe Tumbler",
+        price: 17,
+        variants: [
+          { name: "Style & Lid", options: [ { name: "Monogram Straight", price: 0 }, { name: "Monogram Handle", price: 1 }, { name: "Full Design Straight", price: 7 }, { name: "Full Design Handle", price: 8 } ] }
+        ]
+      },
+      {
+        type: "customizable",
+        name: "30oz Trio Traveler Tumbler",
+        price: 25,
+        variants: [
+          { name: "Style", options: [ { name: "Monogram", price: 0 }, { name: "Full Design", price: 11 } ] }
+        ]
+      },
+      {
+        type: "customizable",
+        name: "30oz Holographic Grippy Tumbler",
+        price: 25,
+        variants: [
+          { name: "Style & Color", options: [ { name: "Monogram White", price: 0 }, { name: "Monogram Ombre Mint", price: 0 }, { name: "Monogram Ombre Pink (Limited Quantity)", price: 1 }, { name: "Monogram Ombre Purple (Limited Quantity)", price: 1 }, { name: "Full Design White", price: 12 }, { name: "Full Design Ombre Mint", price: 12 }, { name: "Full Design Ombre Pink (Limited Quantity)", price: 13 }, { name: "Full Design Ombre Purple (Limited Quantity)", price: 13 } ] }
+        ]
+      },
+      {
+        type: "customizable",
+        name: "40oz Big Swig Tumbler",
+        price: 33,
+        variants: [
+          { name: "Style & Finish", options: [ { name: "Monogram White", price: 0 }, { name: "Monogram Holographic White", price: 1 }, { name: "Full Design White", price: 7 }, { name: "Full Design Holographic White", price: 8 } ] }
+        ]
+      },
+      {
+        type: "customizable",
+        name: "40oz Holographic Traveler Tumbler",
+        price: 33,
+        variants: [
+          { name: "Style & Color", options: [ { name: "Monogram White", price: 0 }, { name: "Monogram Ombre Mint", price: 1 }, { name: "Monogram Ombre Pink", price: 1 }, { name: "Full Design White", price: 6 }, { name: "Full Design Ombre Mint", price: 7 }, { name: "Full Design Ombre Pink", price: 7 } ] }
+        ]
+      },
+      {
+        type: "customizable",
+        name: "40oz Ombre Big Swig & Matching Keychain",
+        price: 35,
+        variants: [
+          { name: "Style & Color", options: [ { name: "Monogram Red", price: 0 }, { name: "Monogram Orange", price: 0 }, { name: "Monogram Yellow", price: 0 }, { name: "Monogram Green", price: 0 }, { name: "Monogram Blue", price: 0 }, { name: "Monogram Purple", price: 0 }, { name: "Monogram Black", price: 0 }, { name: "Monogram Sand", price: 0 }, { name: "Full Design Red", price: 12 }, { name: "Full Design Orange", price: 12 }, { name: "Full Design Yellow", price: 12 }, { name: "Full Design Green", price: 12 }, { name: "Full Design Blue", price: 12 }, { name: "Full Design Purple", price: 12 }, { name: "Full Design Black", price: 12 }, { name: "Full Design Sand", price: 12 } ] }
+        ]
+      },
+      {
+        type: "customizable",
+        name: "Speaker Tumblers",
+        price: 41,
+        variants: [
+          { name: "Style & Size", options: [ { name: "Monogram 20oz Skinny", price: 0 }, { name: "Monogram 30oz Grippy", price: 0 }, { name: "Monogram 30oz Holographic Unicorn Grippy", price: 0 }, { name: "Monogram 40oz Traveler", price: 0 }, { name: "Full Design 20oz Skinny", price: 4 }, { name: "Full Design 30oz Grippy", price: 6 }, { name: "Full Design 30oz Holographic Unicorn Grippy", price: 6 }, { name: "Full Design 40oz Traveler", price: 6 } ] }
+        ]
+      },
+      {
+        type: "customizable",
+        name: "12oz Grippy Tumbler",
+        price: 17,
+        variants: [
+          { name: "Style", options: [ { name: "Monogram", price: 0 }, { name: "Full Design", price: 5 } ] }
+        ]
+      },
+      {
+        type: "customizable",
+        name: "20oz Grippy Tumbler",
+        price: 18,
+        variants: [
+          { name: "Style", options: [ { name: "Monogram", price: 0 }, { name: "Full Design", price: 6 } ] }
+        ]
+      },
+      {
+        type: "customizable",
+        name: "30oz Grippy Tumbler",
+        price: 23,
+        variants: [
+          { name: "Style", options: [ { name: "Monogram", price: 0 }, { name: "Full Design", price: 10 } ] }
+        ]
+      },
+      {
+        type: "customizable",
+        name: "Tri Sip Tumbler",
+        price: 23,
+        variants: [
+          { name: "Style & Size", options: [ { name: "Monogram 20oz", price: 0 }, { name: "Monogram 30oz", price: 3 }, { name: "Full Design 20oz", price: 13 }, { name: "Full Design 30oz", price: 20 } ] }
+        ]
+      },
+      {
+        type: "customizable",
+        name: "30oz Clipmate Hydro Tumbler",
+        price: 21,
+        variants: [
+          { name: "Style & Finish", options: [ { name: "Monogram White", price: 0 }, { name: "Monogram Holographic", price: 1 }, { name: "Full Design White", price: 7 }, { name: "Full Design Holographic", price: 8 } ] }
+        ]
+      },
+      {
+        type: "customizable",
+        name: "40oz Traveler Tumbler",
+        price: 32,
+        variants: [
+          { name: "Style", options: [ { name: "Monogram", price: 0 }, { name: "Full Design", price: 6 } ] }
+        ]
+      },
+      {
+        type: "customizable",
+        name: "22oz Fatty Tumbler",
+        price: 15,
+        variants: [
+          { name: "Style", options: [ { name: "Monogram", price: 0 }, { name: "Full Design", price: 9 } ] }
+        ]
+      },
+      {
+        type: "customizable",
+        name: "12oz Duo Tumbler - Toddler Handle",
+        price: 18,
+        variants: [
+          { name: "Style", options: [ { name: "Monogram", price: 0 }, { name: "Full Design", price: 7 } ] }
+        ]
+      },
+      {
+        type: "customizable",
+        name: "32oz White Glitter Hydro Handle Bottle",
+        price: 30,
+        variants: [
+          { name: "Style", options: [ { name: "Monogram", price: 0 }, { name: "Full Design", price: 6 } ] }
+        ]
+      },
+      {
+        type: "customizable",
+        name: "12oz Kids Water Bottle",
+        price: 16,
+        variants: [
+          { name: "Style & Color", options: [ { name: "Monogram Blue with Gray", price: 0 }, { name: "Monogram Red with Gray", price: 0 }, { name: "Monogram Black with Gray", price: 0 }, { name: "Monogram Pink with Gray", price: 0 }, { name: "Monogram Orange with Yellow", price: 0 }, { name: "Monogram Pink with Green", price: 0 }, { name: "Full Design Blue with Gray", price: 4 }, { name: "Full Design Red with Gray", price: 4 }, { name: "Full Design Black with Gray", price: 4 }, { name: "Full Design Pink with Gray", price: 4 }, { name: "Full Design Orange with Yellow", price: 4 }, { name: "Full Design Pink with Green", price: 4 } ] }
+        ]
+      },
+      {
+        type: "customizable",
+        name: "Hydro Handle Bottle",
+        price: 25,
+        variants: [
+          { name: "Style & Size", options: [ { name: "Monogram 25oz", price: 0 }, { name: "Monogram 40oz", price: 1 }, { name: "Full Design 25oz", price: 5 }, { name: "Full Design 40oz", price: 6 } ] }
+        ]
+      },
+      {
+        type: "customizable",
+        name: "Duo Hydro Handle Bottle",
+        price: 25,
+        variants: [
+          { name: "Style & Size", options: [ { name: "Monogram 18oz", price: 0 }, { name: "Monogram 25oz", price: 1 }, { name: "Monogram 32oz", price: 2 }, { name: "Monogram 40oz", price: 3 }, { name: "Full Design 18oz", price: 6 }, { name: "Full Design 25oz", price: 7 }, { name: "Full Design 32oz", price: 8 }, { name: "Full Design 40oz", price: 9 } ] }
+        ]
+      },
+      {
+        type: "customizable",
+        name: "20oz Gradient Glass Tumbler",
+        price: 17,
+        variants: [
+          { name: "Style & Color", options: [ { name: "Monogram Red", price: 0 }, { name: "Monogram Blue", price: 0 }, { name: "Monogram Pink", price: 0 }, { name: "Monogram Yellow", price: 0 }, { name: "Full Design Red", price: 8 }, { name: "Full Design Blue", price: 8 }, { name: "Full Design Pink", price: 8 }, { name: "Full Design Yellow", price: 8 } ] }
+        ]
+      },
+      {
+        type: "customizable",
+        name: "32oz Hydro Hound Tumbler",
+        price: 44,
+        variants: [
+          { name: "Style & Finish", options: [ { name: "Monogram White", price: 0 }, { name: "Monogram Clear", price: 0 }, { name: "Monogram Two Tone", price: 0 }, { name: "Full Design White", price: 16 }, { name: "Full Design Clear", price: 16 }, { name: "Full Design Two Tone", price: 16 } ] }
+        ]
+      },
+      {
+        type: "customizable",
+        name: "15oz Ceramic Coffee Mug",
+        price: 12,
+        variants: [
+          { name: "Style & Finish", options: [ { name: "Monogram White", price: 0 }, { name: "Monogram Black Heat Changing", price: 2 }, { name: "Full Design White", price: 8 }, { name: "Full Design Black Heat Changing", price: 9 } ] }
+        ]
+      },
+      {
+        type: "customizable",
+        name: "Glass Mug with Lid",
+        price: 13,
+        variants: [
+          { name: "Style, Size & Finish", options: [ { name: "Monogram 15oz Clear", price: 4 }, { name: "Monogram 17oz Clear", price: 0 }, { name: "Monogram 17oz Matte", price: 0 }, { name: "Full Design 15oz Clear", price: 11 }, { name: "Full Design 17oz Clear", price: 7 }, { name: "Full Design 17oz Matte", price: 7 } ] }
+        ]
+      },
+      {
+        type: "customizable",
+        name: "Insulated Mug",
+        price: 18,
+        variants: [
+          { name: "Style", options: [ { name: "Monogram", price: 0 }, { name: "Full Design", price: 4 } ] }
+        ]
+      },
+      {
+        type: "customizable",
+        name: "12oz Stemless Wine Tumbler",
+        price: 17,
+        variants: [
+          { name: "Style", options: [ { name: "Monogram", price: 0 }, { name: "Full Design", price: 5 } ] }
+        ]
+      },
+      {
+        type: "customizable",
+        name: "7oz Flask Bottle",
+        price: 15,
+        variants: [
+          { name: "Style", options: [ { name: "Monogram", price: 0 }, { name: "Full Design", price: 4 } ] }
+        ]
+      },
+      {
+        type: "customizable",
+        name: "Medium Tote Bag",
+        price: 10,
+        variants: [
+          { name: "Type & Color", options: [ { name: "Vinyl One Side Design White", price: 0 }, { name: "Vinyl One Side Design Black", price: 0 }, { name: "Vinyl One Side Design Natural", price: 0 }, { name: "Vinyl Two Side Design White", price: 0 }, { name: "Vinyl Two Side Design Black", price: 0 }, { name: "Vinyl Two Side Design Natural", price: 0 }, { name: "Print One Side Design White", price: 0 }, { name: "Print Two Side Design White", price: 0 } ] }
+        ]
+      },
+      {
+        type: "customizable",
+        name: "Baby Onesie",
+        price: 10,
+        variants: [
+          { name: "Size", options: [ { name: "6-9 months", price: 0 }, { name: "9-12 months", price: 0 }, { name: "12-18 months", price: 0 }, { name: "18-24 months", price: 0 } ] }
+        ]
+      },
+      { type: "customizable", name: "Mini Tote Bag", price: 5, variants: [] },
+      { type: "customizable", name: "Baby Bib with Spill Pocket", price: 8, variants: [] },
+      {
+        type: "customizable",
+        name: "Soap Dispenser",
+        price: 8,
+        variants: [
+          { name: "Style", options: [ { name: "Monogram", price: 0 }, { name: "Full Design", price: 3 } ] }
+        ]
+      },
+      {
+        type: "customizable",
+        name: "16oz Aluminum Spray Bottle",
+        price: 8,
+        variants: [
+          { name: "Style", options: [ { name: "Monogram", price: 0 }, { name: "Full Design", price: 3 } ] }
+        ]
+      },
+      { type: "customizable", name: "Slate Photo Panel with Stand", price: 22, variants: [] },
+      {
+        type: "customizable",
+        name: "Sassy Storage Jar",
+        price: 12,
+        variants: [
+          { name: "Style", options: [ { name: "Monogram/Small Design", price: 0 } ] }
+        ]
+      },
+      {
+        type: "customizable",
+        name: "10oz Candle Jar",
+        price: 9,
+        variants: [
+          { name: "Style", options: [ { name: "Monogram", price: 0 }, { name: "Full Design", price: 2 } ] }
+        ]
+      },
+      {
+        type: "customizable",
+        name: "8x10 Wood Photo Panel",
+        price: 18,
+        variants: [
+          { name: "Finish", options: [ { name: "Weathered", price: 0 }, { name: "Walnut", price: 0 } ] }
+        ]
+      },
+      {
+        type: "customizable",
+        name: "Tabletop Wood Photo Panel",
+        price: 10,
+        variants: [
+          { name: "Size", options: [ { name: "4x6 inches", price: 0 }, { name: "5x7 inches", price: 2 } ] }
+        ]
+      },
+      {
+        type: "customizable",
+        name: "Memory Photo Blanket",
+        price: 60,
+        variants: [
+          { name: "Style", options: [ { name: "9 Panel", price: 1 }, { name: "20 Panel", price: 0 }, { name: "15 Panel Paw", price: 3 }, { name: "14 Panel Moon", price: 5 } ] }
+        ]
+      },
+      {
+        type: "customizable",
+        name: "Aluminum Business Cards",
+        price: 15,
+        variants: [
+          { name: "Quantity & Side", options: [ { name: "25 count single side", price: 0 }, { name: "25 count double side", price: 10 }, { name: "50 count single side", price: 10 }, { name: "50 count double side", price: 30 }, { name: "100 count single side", price: 25 }, { name: "100 count double side", price: 35 } ] }
+        ]
+      },
+      { type: "customizable", name: "Custom Playing Cards", price: 25, variants: [] },
+      { type: "customizable", name: "Cardboard Jigsaw Puzzle", price: 20, variants: [] },
+
+      // --- PREMADE PRODUCTS ---
+      {
+        type: "premade",
+        name: "Medium Adult T-Shirts",
+        price: 18,
+        variants: [
+          { name: "Design & Color", options: [ { name: "Be the Light (Navy Blue-Cotton)", price: 0 }, { name: "Eye Roll (Violet-Cotton)", price: 0 }, { name: "Please Don't Die (Dusty Rose-Cotton)", price: 0 }, { name: "Plans with Dog and Cat (Sage-Cotton)", price: 0 }, { name: "Gardening (Safety Pink-Cotton)", price: 0 } ] }
+        ]
+      },
+      {
+        type: "premade",
+        name: "Small Adult T-Shirts",
+        price: 18,
+        variants: [
+          { name: "Design & Color", options: [ { name: "Level 30 Mom (Light Pink-Cotton)", price: 0 }, { name: "Horrible Idea (White-Polyester)", price: 0 } ] }
+        ]
+      },
+      {
+        type: "premade",
+        name: "Large Adult T-Shirt",
+        price: 18,
+        variants: [
+          { name: "Design & Color", options: [ { name: "Teaching (White-Polyester)", price: 0 } ] }
+        ]
+      },
+      {
+        type: "premade",
+        name: "XL Adult T-Shirt",
+        price: 18,
+        variants: [
+          { name: "Design & Color", options: [ { name: "Don't Rise and Shine (Sport Gray-Cotton)", price: 0 }, { name: "Man and Woman Silouhette (White-Polyester)", price: 0 } ] }
+        ]
+      },
+      {
+        type: "premade",
+        name: "XL Youth T-Shirt",
+        price: 15,
+        variants: [
+          { name: "Design & Color", options: [ { name: "Being Cute (Pink-Cotton)", price: 0 } ] }
+        ]
+      },
+      {
+        type: "premade",
+        name: "12oz Kids Water Bottle",
+        price: 20,
+        variants: [
+          { name: "Design", options: [ { name: "Ocean Creatures", price: 0 }, { name: "Solar System", price: 0 }, { name: "Dinosaurs", price: 0 }, { name: "Gamer", price: 0 }, { name: "Game Day", price: 0 }, { name: "Astronaut", price: 0 } ] }
+        ]
+      },
+      {
+        type: "premade",
+        name: "12oz Toddler Handle Tumbler",
+        price: 25,
+        variants: [
+          { name: "Design", options: [ { name: "Rainbow Animals", price: 0 }, { name: "Fairies", price: 0 }, { name: "Unicorn", price: 0 } ] }
+        ]
+      },
+      {
+        type: "premade",
+        name: "12oz Grippy Tumbler",
+        price: 25,
+        variants: [
+          { name: "Design", options: [ { name: "Fairies", price: 0 }, { name: "Baby Dinosaur", price: 0 }, { name: "Hot Air Balloon", price: 0 } ] }
+        ]
+      },
+      {
+        type: "premade",
+        name: "18oz Wine Glass - Ombre Dark Blue",
+        price: 25,
+        variants: [
+          { name: "Design", options: [ { name: "Stay Cool", price: 0 }, { name: "Sip Happens", price: 0 }, { name: "Monogram 'S'", price: 0 } ] }
+        ]
+      },
+      {
+        type: "premade",
+        name: "20oz Skinny Tumbler",
+        price: 25,
+        variants: [
+          { name: "Design", options: [ { name: "Star & Moon", price: 0 }, { name: "Full Color", price: 0 }, { name: "3 Daisies", price: 0 }, { name: "Face Line Art", price: 0 } ] }
+        ]
+      },
+      {
+        type: "premade",
+        name: "20oz Skinny with Handle Tumbler",
+        price: 25,
+        variants: [
+          { name: "Design", options: [ { name: "Cats", price: 0 }, { name: "Flower on Wood Block", price: 0 } ] }
+        ]
+      },
+      {
+        type: "premade",
+        name: "20oz Skinny Ombre Tumbler",
+        price: 25,
+        variants: [
+          { name: "Design", options: [ { name: "Green with Hummingbird", price: 0 }, { name: "Burgundy with Butterfly", price: 0 } ] }
+        ]
+      },
+      {
+        type: "premade",
+        name: "20oz Strawbler Tumbler",
+        price: 35,
+        variants: [
+          { name: "Design", options: [ { name: "Playhouse", price: 0 }, { name: "Flower Tree Drawing", price: 0 } ] }
+        ]
+      },
+      {
+        type: "premade",
+        name: "20oz Skinny Glass Tumbler",
+        price: 25,
+        variants: [
+          { name: "Design", options: [ { name: "Lemon Tree", price: 0 }, { name: "Pure Bliss", price: 0 }, { name: "Become Limitless", price: 0 }, { name: "Be Faithful", price: 0 } ] }
+        ]
+      },
+      {
+        type: "premade",
+        name: "20oz Glass Skinny Tumbler - Ombre",
+        price: 33,
+        variants: [
+          { name: "Design", options: [ { name: "Blue - Believe in Yourself", price: 0 }, { name: "Pink - Bloom Beautifully", price: 0 }, { name: "Yellow - Garden", price: 0 } ] }
+        ]
+      },
+      {
+        type: "premade",
+        name: "22oz Slide Top Tumbler",
+        price: 25,
+        variants: [
+          { name: "Design", options: [ { name: "Sweets & Treats", price: 0 }, { name: "Cats", price: 0 } ] }
+        ]
+      },
+      { type: "premade", name: "15oz Glitter Straight Tumbler", price: 23, variants: [] },
+      {
+        type: "premade",
+        name: "20oz Glitter Straight Tumbler",
+        price: 25,
+        variants: [
+          { name: "Design", options: [ { name: "Flowers with Butterfly", price: 0 }, { name: "Purple Flower", price: 0 }, { name: "Pray On It", price: 0 } ] }
+        ]
+      },
+      {
+        type: "premade",
+        name: "25oz Glitter Straight Tumbler",
+        price: 27,
+        variants: [
+          { name: "Design", options: [ { name: "Mason Jar", price: 0 } ] }
+        ]
+      },
+      {
+        type: "premade",
+        name: "30oz Glitter Straight Tumbler",
+        price: 27,
+        variants: [
+          { name: "Design", options: [ { name: "Purple with Cream Flower", price: 0 }, { name: "Flower Tree Drawing", price: 0 }, { name: "Pond", price: 0 }, { name: "Fairies", price: 0 }, { name: "Pink Flower", price: 0 } ] }
+        ]
+      },
+      {
+        type: "premade",
+        name: "35oz Glitter Straight Tumbler",
+        price: 32,
+        variants: [
+          { name: "Design", options: [ { name: "Gold Rose", price: 0 }, { name: "Purple Crystal", price: 0 }, { name: "Green with Paint Splash", price: 0 } ] }
+        ]
+      },
+      {
+        type: "premade",
+        name: "20oz Grippy Tumbler",
+        price: 25,
+        variants: [
+          { name: "Design", options: [ { name: "Faith Over Fear", price: 0 }, { name: "Believe", price: 0 } ] }
+        ]
+      },
+      {
+        type: "premade",
+        name: "30oz Grippy Tumbler",
+        price: 33,
+        variants: [
+          { name: "Design", options: [ { name: "Adulting is Hard", price: 0 }, { name: "Bloom Anyway", price: 0 }, { name: "Teacher", price: 0 }, { name: "Coffee", price: 0 }, { name: "Mint Ombre Garden", price: 0 } ] }
+        ]
+      },
+      {
+        type: "premade",
+        name: "30oz Trio Traveler Tumbler",
+        price: 35,
+        variants: [
+          { name: "Design", options: [ { name: "Confidence", price: 0 }, { name: "Grace in Motion", price: 0 } ] }
+        ]
+      },
+      {
+        type: "premade",
+        name: "40oz Big Swig Tumbler",
+        price: 40,
+        variants: [
+          { name: "Design", options: [ { name: "Hummingbird with Flowers", price: 0 }, { name: "Choose Joy", price: 0 } ] }
+        ]
+      },
+      { type: "premade", name: "20oz Tri Sip Tumbler", price: 36, variants: [] },
+      {
+        type: "premade",
+        name: "25oz Water Bottle",
+        price: 30,
+        variants: [
+          { name: "Design", options: [ { name: "Emotional Support", price: 0 }, { name: "Just Keep Sipping", price: 0 }, { name: "Hydrated & Unbothered", price: 0 }, { name: "Unstoppable", price: 0 } ] }
+        ]
+      },
+      { type: "premade", name: "40oz Hydro Handle Bottle", price: 35, variants: [] },
+      {
+        type: "premade",
+        name: "11.8oz Ceramic Mug",
+        price: 15,
+        variants: [
+          { name: "Design", options: [ { name: "Reason Smiles", price: 0 }, { name: "Sweet Georgia", price: 0 }, { name: "I Can Do All Things", price: 0 }, { name: "Some things are worth it", price: 0 }, { name: "Macon Made", price: 0 }, { name: "Coffee Before Conversation", price: 0 }, { name: "Wander", price: 0 }, { name: "Made with Love", price: 0 }, { name: "Adulting", price: 0 }, { name: "Daisies", price: 0 } ] }
+        ]
+      },
+      {
+        type: "premade",
+        name: "17oz Glass Mug",
+        price: 20,
+        variants: [
+          { name: "Design", options: [ { name: "Morning Ritual", price: 0 }, { name: "Garden", price: 0 }, { name: "Be the Light", price: 0 }, { name: "Sweet Georgia", price: 0 }, { name: "Black Line Flowers", price: 0 }, { name: "Simply Fabulous", price: 0 }, { name: "Blood Type", price: 0 } ] }
+        ]
+      },
+      {
+        type: "premade",
+        name: "8oz Mini Tumbler",
+        price: 12,
+        variants: [
+          { name: "Color", options: [ { name: "Orange", price: 0 }, { name: "Green", price: 0 }, { name: "Blue", price: 0 }, { name: "Pink", price: 0 } ] }
+        ]
+      },
+      {
+        type: "premade",
+        name: "10oz Shortie Tumbler",
+        price: 20,
+        variants: [
+          { name: "Color", options: [ { name: "Blue", price: 0 }, { name: "Orange", price: 0 }, { name: "Green", price: 0 }, { name: "Pink", price: 0 } ] }
+        ]
+      },
+      {
+        type: "premade",
+        name: "4oz Keychain Tumbler",
+        price: 10,
+        variants: [
+          { name: "Design", options: [ { name: "Flower Vine", price: 0 }, { name: "Choose Joy", price: 0 }, { name: "Butterfly", price: 0 } ] }
+        ]
+      },
+      {
+        type: "premade",
+        name: "7oz Flask Bottle",
+        price: 15,
+        variants: [
+          { name: "Option", options: [ { name: "A", price: 0 }, { name: "B", price: 0 }, { name: "C", price: 0 }, { name: "D", price: 0 }, { name: "E", price: 0 } ] }
+        ]
+      },
+      {
+        type: "premade",
+        name: "A5 Padfolio",
+        price: 25,
+        variants: [
+          { name: "Design", options: [ { name: "Trust in the Lord", price: 0 }, { name: "Pray on It", price: 0 }, { name: "The Lord is my Shepherd", price: 0 }, { name: "Blessed Beyond Measure", price: 0 }, { name: "Be the Light", price: 0 }, { name: "She Believed", price: 0 }, { name: "Walk by Faith", price: 0 }, { name: "Coffee & Patience", price: 0 }, { name: "Progress over Perfection", price: 0 }, { name: "Grow through...", price: 0 }, { name: "CEO", price: 0 }, { name: "Create Plan Accomplish", price: 0 } ] }
+        ]
+      },
+      {
+        type: "premade",
+        name: "Burlap Tote",
+        price: 25,
+        variants: [
+          { name: "Option", options: [ { name: "A", price: 0 }, { name: "B", price: 0 }, { name: "C", price: 0 }, { name: "D", price: 0 } ] }
+        ]
+      },
+      {
+        type: "premade",
+        name: "Bundle Deal",
+        price: 43,
+        variants: [
+          { name: "Option", options: [ { name: "A", price: 0 }, { name: "B", price: 4 } ] }
+        ]
+      },
+      {
+        type: "premade",
+        name: "18oz Ceramic Handsoap Bottle",
+        price: 15,
+        variants: [
+          { name: "Design", options: [ { name: "Burgundy & Gold", price: 0 }, { name: "Pink Rose", price: 0 }, { name: "Golden Rose", price: 0 } ] }
+        ]
+      },
+      {
+        type: "premade",
+        name: "18oz Aluminum Handsoap Bottle",
+        price: 12,
+        variants: [
+          { name: "Design", options: [ { name: "Butterfly Heart", price: 0 }, { name: "Golden Hummingbird", price: 0 }, { name: "Pink Rose & Butterfly", price: 0 } ] }
+        ]
+      },
+      {
+        type: "premade",
+        name: "16oz Aluminum Spray Bottle",
+        price: 12,
+        variants: [
+          { name: "Design", options: [ { name: "Blue Butterflies", price: 0 }, { name: "Flowers Line Art", price: 0 } ] }
+        ]
+      }
+    ];
+
+    let currentFilteredData = [];
+
+    function renderProducts() {
+      const searchInput = document.getElementById('searchInput').value.toLowerCase();
+      const typeFilter = document.getElementById('typeFilter').value;
+      const addonFilter = document.getElementById('addonFilter').value;
+      const grid = document.getElementById('productGrid');
+      grid.innerHTML = '';
+
+      currentFilteredData = rawData.filter(product => {
+        // Search
+        const matchesName = product.name.toLowerCase().includes(searchInput);
+        const matchesVariants = product.variants.some(vGroup => 
+          vGroup.options.some(opt => opt.name.toLowerCase().includes(searchInput))
+        );
+        const matchesSearch = matchesName || matchesVariants;
+
+        // Type Filter (Customizable vs Premade)
+        let matchesType = true;
+        if (typeFilter !== 'all') {
+          matchesType = product.type === typeFilter;
+        }
+
+        // Options/Add-ons Filter
+        let matchesAddon = true;
+        if (addonFilter === 'with-addons') {
+          matchesAddon = product.variants.length > 0;
+        } else if (addonFilter === 'no-addons') {
+          matchesAddon = product.variants.length === 0;
+        }
+
+        return matchesSearch && matchesType && matchesAddon;
+      });
+
+      document.getElementById('productCount').innerText = `Showing ${currentFilteredData.length} of ${rawData.length} products`;
+
+      currentFilteredData.forEach((product, pIndex) => {
+        const card = document.createElement('div');
+        card.className = 'product-card';
+
+        const badgeClass = product.type === 'customizable' ? 'badge-customizable' : 'badge-premade';
+        const badgeLabel = product.type === 'customizable' ? 'Customizable' : 'Premade';
+
+        let variantsHTML = '';
+        if (product.variants && product.variants.length > 0) {
+          variantsHTML = `<div class="variants-container">`;
+          product.variants.forEach((vGroup, vIndex) => {
+            variantsHTML += `
+              <div class="variant-group">
+                <label class="variant-label">${vGroup.name}</label>
+                <select class="variant-select" data-pindex="${pIndex}" onchange="updatePrice(${pIndex})">
+                  ${vGroup.options.map(opt => `
+                    <option value="${opt.price}">${opt.name} ${opt.price > 0 ? `(+$${opt.price})` : ''}</option>
+                  `).join('')}
+                </select>
+              </div>
+            `;
+          });
+          variantsHTML += `</div>`;
+        }
+
+        card.innerHTML = `
+          <div>
+            <div>
+              <span class="type-badge ${badgeClass}">${badgeLabel}</span>
+            </div>
+            <div class="product-header">
+              <span class="product-title">${product.name}</span>
+              <span class="base-price">Base: $${product.price}</span>
+            </div>
+            ${variantsHTML}
+          </div>
+          <div class="total-container">
+            <span class="total-label">Total Price:</span>
+            <span class="total-price" id="total-${pIndex}">$${product.price}</span>
+          </div>
+        `;
+
+        grid.appendChild(card);
+        updatePrice(pIndex);
+      });
+    }
+
+    function updatePrice(pIndex) {
+      const cards = document.querySelectorAll('.product-card');
+      const card = cards[pIndex];
+      if (!card) return;
+
+      const product = currentFilteredData[pIndex];
+      const basePrice = product.price;
+      const selects = card.querySelectorAll('.variant-select');
+      let addonSum = 0;
+
+      selects.forEach(select => {
+        addonSum += parseFloat(select.value) || 0;
+      });
+
+      const totalElement = card.querySelector('.total-price');
+      if (totalElement) {
+        totalElement.innerText = `$${basePrice + addonSum}`;
+      }
+    }
+
+    document.getElementById('searchInput').addEventListener('input', renderProducts);
+    document.getElementById('typeFilter').addEventListener('change', renderProducts);
+    document.getElementById('addonFilter').addEventListener('change', renderProducts);
+
+    renderProducts();
+  </script>
+</body>
+</html>
