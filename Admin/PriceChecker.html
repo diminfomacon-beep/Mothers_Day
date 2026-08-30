@@ -10,11 +10,11 @@
       --card-bg: #ffffff;
       --text-color: #333333;
       --accent-color: #2563eb;
-      --accent-hover: #1d4ed8;
       --border-color: #e5e7eb;
       --subtext-color: #6b7280;
       --badge-custom: #059669;
       --badge-premade: #7c3aed;
+      --hover-bg: #f8fafc;
     }
 
     * {
@@ -31,23 +31,22 @@
     }
 
     .container {
-      max-width: 1000px;
+      max-width: 900px;
       margin: 0 auto;
     }
 
     header {
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
 
     h1 {
       font-size: 1.8rem;
-      margin-bottom: 8px;
     }
 
     .controls {
       display: flex;
       gap: 12px;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
       flex-wrap: wrap;
     }
 
@@ -80,49 +79,63 @@
     .stats {
       font-size: 0.9rem;
       color: var(--subtext-color);
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
 
-    .product-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 16px;
+    .product-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
 
     .product-card {
       background: var(--card-bg);
       border: 1px solid var(--border-color);
-      border-radius: 10px;
-      padding: 16px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
+      border-radius: 8px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+      overflow: hidden;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .product-card.expanded {
+      border-color: var(--accent-color);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
 
     .product-header {
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 8px;
+      align-items: center;
+      padding: 14px 18px;
+      cursor: pointer;
+      user-select: none;
+      background-color: var(--card-bg);
+    }
+
+    .product-header:hover {
+      background-color: var(--hover-bg);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
     }
 
     .product-title {
-      font-size: 1.1rem;
+      font-size: 1rem;
       font-weight: 600;
-      margin-right: 8px;
     }
 
     .type-badge {
       font-size: 0.7rem;
       font-weight: 700;
       text-transform: uppercase;
-      padding: 3px 8px;
+      padding: 2px 8px;
       border-radius: 12px;
       color: white;
       white-space: nowrap;
-      margin-bottom: 8px;
-      display: inline-block;
     }
 
     .badge-customizable {
@@ -133,18 +146,43 @@
       background-color: var(--badge-premade);
     }
 
-    .base-price {
-      font-size: 0.85rem;
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .total-price {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent-color);
+    }
+
+    .chevron {
+      font-size: 0.8rem;
       color: var(--subtext-color);
-      white-space: nowrap;
+      transition: transform 0.2s ease;
+    }
+
+    .product-card.expanded .chevron {
+      transform: rotate(180deg);
+    }
+
+    .product-details {
+      display: none;
+      padding: 16px 18px;
+      border-top: 1px solid var(--border-color);
+      background-color: #fafafa;
+    }
+
+    .product-card.expanded .product-details {
+      display: block;
     }
 
     .variants-container {
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      margin-top: 8px;
-      margin-bottom: 16px;
+      gap: 12px;
     }
 
     .variant-group {
@@ -154,7 +192,7 @@
     }
 
     .variant-label {
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       font-weight: 600;
       color: var(--subtext-color);
       text-transform: uppercase;
@@ -162,30 +200,17 @@
 
     select.variant-select {
       width: 100%;
-      padding: 8px;
+      padding: 8px 10px;
       border: 1px solid var(--border-color);
       border-radius: 6px;
-      background-color: #fafafa;
+      background-color: white;
       font-size: 0.9rem;
     }
 
-    .total-container {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding-top: 12px;
-      border-top: 1px solid var(--border-color);
-      margin-top: 12px;
-    }
-
-    .total-label {
-      font-weight: 600;
-    }
-
-    .total-price {
-      font-size: 1.3rem;
-      font-weight: 700;
-      color: var(--accent-color);
+    .base-price-info {
+      font-size: 0.85rem;
+      color: var(--subtext-color);
+      margin-bottom: 12px;
     }
   </style>
 </head>
@@ -214,7 +239,7 @@
 
     <div class="stats" id="productCount">Showing 0 products</div>
 
-    <div class="product-grid" id="productGrid"></div>
+    <div class="product-list" id="productList"></div>
   </div>
 
   <script>
@@ -857,24 +882,21 @@
       const searchInput = document.getElementById('searchInput').value.toLowerCase();
       const typeFilter = document.getElementById('typeFilter').value;
       const addonFilter = document.getElementById('addonFilter').value;
-      const grid = document.getElementById('productGrid');
-      grid.innerHTML = '';
+      const listContainer = document.getElementById('productList');
+      listContainer.innerHTML = '';
 
       currentFilteredData = rawData.filter(product => {
-        // Search
         const matchesName = product.name.toLowerCase().includes(searchInput);
         const matchesVariants = product.variants.some(vGroup => 
           vGroup.options.some(opt => opt.name.toLowerCase().includes(searchInput))
         );
         const matchesSearch = matchesName || matchesVariants;
 
-        // Type Filter (Customizable vs Premade)
         let matchesType = true;
         if (typeFilter !== 'all') {
           matchesType = product.type === typeFilter;
         }
 
-        // Options/Add-ons Filter
         let matchesAddon = true;
         if (addonFilter === 'with-addons') {
           matchesAddon = product.variants.length > 0;
@@ -897,11 +919,11 @@
         let variantsHTML = '';
         if (product.variants && product.variants.length > 0) {
           variantsHTML = `<div class="variants-container">`;
-          product.variants.forEach((vGroup, vIndex) => {
+          product.variants.forEach((vGroup) => {
             variantsHTML += `
               <div class="variant-group">
                 <label class="variant-label">${vGroup.name}</label>
-                <select class="variant-select" data-pindex="${pIndex}" onchange="updatePrice(${pIndex})">
+                <select class="variant-select" onchange="updatePrice(${pIndex})">
                   ${vGroup.options.map(opt => `
                     <option value="${opt.price}">${opt.name} ${opt.price > 0 ? `(+$${opt.price})` : ''}</option>
                   `).join('')}
@@ -910,28 +932,45 @@
             `;
           });
           variantsHTML += `</div>`;
+        } else {
+          variantsHTML = `<div style="font-size:0.85rem; color: var(--subtext-color);">No additional options or add-ons for this item.</div>`;
         }
 
         card.innerHTML = `
-          <div>
-            <div>
+          <div class="product-header" onclick="toggleCard(event, ${pIndex})">
+            <div class="header-left">
               <span class="type-badge ${badgeClass}">${badgeLabel}</span>
-            </div>
-            <div class="product-header">
               <span class="product-title">${product.name}</span>
-              <span class="base-price">Base: $${product.price}</span>
             </div>
-            ${variantsHTML}
+            <div class="header-right">
+              <span class="total-price" id="total-${pIndex}">$${product.price}</span>
+              <span class="chevron">&#9660;</span>
+            </div>
           </div>
-          <div class="total-container">
-            <span class="total-label">Total Price:</span>
-            <span class="total-price" id="total-${pIndex}">$${product.price}</span>
+          <div class="product-details">
+            <div class="base-price-info">Base Price: <strong>$${product.price}</strong></div>
+            ${variantsHTML}
           </div>
         `;
 
-        grid.appendChild(card);
+        listContainer.appendChild(card);
         updatePrice(pIndex);
       });
+    }
+
+    function toggleCard(event, pIndex) {
+      event.stopPropagation();
+      const cards = document.querySelectorAll('.product-card');
+      const targetCard = cards[pIndex];
+      const isAlreadyExpanded = targetCard.classList.contains('expanded');
+
+      // Collapse all open cards
+      cards.forEach(card => card.classList.remove('expanded'));
+
+      // If clicked card wasn't already expanded, expand it
+      if (!isAlreadyExpanded) {
+        targetCard.classList.add('expanded');
+      }
     }
 
     function updatePrice(pIndex) {
@@ -953,6 +992,13 @@
         totalElement.innerText = `$${basePrice + addonSum}`;
       }
     }
+
+    // Collapse active cards when clicking anywhere outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.product-card')) {
+        document.querySelectorAll('.product-card').forEach(card => card.classList.remove('expanded'));
+      }
+    });
 
     document.getElementById('searchInput').addEventListener('input', renderProducts);
     document.getElementById('typeFilter').addEventListener('change', renderProducts);
