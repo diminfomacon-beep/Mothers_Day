@@ -924,9 +924,10 @@
               <div class="variant-group">
                 <label class="variant-label">${vGroup.name}</label>
                 <select class="variant-select" onchange="updatePrice(${pIndex})">
-                  ${vGroup.options.map(opt => `
-                    <option value="${opt.price}">${opt.name} ${opt.price > 0 ? `(+$${opt.price})` : ''}</option>
-                  `).join('')}
+                  ${vGroup.options.map(opt => {
+                    const optionTotalPrice = product.price + opt.price;
+                    return `<option value="${opt.price}">${opt.name} ($${optionTotalPrice})</option>`;
+                  }).join('')}
                 </select>
               </div>
             `;
@@ -964,10 +965,8 @@
       const targetCard = cards[pIndex];
       const isAlreadyExpanded = targetCard.classList.contains('expanded');
 
-      // Collapse all open cards
       cards.forEach(card => card.classList.remove('expanded'));
 
-      // If clicked card wasn't already expanded, expand it
       if (!isAlreadyExpanded) {
         targetCard.classList.add('expanded');
       }
@@ -993,7 +992,6 @@
       }
     }
 
-    // Collapse active cards when clicking anywhere outside
     document.addEventListener('click', (e) => {
       if (!e.target.closest('.product-card')) {
         document.querySelectorAll('.product-card').forEach(card => card.classList.remove('expanded'));
