@@ -10,9 +10,8 @@
   <meta name="apple-mobile-web-app-title" content="Price Checker">
 
   <link id="manifest-placeholder" rel="manifest">
-
-  <link rel="icon" id="favicon-placeholder" type="image/svg+xml">
-  <link rel="apple-touch-icon" id="apple-icon-placeholder">
+  <link id="favicon-placeholder" rel="icon" type="image/svg+xml">
+  <link id="apple-icon-placeholder" rel="apple-touch-icon">
 
   <style>
     :root {
@@ -242,7 +241,6 @@
         <option value="customizable">Customizable Items</option>
         <option value="premade">Premade Items</option>
       </select>
-
     </div>
 
     <div class="stats" id="productCount">Showing 0 products</div>
@@ -251,41 +249,9 @@
   </div>
 
   <script>
-    // --- APP ICON & MANIFEST SETUP FOR IOS/ANDROID ---
-    const svgIcon = `
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
-        <rect width="512" height="512" rx="110" fill="#2563eb"/>
-        <path d="M160 190h192M160 256h192M160 322h120" stroke="#ffffff" stroke-width="32" stroke-linecap="round"/>
-        <circle cx="360" cy="322" r="28" fill="#059669"/>
-      </svg>
-    `.trim();
-
-    const iconDataUrl = "data:image/svg+xml;base64," + btoa(svgIcon);
-
-    document.getElementById('favicon-placeholder').setAttribute('href', iconDataUrl);
-    document.getElementById('apple-icon-placeholder').setAttribute('href', iconDataUrl);
-
-    const manifestData = {
-      name: "Product Price Checker",
-      short_name: "PriceChecker",
-      start_url: "./",
-      display: "standalone",
-      background_color: "#f4f6f9",
-      theme_color: "#2563eb",
-      icons: [{
-        src: iconDataUrl,
-        sizes: "512x512",
-        type: "image/svg+xml",
-        purpose: "any maskable"
-      }]
-    };
-
-    const manifestBlob = new Blob([JSON.stringify(manifestData)], { type: 'application/json' });
-    document.getElementById('manifest-placeholder').setAttribute('href', URL.createObjectURL(manifestBlob));
-
-    // --- DATA & LOGIC ---
+    // --- DATA ---
     const rawData = [
-      // --- CUSTOMIZABLE PRODUCTS ---
+      // CUSTOMIZABLE PRODUCTS
       {
         type: "customizable",
         name: "Adult Polyester Graphic T-Shirt",
@@ -615,7 +581,7 @@
       { type: "customizable", name: "Custom Playing Cards", price: 25, variants: [] },
       { type: "customizable", name: "Cardboard Jigsaw Puzzle", price: 20, variants: [] },
 
-      // --- PREMADE PRODUCTS ---
+      // PREMADE PRODUCTS
       {
         type: "premade",
         name: "Medium Adult T-Shirts",
@@ -919,16 +885,44 @@
 
     let currentFilteredData = [];
 
+    // Setup app icons and manifest dynamically without breaking rendering
+    function setupIconsAndManifest() {
+      try {
+        const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="110" fill="#2563eb"/><path d="M160 190h192M160 256h192M160 322h120" stroke="#ffffff" stroke-width="32" stroke-linecap="round"/><circle cx="360" cy="322" r="28" fill="#059669"/></svg>`;
+        const iconDataUrl = "data:image/svg+xml;base64," + btoa(svgIcon);
+
+        const fav = document.getElementById('favicon-placeholder');
+        const apple = document.getElementById('apple-icon-placeholder');
+        if (fav) fav.setAttribute('href', iconDataUrl);
+        if (apple) apple.setAttribute('href', iconDataUrl);
+
+        const manifestData = {
+          name: "Product Price Checker",
+          short_name: "PriceChecker",
+          start_url: "./",
+          display: "standalone",
+          background_color: "#f4f6f9",
+          theme_color: "#2563eb",
+          icons: [{ src: iconDataUrl, sizes: "512x512", type: "image/svg+xml", purpose: "any maskable" }]
+        };
+
+        const manifestBlob = new Blob([JSON.stringify(manifestData)], { type: 'application/json' });
+        const man = document.getElementById('manifest-placeholder');
+        if (man) man.setAttribute('href', URL.createObjectURL(manifestBlob));
+      } catch (e) {
+        console.warn("Manifest generation skipped:", e);
+      }
+    }
+
     function renderProducts() {
-      const searchInput = document.getElementById('searchInput').value.toLowerCase();
+      const searchInput = document.getElementById('searchInput').value.toLowerCase().trim();
       const typeFilter = document.getElementById('typeFilter').value;
-      const addonFilter = document.getElementById('addonFilter').value;
       const listContainer = document.getElementById('productList');
       listContainer.innerHTML = '';
 
       currentFilteredData = rawData.filter(product => {
         const matchesName = product.name.toLowerCase().includes(searchInput);
-        const matchesVariants = product.variants.some(vGroup => 
+        const matchesVariants = product.variants && product.variants.some(vGroup => 
           vGroup.options.some(opt => opt.name.toLowerCase().includes(searchInput))
         );
         const matchesSearch = matchesName || matchesVariants;
@@ -938,14 +932,7 @@
           matchesType = product.type === typeFilter;
         }
 
-        let matchesAddon = true;
-        if (addonFilter === 'with-addons') {
-          matchesAddon = product.variants.length > 0;
-        } else if (addonFilter === 'no-addons') {
-          matchesAddon = product.variants.length === 0;
-        }
-
-        return matchesSearch && matchesType && matchesAddon;
+        return matchesSearch && matchesType;
       });
 
       document.getElementById('productCount').innerText = `Showing ${currentFilteredData.length} of ${rawData.length} products`;
@@ -1039,11 +1026,14 @@
       }
     });
 
-    document.getElementById('searchInput').addEventListener('input', renderProducts);
-    document.getElementById('typeFilter').addEventListener('change', renderProducts);
-    document.getElementById('addonFilter').addEventListener('change', renderProducts);
+    // Initialize when DOM is ready
+    document.addEventListener('DOMContentLoaded', () => {
+      setupIconsAndManifest();
+      renderProducts();
 
-    renderProducts();
+      document.getElementById('searchInput').addEventListener('input', renderProducts);
+      document.getElementById('typeFilter').addEventListener('change', renderProducts);
+    });
   </script>
 </body>
 </html>
