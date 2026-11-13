@@ -195,48 +195,50 @@
             }
 
             // --- Scaled Shipping Setup ---
-            const deliveryType = document.querySelector('input[name="delivery"]:checked').value;
+           const deliveryType = document.querySelector('input[name="delivery"]:checked').value;
             let shippingCost = 0;
-
+            
             if (deliveryType === 'shipping') {
+            
                 document.getElementById('shipping-options').style.display = 'block';
+            
                 const selectedRegion = document.getElementById('ship-region').value;
-                if (selectedRegion === "US") {
-                    if (totalQty >= 8) shippingCost = 25.00;
-                    else if (totalQty >= 9) shippingCost = 45.00;
-                    else if (totalQty >= 4) shippingCost = 15.00;
-                    else shippingCost = 9.50;
-                } else if (selectedRegion === "CA") {
-                    if (totalQty >= 8) shippingCost = 75.00;
-                    else if (totalQty >= 9) shippingCost = 150.00;
-                    else if (totalQty >= 4) shippingCost = 40.00;
-                    else shippingCost = 25.00;
-                } else if (selectedRegion === "INTL") {
-                    if (totalQty >= 8) shippingCost = 135.00;
-                    else if (totalQty >= 9) shippingCost = 250.00;
-                    else if (totalQty >= 4) shippingCost = 95.00;
-                    else shippingCost = 65.00;
-                } else if (selectedRegion === "JA") {
-                    if (totalQty >= 6) shippingCost = 35.00;
-                    else if (totalQty >= 7) shippingCost = 150.00;
-                    else if (totalQty >= 3) shippingCost = 20.00;
-                    else shippingCost = 15.00;
+            
+                // Shipping tiers: 1-3, 4-7, 8-12, 13+
+                let tier = 0;
+            
+                if (totalQty >= 13) {
+                    tier = 3;
+                } else if (totalQty >= 8) {
+                    tier = 2;
+                } else if (totalQty >= 4) {
+                    tier = 1;
                 }
+            
+                const shippingRates = {
+                    US: [9.50, 15.00, 25.00, 45.00],
+                    CA: [25.00, 40.00, 75.00, 150.00],
+                    INTL: [65.00, 95.00, 135.00, 250.00],
+                    JA: [15.00, 20.00, 35.00, 150.00]
+                };
+            
+                if (shippingRates[selectedRegion]) {
+                    shippingCost = shippingRates[selectedRegion][tier];
+                }
+            
             } else {
                 document.getElementById('shipping-options').style.display = 'none';
             }
-
+            
             let finalTaxable = Math.max(0, baseTotal - promoDiscountAmt);
             let tax = finalTaxable * 0.04;
             let grandTotal = finalTaxable + shippingCost + tax;
-
+            
             document.getElementById('sub-total').textContent = baseTotal.toFixed(2);
             document.getElementById('promo-discount-amt').textContent = promoDiscountAmt.toFixed(2);
             document.getElementById('shipping-amt').textContent = shippingCost.toFixed(2);
             document.getElementById('tax-amt').textContent = tax.toFixed(2);
             document.getElementById('grand-total').textContent = grandTotal.toFixed(2);
-        }
-
         // --- Notifications ---
         function sendPushNotification(total) {
             fetch("https://api.pushover.net/1/messages.json", {
