@@ -241,6 +241,7 @@
                 document.getElementById('shipping-amt').textContent = shippingCost.toFixed(2);
                 document.getElementById('tax-amt').textContent = tax.toFixed(2);
                 document.getElementById('grand-total').textContent = grandTotal.toFixed(2);
+        }
         // --- Notifications ---
         function sendPushNotification(total) {
             fetch("https://api.pushover.net/1/messages.json", {
