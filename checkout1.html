@@ -202,19 +202,25 @@
                 document.getElementById('shipping-options').style.display = 'block';
                 const selectedRegion = document.getElementById('ship-region').value;
                 if (selectedRegion === "US") {
-                    shippingCost = 9.50;
+                    if (totalQty >= 8) shippingCost = 25.00;
+                    else if (totalQty >= 9) shippingCost = 45.00;
+                    else if (totalQty >= 4) shippingCost = 15.00;
+                    else shippingCost = 9.50;
                 } else if (selectedRegion === "CA") {
                     if (totalQty >= 8) shippingCost = 75.00;
+                    else if (totalQty >= 9) shippingCost = 150.00;
                     else if (totalQty >= 4) shippingCost = 40.00;
                     else shippingCost = 25.00;
                 } else if (selectedRegion === "INTL") {
                     if (totalQty >= 8) shippingCost = 135.00;
+                    else if (totalQty >= 9) shippingCost = 250.00;
                     else if (totalQty >= 4) shippingCost = 95.00;
                     else shippingCost = 65.00;
                 } else if (selectedRegion === "JA") {
-                    if (totalQty >= 6) shippingCost = 25.00;
-                    else if (totalQty >= 3) shippingCost = 15.00;
-                    else shippingCost = 55.00;
+                    if (totalQty >= 6) shippingCost = 35.00;
+                    else if (totalQty >= 7) shippingCost = 150.00;
+                    else if (totalQty >= 3) shippingCost = 20.00;
+                    else shippingCost = 15.00;
                 }
             } else {
                 document.getElementById('shipping-options').style.display = 'none';
