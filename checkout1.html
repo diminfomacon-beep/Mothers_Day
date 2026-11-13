@@ -62,6 +62,7 @@
                 <option value="US">United States ($9.50)</option>
                 <option value="CA">Canada (Calculated Rate)</option> 
                 <option value="INTL">International (Calculated Rate)</option>
+                <option value="JA">Jamaica (Calculated Rate)</option>
             </select>
         </div>
 
@@ -210,6 +211,10 @@
                     if (totalQty >= 8) shippingCost = 135.00;
                     else if (totalQty >= 4) shippingCost = 95.00;
                     else shippingCost = 65.00;
+                } else if (selectedRegion === "JA") {
+                    if (totalQty >= 6) shippingCost = 25.00;
+                    else if (totalQty >= 3) shippingCost = 15.00;
+                    else shippingCost = 55.00;
                 }
             } else {
                 document.getElementById('shipping-options').style.display = 'none';
