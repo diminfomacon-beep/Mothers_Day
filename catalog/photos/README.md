@@ -54,3 +54,15 @@ Photos appear on the catalog page automatically once uploaded.
 - Metallic Business Cards
 - Cardboard Puzzle
 - Custom Playing Cards
+
+## Variation photos (optional)
+
+When a customer picks a variation (a color or finish), the photo can
+switch to match it. Name the file like this:
+`<Product> - <Variation>.jpg`
+for example: `20oz Skinny Tumbler - Monogram Holographic.jpg`
+or `Glass Mug - Full Design 17oz Matte.png`.
+Only upload the variations that actually look different.
+If there is no photo for the variation picked, the main product
+photo stays. The photo follows the color/finish dropdown, or the
+single dropdown when a product only has one.

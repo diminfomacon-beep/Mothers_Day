@@ -113,6 +113,68 @@ function cardHTML(p) {
     '</article>';
 }
 
+function pickVisualMenu(menus) {
+  for (var i = 0; i < menus.length; i++) {
+    var g = (menus[i].dataset.groupName || '').replace(/:$/, '');
+    if (/color/i.test(g)) return menus[i];
+  }
+  if (menus.length === 1) return menus[0];
+  return null;
+}
+
+function tryVariationPhoto(card, display, value) {
+  var img = card.querySelector('.prod-img');
+  if (!img) return;
+  var base = 'photos/' + encodeURIComponent(display + ' - ' + value);
+  var main = 'photos/' + encodeURIComponent(display) + '.jpg';
+  var exts = ['jpg', 'png', 'jpeg'];
+  var token = parseInt(card.getAttribute('data-photo-token') || '0', 10) + 1;
+  card.setAttribute('data-photo-token', token);
+  var attempt = 0;
+  var probe = new Image();
+  probe.onload = function () {
+    if (parseInt(card.getAttribute('data-photo-token') || '0', 10) !== token) return;
+    img.src = probe.src;
+    img.style.display = '';
+  };
+  probe.onerror = function () {
+    attempt++;
+    if (attempt < exts.length) { probe.src = base + '.' + exts[attempt]; return; }
+    if (img.getAttribute('src') !== main) { img.src = main; }
+  };
+  probe.src = base + '.' + exts[0];
+}
+
+function watchButtons() {
+  var frames = document.querySelectorAll('.btn-slot iframe');
+  frames.forEach(function (fr) {
+    if (fr.getAttribute('data-watched')) return;
+    fr.setAttribute('data-watched', '1');
+    var attach = function () {
+      try {
+        var doc = fr.contentDocument;
+        if (!doc) return;
+        var menus = doc.querySelectorAll('.dynamic-option-menu');
+        if (!menus.length) return;
+        var menu = pickVisualMenu(menus);
+        if (!menu) return;
+        var card = fr.closest('.card');
+        if (!card) return;
+        var h3 = card.querySelector('h3');
+        var display = h3 ? h3.textContent.trim() : '';
+        if (!display) return;
+        var sync = function () { tryVariationPhoto(card, display, menu.value); };
+        menu.addEventListener('change', sync);
+        sync();
+      } catch (e) { /* button not readable yet; photo stays on the main one */ }
+    };
+    try {
+      if (fr.contentDocument && fr.contentDocument.readyState === 'complete') attach();
+      else fr.addEventListener('load', attach);
+    } catch (e) { fr.addEventListener('load', attach); }
+  });
+}
+
 function render(rows, live) {
   var byName = {};
   rows.forEach(function (r) { byName[r.n] = r; });
@@ -140,6 +202,7 @@ function render(rows, live) {
   } else {
     notice.classList.remove('show');
   }
+  watchButtons();
 }
 
 function rowsFromCSV(text) {
