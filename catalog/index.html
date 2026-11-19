@@ -173,15 +173,15 @@ function watchButtons() {
         var h3 = card.querySelector('h3');
         var display = h3 ? h3.textContent.trim() : '';
         if (!display) return;
+        if (fr.getAttribute('data-photo-attached')) return;
+        fr.setAttribute('data-photo-attached', '1');
         var sync = function () { tryVariationPhoto(card, display, menu.value); };
         menu.addEventListener('change', sync);
         sync();
       } catch (e) { /* button not readable yet; photo stays on the main one */ }
     };
-    try {
-      if (fr.contentDocument && fr.contentDocument.readyState === 'complete') attach();
-      else fr.addEventListener('load', attach);
-    } catch (e) { fr.addEventListener('load', attach); }
+    fr.addEventListener('load', attach);
+    try { attach(); } catch (e) {}
   });
 }
 
@@ -218,6 +218,8 @@ function watchStock() {
         var display = h3 ? h3.textContent.trim() : sheetName;
         var badge = card.querySelector('.stock-badge');
         var pre = card.querySelector('.preorder-btn');
+        if (fr.getAttribute('data-stock-attached')) return;
+        fr.setAttribute('data-stock-attached', '1');
         var sync = function () {
           var val = menu.value;
           var st = stockFor(sheetName, val);
@@ -250,10 +252,8 @@ function watchStock() {
         sync();
       } catch (e) { /* stock stays unlimited if the button cannot be read */ }
     };
-    try {
-      if (fr.contentDocument && fr.contentDocument.readyState === 'complete') attach();
-      else fr.addEventListener('load', attach);
-    } catch (e) { fr.addEventListener('load', attach); }
+    fr.addEventListener('load', attach);
+    try { attach(); } catch (e) {}
   });
 }
 
