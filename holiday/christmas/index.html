@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Christmas — D.I.M. Bright Ideas LLC</title>
+<style>
+  :root { --green:#0e3b2e; --green-soft:#e6f0eb; --red:#c1272d; --gold:#c9a227; --ink:#222; --muted:#666; --line:#e5e5e5; --bg:#f4f7f9; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:Georgia,'Times New Roman',serif; background:var(--bg); color:var(--ink); }
+  header { background:var(--green); color:#fff; padding:28px 20px 22px; text-align:center; }
+  header .eyebrow { margin:0 0 6px; font-size:13px; letter-spacing:2.5px; text-transform:uppercase; opacity:.85; }
+  header h1 { margin:0; font-size:46px; letter-spacing:.5px; }
+  header p { margin:8px 0 0; font-size:15px; opacity:.9; }
+  .bar { max-width:1100px; margin:0 auto; padding:14px 20px 0; display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between; }
+  .bar a { color:var(--red); font-weight:bold; text-decoration:none; }
+  .intro { max-width:1100px; margin:10px auto 0; padding:0 20px; text-align:center; color:#444; font-size:15px; line-height:1.6; }
+  .intro strong { color:var(--red); }
+  .updated { font-size:13px; color:var(--muted); }
+  main { max-width:1100px; margin:0 auto; padding:8px 20px 40px; position:relative; z-index:1; }
+  h2.section { font-size:24px; color:var(--green); border-bottom:2px solid var(--gold); padding-bottom:6px; margin:36px 0 18px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:20px; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:12px; padding:18px; box-shadow:0 2px 8px rgba(0,0,0,.05); }
+  .card h3 { margin:0 0 6px; font-size:19px; color:var(--green); }
+  .prod-img { width:100%; border-radius:8px; margin-bottom:10px; display:block; }
+  .ready { font-size:13px; font-weight:bold; color:var(--red); margin:0 0 6px; }
+  .price { font-size:18px; font-weight:bold; color:var(--red); margin:0 0 10px; }
+  .btn-slot iframe { width:100%; border:0; display:block; }
+  .cta { max-width:1100px; margin:0 auto; padding:0 20px 40px; text-align:center; font-size:16px; line-height:1.6; position:relative; z-index:1; }
+  .cta a { color:var(--red); font-weight:bold; }
+  footer { text-align:center; color:var(--muted); font-size:13px; padding:20px; position:relative; z-index:1; }
+  .loading { text-align:center; color:var(--muted); padding:30px 0; font-size:15px; }
+  #snow { position:fixed; inset:0; pointer-events:none; z-index:50; overflow:hidden; }
+  .flake { position:absolute; top:-12px; background:#fff; border-radius:50%; box-shadow:0 0 6px rgba(255,255,255,.9); animation:fall linear infinite; }
+  @keyframes fall { to { transform:translateY(105vh); } }
+  @media (prefers-reduced-motion: reduce) { #snow { display:none; } }
+</style>
+</head>
+<body>
+<div id="snow" aria-hidden="true"></div>
+<header>
+  <p class="eyebrow">D.I.M. Bright Ideas LLC</p>
+  <h1>Christmas</h1>
+  <p>Ready-made Christmas favorites — ready to ship or pick up today</p>
+</header>
+<div class="bar">
+  <span class="updated" id="updated">Prices load live from our price sheet.</span>
+  <a href="https://www.dimbrightideas.com/cart" target="_blank" rel="noopener">View Cart &rarr;</a>
+</div>
+<p class="intro">Limited quantities available on Christmas items.<br><strong>Christmas ordering closes Friday, Dec 11, 2026</strong> — order early, these are ready to go!</p>
+<main id="christmas">
+<h2 class="section">Christmas Drinkware</h2><div class="grid"><article class="card" data-sheet="30oz Christmas Mint Grippy"><img class="prod-img" src="photos/30oz%20Christmas%20Mint%20Grippy.jpg" data-ext="0" onerror="imgFallback(this)" alt="30oz Christmas Mint Grippy" loading="lazy"><h3>30oz Christmas Mint Grippy</h3><p class="ready">Ready to Ship/Pickup</p><p class="price">$33</p><div class="btn-slot"><iframe title="Order 30oz Christmas Mint Grippy" src="https://diminfomacon-beep.github.io/Mothers_Day/grab-and-go-btn.html?name=30oz_Christmas_Mint_Grippy&amp;price=33&amp;vars=" style="height:110px" loading="lazy"></iframe></div></article><article class="card" data-sheet="20oz Pink Christmas Glass"><img class="prod-img" src="photos/20oz%20Pink%20Christmas%20Glass.jpg" data-ext="0" onerror="imgFallback(this)" alt="20oz Pink Christmas Glass" loading="lazy"><h3>20oz Pink Christmas Glass</h3><p class="ready">Ready to Ship/Pickup</p><p class="price">$25</p><div class="btn-slot"><iframe title="Order 20oz Pink Christmas Glass" src="https://diminfomacon-beep.github.io/Mothers_Day/grab-and-go-btn.html?name=20oz_Pink_Christmas_Glass&amp;price=25&amp;vars=" style="height:110px" loading="lazy"></iframe></div></article><article class="card" data-sheet="35oz Glitter Christmas"><img class="prod-img" src="photos/35oz%20Glitter%20Christmas.jpg" data-ext="0" onerror="imgFallback(this)" alt="35oz Glitter Christmas" loading="lazy"><h3>35oz Glitter Christmas</h3><p class="ready">Ready to Ship/Pickup</p><p class="price">$32</p><div class="btn-slot"><iframe title="Order 35oz Glitter Christmas" src="https://diminfomacon-beep.github.io/Mothers_Day/grab-and-go-btn.html?name=35oz_Glitter_Christmas&amp;price=32&amp;vars=" style="height:110px" loading="lazy"></iframe></div></article><article class="card" data-sheet="18oz  Christmas Glow Wine Glass"><img class="prod-img" src="photos/18oz%20Christmas%20Glow%20Wine%20Glass.jpg" data-ext="0" onerror="imgFallback(this)" alt="18oz Christmas Glow Wine Glass" loading="lazy"><h3>18oz Christmas Glow Wine Glass</h3><p class="ready">Ready to Ship/Pickup</p><p class="price">$25</p><div class="btn-slot"><iframe title="Order 18oz Christmas Glow Wine Glass" src="https://diminfomacon-beep.github.io/Mothers_Day/grab-and-go-btn.html?name=18oz__Christmas_Glow_Wine_Glass&amp;price=25&amp;vars=" style="height:110px" loading="lazy"></iframe></div></article><article class="card" data-sheet="30oz Christmas Trio Traveler"><img class="prod-img" src="photos/30oz%20Christmas%20Trio%20Traveler.jpg" data-ext="0" onerror="imgFallback(this)" alt="30oz Christmas Trio Traveler" loading="lazy"><h3>30oz Christmas Trio Traveler</h3><p class="ready">Ready to Ship/Pickup</p><p class="price">$35</p><div class="btn-slot"><iframe title="Order 30oz Christmas Trio Traveler" src="https://diminfomacon-beep.github.io/Mothers_Day/grab-and-go-btn.html?name=30oz_Christmas_Trio_Traveler&amp;price=35&amp;vars=" style="height:110px" loading="lazy"></iframe></div></article><article class="card" data-sheet="20oz Christmas Glass"><img class="prod-img" src="photos/20oz%20Christmas%20Glass.jpg" data-ext="0" onerror="imgFallback(this)" alt="20oz Christmas Glass" loading="lazy"><h3>20oz Christmas Glass</h3><p class="ready">Ready to Ship/Pickup</p><p class="price">$25</p><div class="btn-slot"><iframe title="Order 20oz Christmas Glass" src="https://diminfomacon-beep.github.io/Mothers_Day/grab-and-go-btn.html?name=20oz_Christmas_Glass&amp;price=25&amp;vars=" style="height:110px" loading="lazy"></iframe></div></article><article class="card" data-sheet="20oz Christmas Storyboard"><img class="prod-img" src="photos/20oz%20Christmas%20Storyboard.jpg" data-ext="0" onerror="imgFallback(this)" alt="20oz Christmas Storyboard" loading="lazy"><h3>20oz Christmas Storyboard</h3><p class="ready">Ready to Ship/Pickup</p><p class="price">$25</p><div class="btn-slot"><iframe title="Order 20oz Christmas Storyboard" src="https://diminfomacon-beep.github.io/Mothers_Day/grab-and-go-btn.html?name=20oz_Christmas_Storyboard&amp;price=25&amp;vars=" style="height:110px" loading="lazy"></iframe></div></article></div><h2 class="section">Christmas Keepsakes</h2><div class="grid"><article class="card" data-sheet="Personalized Double Sided Ornaments"><img class="prod-img" src="photos/Personalized%20Double%20Sided%20Ornaments.jpg" data-ext="0" onerror="imgFallback(this)" alt="Personalized Double Sided Ornaments" loading="lazy"><h3>Personalized Double Sided Ornaments</h3><p class="ready">Ready to Ship/Pickup</p><p class="price">$5</p><div class="btn-slot"><iframe title="Order Personalized Double Sided Ornaments" src="https://diminfomacon-beep.github.io/Mothers_Day/grab-and-go-btn.html?name=Personalized_Double_Sided_Ornaments&amp;price=5&amp;vars=" style="height:110px" loading="lazy"></iframe></div></article><article class="card" data-sheet="Christmas Photo Panel - 8&quot; x 10&quot;"><img class="prod-img" src="photos/Christmas%20Photo%20Panel%20-%208%22%20x%2010%22.jpg" data-ext="0" onerror="imgFallback(this)" alt="Christmas Photo Panel - 8&quot; x 10&quot;" loading="lazy"><h3>Christmas Photo Panel - 8&quot; x 10&quot;</h3><p class="ready">Ready to Ship/Pickup</p><p class="price">$10</p><div class="btn-slot"><iframe title="Order Christmas Photo Panel - 8&quot; x 10&quot;" src="https://diminfomacon-beep.github.io/Mothers_Day/grab-and-go-btn.html?name=Christmas_Photo_Panel_-_8%22_x_10%22&amp;price=10&amp;vars=" style="height:110px" loading="lazy"></iframe></div></article></div>
+</main>
+<div class="cta">Don&rsquo;t see what you want? Let&rsquo;s create your customized experience.<br><a href="https://www.dimbrightideas.com/catalog" target="_blank" rel="noopener">Shop our Catalog &rarr;</a></div>
+<footer>Questions? Email info@dimbrightideas.com or text (478) 382-0150 &middot; Prices update automatically when our price sheet changes.</footer>
+<script>
+var SHEET_CSV = "https://docs.google.com/spreadsheets/d/1prGR7MNbp5MwnfMUmxD96BmvrHl-QKC-u90zQffflow/gviz/tq?tqx=out:csv&sheet=Premade%20Simple%20Buttons";
+var FALLBACK = [{"n": "30oz Christmas Mint Grippy", "p": 33.0, "u": "https://diminfomacon-beep.github.io/Mothers_Day/grab-and-go-btn.html?name=30oz_Christmas_Mint_Grippy&price=33&vars=", "v": false}, {"n": "20oz Pink Christmas Glass", "p": 25.0, "u": "https://diminfomacon-beep.github.io/Mothers_Day/grab-and-go-btn.html?name=20oz_Pink_Christmas_Glass&price=25&vars=", "v": false}, {"n": "35oz Glitter Christmas", "p": 32.0, "u": "https://diminfomacon-beep.github.io/Mothers_Day/grab-and-go-btn.html?name=35oz_Glitter_Christmas&price=32&vars=", "v": false}, {"n": "18oz  Christmas Glow Wine Glass", "p": 25.0, "u": "https://diminfomacon-beep.github.io/Mothers_Day/grab-and-go-btn.html?name=18oz__Christmas_Glow_Wine_Glass&price=25&vars=", "v": false}, {"n": "30oz Christmas Trio Traveler", "p": 35.0, "u": "https://diminfomacon-beep.github.io/Mothers_Day/grab-and-go-btn.html?name=30oz_Christmas_Trio_Traveler&price=35&vars=", "v": false}, {"n": "20oz Christmas Glass", "p": 25.0, "u": "https://diminfomacon-beep.github.io/Mothers_Day/grab-and-go-btn.html?name=20oz_Christmas_Glass&price=25&vars=", "v": false}, {"n": "20oz Christmas Storyboard", "p": 25.0, "u": "https://diminfomacon-beep.github.io/Mothers_Day/grab-and-go-btn.html?name=20oz_Christmas_Storyboard&price=25&vars=", "v": false}, {"n": "Personalized Double Sided Ornaments", "p": 5.0, "u": "https://diminfomacon-beep.github.io/Mothers_Day/grab-and-go-btn.html?name=Personalized_Double_Sided_Ornaments&price=5&vars=", "v": false}, {"n": "Christmas Photo Panel - 8\" x 10\"", "p": 10.0, "u": "https://diminfomacon-beep.github.io/Mothers_Day/grab-and-go-btn.html?name=Christmas_Photo_Panel_-_8%22_x_10%22&price=10&vars=", "v": false}];
+var MAPS = {"names": {"18oz  Christmas Glow Wine Glass": "18oz Christmas Glow Wine Glass"}, "sections": [["Christmas Drinkware", ["30oz Christmas Mint Grippy", "20oz Pink Christmas Glass", "35oz Glitter Christmas", "18oz  Christmas Glow Wine Glass", "30oz Christmas Trio Traveler", "20oz Christmas Glass", "20oz Christmas Storyboard"]], ["Christmas Keepsakes", ["Personalized Double Sided Ornaments", "Christmas Photo Panel - 8\" x 10\""]]], "page": ["18oz  Christmas Glow Wine Glass", "20oz Christmas Glass", "20oz Christmas Storyboard", "20oz Pink Christmas Glass", "30oz Christmas Mint Grippy", "30oz Christmas Trio Traveler", "35oz Glitter Christmas", "Christmas Photo Panel - 8\" x 10\"", "Personalized Double Sided Ornaments"]};
+var SECTIONS = MAPS.sections;
+var NAME_MAP = MAPS.names, PAGE = MAPS.page;
+
+(function snow() {
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var layer = document.getElementById('snow');
+  for (var i = 0; i < 30; i++) {
+    var f = document.createElement('span');
+    f.className = 'flake';
+    var size = 4 + Math.random() * 7;
+    f.style.width = size + 'px';
+    f.style.height = size + 'px';
+    f.style.left = (Math.random() * 100) + 'vw';
+    f.style.opacity = (0.4 + Math.random() * 0.5);
+    f.style.animationDuration = (7 + Math.random() * 8) + 's';
+    f.style.animationDelay = (-Math.random() * 12) + 's';
+    layer.appendChild(f);
+  }
+})();
+
+function imgFallback(el) {
+  var exts = ['jpg', 'png', 'jpeg'];
+  var i = parseInt(el.getAttribute('data-ext') || '0', 10) + 1;
+  if (i >= exts.length) { el.style.display = 'none'; return; }
+  el.setAttribute('data-ext', i);
+  el.src = el.src.replace(/\.(jpg|png|jpeg)(\?.*)?$/i, '') + '.' + exts[i];
+}
+
+function parseCSV(text) {
+  var rows = [], row = [], cur = '', inQ = false;
+  for (var i = 0; i < text.length; i++) {
+    var c = text[i];
+    if (inQ) {
+      if (c === '"') {
+        if (text[i+1] === '"') { cur += '"'; i++; } else { inQ = false; }
+      } else { cur += c; }
+    } else if (c === '"') { inQ = true; }
+    else if (c === ',') { row.push(cur); cur = ''; }
+    else if (c === '\n' || c === '\r') {
+      if (c === '\r' && text[i+1] === '\n') i++;
+      row.push(cur); cur = '';
+      if (row.length > 1 || row[0] !== '') rows.push(row);
+      row = [];
+    } else { cur += c; }
+  }
+  if (cur !== '' || row.length) { row.push(cur); rows.push(row); }
+  return rows;
+}
+
+function priceText(p, hasVars) {
+  var n = (p % 1 === 0) ? p : p.toFixed(2);
+  return hasVars ? 'From $' + n : '$' + n;
+}
+
+function cardHTML(p) {
+  var display = NAME_MAP[p.n] || p.n;
+  var img = 'photos/' + encodeURIComponent(display) + '.jpg';
+  var imgTag = '<img class="prod-img" src="' + img + '" data-ext="0" onerror="imgFallback(this)" alt="' + display.replace(/"/g,'&quot;') + '" loading="lazy">';
+  var height = p.v ? 170 : 110;
+  return '<article class="card" data-sheet="' + p.n.replace(/"/g,'&quot;') + '">' + imgTag +
+    '<h3>' + display.replace(/</g,'&lt;') + '</h3>' +
+    '<p class="ready">Ready to Ship/Pickup</p>' +
+    '<p class="price">' + priceText(p.p, p.v) + '</p>' +
+    '<div class="btn-slot"><iframe title="Order ' + display.replace(/"/g,'&quot;') + '" src="' + p.u.replace(/"/g,'&quot;') + '" style="height:' + height + 'px" loading="lazy"></iframe></div>' +
+    '</article>';
+}
+
+function pickVisualMenu(menus) {
+  for (var i = 0; i < menus.length; i++) {
+    var g = (menus[i].dataset.groupName || '').replace(/:$/, '');
+    if (/color/i.test(g)) return menus[i];
+  }
+  if (menus.length === 1) return menus[0];
+  return null;
+}
+
+function tryVariationPhoto(card, display, value) {
+  var img = card.querySelector('.prod-img');
+  if (!img) return;
+  var base = 'photos/' + encodeURIComponent(display + ' - ' + value);
+  var main = 'photos/' + encodeURIComponent(display) + '.jpg';
+  var exts = ['jpg', 'png', 'jpeg'];
+  var token = parseInt(card.getAttribute('data-photo-token') || '0', 10) + 1;
+  card.setAttribute('data-photo-token', token);
+  var attempt = 0;
+  var probe = new Image();
+  probe.onload = function () {
+    if (parseInt(card.getAttribute('data-photo-token') || '0', 10) !== token) return;
+    img.src = probe.src;
+    img.style.display = '';
+  };
+  probe.onerror = function () {
+    attempt++;
+    if (attempt < exts.length) { probe.src = base + '.' + exts[attempt]; return; }
+    if (img.getAttribute('src') !== main) { img.src = main; }
+  };
+  probe.src = base + '.' + exts[0];
+}
+
+function watchButtons() {
+  var frames = document.querySelectorAll('.btn-slot iframe');
+  frames.forEach(function (fr) {
+    if (fr.getAttribute('data-watched')) return;
+    fr.setAttribute('data-watched', '1');
+    var attach = function () {
+      try {
+        var doc = fr.contentDocument;
+        if (!doc) return;
+        var menus = doc.querySelectorAll('.dynamic-option-menu');
+        if (!menus.length) return;
+        var menu = pickVisualMenu(menus);
+        if (!menu) return;
+        var card = fr.closest('.card');
+        if (!card) return;
+        var h3 = card.querySelector('h3');
+        var display = h3 ? h3.textContent.trim() : '';
+        if (!display) return;
+        if (fr.getAttribute('data-photo-attached')) return;
+        fr.setAttribute('data-photo-attached', '1');
+        var sync = function () { tryVariationPhoto(card, display, menu.value); };
+        menu.addEventListener('change', sync);
+        sync();
+      } catch (e) { /* button not readable yet; photo stays on the main one */ }
+    };
+    fr.addEventListener('load', attach);
+    try { attach(); } catch (e) {}
+  });
+}
+
+function render(rows, live) {
+  var byName = {};
+  rows.forEach(function (r) { byName[r.n] = r; });
+  var out = '', seen = {};
+  SECTIONS.forEach(function (sec) {
+    var cards = [];
+    sec[1].forEach(function (name) {
+      var p = byName[name];
+      if (p) { cards.push(cardHTML(p)); seen[name] = true; }
+    });
+    if (cards.length) out += '<h2 class="section">' + sec[0] + '</h2><div class="grid">' + cards.join('') + '</div>';
+  });
+  document.getElementById('christmas').innerHTML = out;
+  var upd = document.getElementById('updated');
+  var now = new Date();
+  upd.textContent = live
+    ? 'Prices updated live from the price sheet — ' + now.toLocaleString()
+    : 'Prices as of Nov 20, 2026.';
+  watchButtons();
+}
+
+function rowsFromCSV(text) {
+  var rows = parseCSV(text).slice(1); // skip header
+  var out = [];
+  rows.forEach(function (r) {
+    if (!r || r.length < 4) return;
+    var name = (r[0] || '').trim(), price = parseFloat((r[1] || '').trim()),
+        vars = (r[2] || '').trim(), url = (r[3] || '').trim();
+    if (!name || isNaN(price) || !url) return;
+    if (PAGE.indexOf(name) === -1) return; // only the curated Christmas set
+    out.push({ n: name, p: price, u: url, v: vars.length > 0 });
+  });
+  return out;
+}
+
+render(FALLBACK, false);
+fetch(SHEET_CSV + '&t=' + Date.now())
+  .then(function (r) { if (!r.ok) throw new Error('sheet not public'); return r.text(); })
+  .then(function (t) {
+    if (t.trim().charAt(0) === '<') throw new Error('sheet not published');
+    var rows = rowsFromCSV(t);
+    if (rows.length) render(rows, true);
+  })
+  .catch(function () { /* keep the saved-price fallback */ });
+</script>
+</body>
+</html>
