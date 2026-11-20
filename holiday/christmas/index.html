@@ -8,13 +8,18 @@
   :root { --green:#0e3b2e; --green-soft:#e6f0eb; --red:#c1272d; --gold:#c9a227; --ink:#222; --muted:#666; --line:#e5e5e5; --bg:#f4f7f9; }
   * { box-sizing:border-box; }
   body { margin:0; font-family:Georgia,'Times New Roman',serif; background:var(--bg); color:var(--ink); }
-  header { background:var(--green); color:#fff; padding:28px 20px 22px; text-align:center; }
+  header { background:var(--green); color:#fff; padding:28px 20px 54px; text-align:center; position:relative; z-index:1; }
   header .eyebrow { margin:0 0 6px; font-size:13px; letter-spacing:2.5px; text-transform:uppercase; opacity:.85; }
   header h1 { margin:0; font-size:46px; letter-spacing:.5px; }
   header p { margin:8px 0 0; font-size:15px; opacity:.9; }
-  .bar { max-width:1100px; margin:0 auto; padding:14px 20px 0; display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between; }
+  .garland { position:absolute; left:0; right:0; bottom:0; width:100%; height:48px; }
+  .bulb { animation:twinkle 1.8s ease-in-out infinite; }
+  @keyframes twinkle { 0%,100% { opacity:1; } 50% { opacity:.3; } }
+  .scene { position:fixed; inset:0; z-index:0; pointer-events:none; }
+  .scene svg { width:100%; height:100%; display:block; }
+  .bar { max-width:1100px; margin:0 auto; padding:14px 20px 0; display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between; position:relative; z-index:1; }
   .bar a { color:var(--red); font-weight:bold; text-decoration:none; }
-  .intro { max-width:1100px; margin:10px auto 0; padding:0 20px; text-align:center; color:#444; font-size:15px; line-height:1.6; }
+  .intro { max-width:1100px; margin:10px auto 0; padding:0 20px; text-align:center; color:#444; font-size:15px; line-height:1.6; position:relative; z-index:1; }
   .intro strong { color:var(--red); }
   .updated { font-size:13px; color:var(--muted); }
   main { max-width:1100px; margin:0 auto; padding:8px 20px 40px; position:relative; z-index:1; }
@@ -33,15 +38,46 @@
   #snow { position:fixed; inset:0; pointer-events:none; z-index:50; overflow:hidden; }
   .flake { position:absolute; top:-12px; background:#fff; border-radius:50%; box-shadow:0 0 6px rgba(255,255,255,.9); animation:fall linear infinite; }
   @keyframes fall { to { transform:translateY(105vh); } }
-  @media (prefers-reduced-motion: reduce) { #snow { display:none; } }
+  @media (prefers-reduced-motion: reduce) { #snow { display:none; } .bulb { animation:none; } }
 </style>
 </head>
 <body>
+<div class="scene" aria-hidden="true"><svg viewBox="0 0 1200 800" preserveAspectRatio="xMidYMax slice">
+<defs>
+<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfe6f7"/><stop offset="1" stop-color="#f6fbff"/></linearGradient>
+<linearGradient id="ground" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#dfeaf4"/></linearGradient>
+<g id="pine">
+<path d="M0,-115 L28,-60 L-28,-60 Z" fill="currentColor"/>
+<path d="M0,-88 L36,-18 L-36,-18 Z" fill="currentColor"/>
+<path d="M0,-58 L44,25 L-44,25 Z" fill="currentColor"/>
+<rect x="-6" y="25" width="12" height="20" fill="#6b4226"/>
+<path d="M0,-115 L12,-92 L-12,-92 Z" fill="#fff" opacity="0.95"/>
+<ellipse cx="-20" cy="-18" rx="9" ry="3.5" fill="#fff" opacity="0.9"/>
+<ellipse cx="18" cy="25" rx="10" ry="4" fill="#fff" opacity="0.9"/>
+</g>
+</defs>
+<rect width="1200" height="800" fill="url(#sky)"/>
+<ellipse cx="200" cy="90" rx="90" ry="22" fill="#fff" opacity="0.55"/>
+<ellipse cx="950" cy="60" rx="110" ry="26" fill="#fff" opacity="0.55"/>
+<ellipse cx="620" cy="150" rx="80" ry="18" fill="#fff" opacity="0.45"/>
+<path d="M0,560 Q300,480 600,545 T1200,530 L1200,800 L0,800 Z" fill="#e3eef7"/>
+<path d="M0,620 Q400,550 800,610 T1200,600 L1200,800 L0,800 Z" fill="#d3e5f2"/>
+<path d="M0,700 Q300,660 600,695 T1200,685 L1200,800 L0,800 Z" fill="url(#ground)"/>
+<use href="#pine" transform="translate(360,780) scale(0.5)" color="#2d6a4f" opacity="0.7"/>
+<use href="#pine" transform="translate(840,780) scale(0.55)" color="#2d6a4f" opacity="0.7"/>
+<use href="#pine" transform="translate(70,770) scale(1.5)" color="#0e3b2e"/>
+<use href="#pine" transform="translate(160,770) scale(1.05)" color="#14532d"/>
+<use href="#pine" transform="translate(235,770) scale(0.7)" color="#0e3b2e"/>
+<use href="#pine" transform="translate(1130,770) scale(1.5)" color="#0e3b2e"/>
+<use href="#pine" transform="translate(1040,770) scale(1.05)" color="#14532d"/>
+<use href="#pine" transform="translate(965,770) scale(0.7)" color="#0e3b2e"/>
+</svg></div>
 <div id="snow" aria-hidden="true"></div>
 <header>
   <p class="eyebrow">D.I.M. Bright Ideas LLC</p>
   <h1>Christmas</h1>
   <p>Ready-made Christmas favorites — ready to ship or pick up today</p>
+  <svg class="garland" viewBox="0 0 1200 48" preserveAspectRatio="none" aria-hidden="true"><path d="M0,8 Q100,34 200,8 T400,8 T600,8 T800,8 T1000,8 T1200,8" fill="none" stroke="#062a21" stroke-width="2"/><g class="bulb" style="animation-delay:0s"><circle cx="100" cy="40" r="10" fill="#ff5a5f" opacity="0.3"/><circle cx="100" cy="40" r="5.5" fill="#ff5a5f"/></g><g class="bulb" style="animation-delay:0.25s"><circle cx="300" cy="40" r="10" fill="#f2b13c" opacity="0.3"/><circle cx="300" cy="40" r="5.5" fill="#f2b13c"/></g><g class="bulb" style="animation-delay:0.5s"><circle cx="500" cy="40" r="10" fill="#4ade80" opacity="0.3"/><circle cx="500" cy="40" r="5.5" fill="#4ade80"/></g><g class="bulb" style="animation-delay:0.75s"><circle cx="700" cy="40" r="10" fill="#60a5fa" opacity="0.3"/><circle cx="700" cy="40" r="5.5" fill="#60a5fa"/></g><g class="bulb" style="animation-delay:1s"><circle cx="900" cy="40" r="10" fill="#f472b6" opacity="0.3"/><circle cx="900" cy="40" r="5.5" fill="#f472b6"/></g><g class="bulb" style="animation-delay:1.25s"><circle cx="1100" cy="40" r="10" fill="#ff5a5f" opacity="0.3"/><circle cx="1100" cy="40" r="5.5" fill="#ff5a5f"/></g><g class="bulb" style="animation-delay:0.15s"><circle cx="200" cy="14" r="9" fill="#4ade80" opacity="0.3"/><circle cx="200" cy="14" r="4.5" fill="#4ade80"/></g><g class="bulb" style="animation-delay:0.4s"><circle cx="400" cy="14" r="9" fill="#60a5fa" opacity="0.3"/><circle cx="400" cy="14" r="4.5" fill="#60a5fa"/></g><g class="bulb" style="animation-delay:0.65s"><circle cx="600" cy="14" r="9" fill="#f472b6" opacity="0.3"/><circle cx="600" cy="14" r="4.5" fill="#f472b6"/></g><g class="bulb" style="animation-delay:0.9s"><circle cx="800" cy="14" r="9" fill="#ff5a5f" opacity="0.3"/><circle cx="800" cy="14" r="4.5" fill="#ff5a5f"/></g><g class="bulb" style="animation-delay:1.15s"><circle cx="1000" cy="14" r="9" fill="#f2b13c" opacity="0.3"/><circle cx="1000" cy="14" r="4.5" fill="#f2b13c"/></g></svg>
 </header>
 <div class="bar">
   <span class="updated" id="updated">Prices load live from our price sheet.</span>
