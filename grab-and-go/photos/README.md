@@ -63,6 +63,11 @@ order dropdown (the button trims them), so copy them exactly.
 
 Total photo names (base + variations): 169
 
+Note: Windows drops trailing dots from a file name, so the
+'Grow through...' variety photo is saved as
+'A5 Padfolio - Grow through.jpg' — the page maps it
+automatically, so it still shows when that variety is picked.
+
 ### 12oz Kids Water Bottle
 
 - 12oz Kids Water Bottle - Ocean Creatures
