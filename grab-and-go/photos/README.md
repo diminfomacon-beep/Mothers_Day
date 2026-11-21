@@ -80,7 +80,7 @@ Total photo names (base + variations): 169
 
 ### 12oz Grippy Tumbler
 
-- 12oz Grippy Tumbler - Faries
+- 12oz Grippy Tumbler - Fairies
 - 12oz Grippy Tumbler - Baby Dinosaur
 - 12oz Grippy Tumbler - Hot Air Balloon
 
