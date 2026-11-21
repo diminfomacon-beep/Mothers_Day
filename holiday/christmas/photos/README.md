@@ -17,3 +17,9 @@ Photos appear on the Christmas page automatically once uploaded.
 - 20oz Christmas Storyboard
 - Personalized Double Sided Ornaments
 - Christmas Photo Panel - 8" x 10"
+
+## Name overrides
+These photos are named differently from the product name on the page,
+so the page is set to look for the file name shown here:
+
+- Christmas Photo Panel - 8" x 10" -> Christmas Photo Panel - 8 x 10 (2).png
