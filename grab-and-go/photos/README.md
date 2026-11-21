@@ -309,7 +309,7 @@ Total photo names (base + variations): 169
 ### Adult Short Sleeve T-Shirt - XL
 
 - Adult Short Sleeve T-Shirt - XL - Don't Rise and Shine(Sport Gray-Cotton)
-- Adult Short Sleeve T-Shirt - XL - Man and Woman Silouhette(White-Polyester)
+- Adult Short Sleeve T-Shirt - XL - Man and Woman Silhouette(White-Polyester)
 
 ### Kids Short Sleeve T-Shirt - XL
 
