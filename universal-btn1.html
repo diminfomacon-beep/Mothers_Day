@@ -44,6 +44,10 @@
         }
 
         .button-row { display: flex; gap: 10px; margin-top: 12px; }
+        /* Narrow card (phone, 2-across grid): stack the two buttons so they stay tappable */
+        @media (max-width: 220px) {
+            .button-row { flex-direction: column; }
+        }
         .action-btn { 
             flex: 1; padding: 12px; font-weight: bold; border-radius: 10px; border: none; cursor: pointer; transition: 0.2s; color: white; text-align: center; font-size: 13px;
         }
