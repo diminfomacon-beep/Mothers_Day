@@ -43,7 +43,7 @@
   .btn-slot iframe, .bundle iframe { max-width:100%; -webkit-overflow-scrolling:touch; }
   .stock-badge { display:none; font-size:14px; font-weight:bold; margin:0 0 10px; padding:6px 10px; border-radius:8px; }
   .stock-badge.low { display:block; background:#fff3cd; color:#7a5b00; border:1px solid #f0d48a; }
-  .stock-badge.out { display:block; background:#fdecea; color:#8f1d1d; border:1px solid #f2b8b5; }
+  .stock-badge.out { display:block; background:#e3efe9; color:#0a3a32; border:1px solid #9dc8b8; }
   .preorder-btn { display:none; margin-top:10px; background:#25d366; color:#fff; font-weight:bold; text-align:center; text-decoration:none; padding:10px 14px; border-radius:8px; }
   .preorder-btn.show { display:block; }
   .bundle { margin-top:44px; }
@@ -278,7 +278,7 @@ function watchStock() {
             if (pre) pre.classList.remove('show');
             enable(true);
           } else if (st <= 0) {
-            if (badge) { badge.className = 'stock-badge out'; badge.textContent = 'Out of stock — available for pre-order'; }
+            if (badge) { badge.className = 'stock-badge out'; badge.textContent = 'Not in stock right now — I can order it from the manufacturer!'; }
             if (pre) { pre.href = 'https://wa.me/14783820150?text=' + encodeURIComponent('Hi! I would like to pre-order the ' + display + ' - ' + val + ' from D.I.M. Bright Ideas.'); pre.classList.add('show'); }
             enable(false);
           } else if (st <= 2) {
