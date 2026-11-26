@@ -152,10 +152,26 @@
                     sel.appendChild(opt);
                 });
                 
+                sel.addEventListener('change', reportPrice);
                 dropdownContainer.appendChild(lbl);
                 dropdownContainer.appendChild(sel);
             }
         });
+    }
+
+    // Tell the parent page (the catalog card) the selected variation's total
+    // price, so the card's displayed price follows the option picked. Uses
+    // postMessage so it works whether this button is same-origin or
+    // cross-origin (github.io). The parent checks the origin.
+    function reportPrice() {
+        let total = basePrice;
+        document.querySelectorAll('.dynamic-option-menu').forEach(function (menu) {
+            const opt = menu.options[menu.selectedIndex];
+            if (opt) total += parseFloat(opt.dataset.price) || 0;
+        });
+        try {
+            window.parent.postMessage({ type: 'dim-price', total: total, base: basePrice }, '*');
+        } catch (e) {}
     }
 
     // Grow this widget's iframe to fit its content (same origin as the page,
@@ -333,6 +349,7 @@
             if(document.getElementById('upload-status')) document.getElementById('upload-status').textContent = "";
             
             optionMenus.forEach(menu => menu.selectedIndex = 0);
+            reportPrice();
         }, 2000);
     }
 </script>
