@@ -293,7 +293,7 @@ function watchStock() {
         sync();
         // Preorder disclosure: when a preorder item is added to the cart or
         // bundle, warn the customer it will take extra time to be ready.
-        var preorderNote = 'This item is available for preorder and will take a little longer to be ready. My supplier can take up to a week to deliver to me, but for the most part they take about 3 days. Would you like to continue with this preorder?';
+        var preorderNote = 'This item is available for pre-order and will take a little longer to be ready. (7 to 14 days) Would you like to continue with this pre-order?';
         doc.addEventListener('click', function (ev) {
           var t = ev.target;
           if (!t) return;
