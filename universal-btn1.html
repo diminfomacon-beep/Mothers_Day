@@ -57,6 +57,10 @@
         .toggle-container { display: flex; gap: 8px; margin-top: 2px; }
         .toggle-btn { flex: 1; padding: 6px; font-size: 11px; background-color: var(--bg-light); border: 1px solid #b9d4cb; border-radius: 8px; cursor: pointer; }
         .status { font-size: 11px; font-weight: bold; margin-top: 4px; text-align: center; }
+        .photo-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+        .photo-thumb { position: relative; width: 48px; height: 48px; }
+        .photo-thumb img { width: 48px; height: 48px; object-fit: cover; border-radius: 6px; border: 1px solid #ddd; display: block; }
+        .photo-remove { position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; border-radius: 50%; border: 0; background: #c1272d; color: #fff; font-size: 12px; line-height: 1; cursor: pointer; padding: 0; }
         .hidden { display: none !important; }
     </style>
 </head>
@@ -79,9 +83,10 @@
         </div>
 
         <div id="upload-wrap" class="hidden">
-            <span class="label-text">Upload Custom Photo/Artwork:</span>
-            <input type="file" id="file-input" accept="image/*" onchange="uploadImage()">
+            <span class="label-text">Upload Photos (up to 5):</span>
+            <input type="file" id="file-input" accept="image/*" multiple onchange="uploadImage()">
             <div id="upload-status" class="status"></div>
+            <div id="photo-list" class="photo-list"></div>
         </div>
         
         <div id="dynamic-dropdowns-container"></div>
@@ -96,7 +101,8 @@
 <script>
     const CLOUD_NAME = "dpsmcu07f"; 
     const UPLOAD_PRESET = "dim_image_uploads"; 
-    let uploadedImageUrl = "";
+    const MAX_PHOTOS = 5;
+    let uploadedImageUrls = [];
 
     const params = new URLSearchParams(window.location.search);
     const baseName = params.get('name') ? params.get('name').replace(/_/g, ' ') : "Custom Product";
@@ -152,36 +158,93 @@
         });
     }
 
+    // Grow this widget's iframe to fit its content (same origin as the page,
+    // so window.frameElement works). Only ever grows, never shrinks, so it
+    // can't fight the page's own height. Keeps the Add to Cart button visible
+    // when the photo upload section expands with thumbnails.
+    function fitIframe() {
+        try {
+            var fr = window.frameElement;
+            if (!fr) return;
+            var h = document.documentElement.scrollHeight || document.body.scrollHeight;
+            var cur = parseInt(fr.style.height, 10) || 0;
+            if (h > cur) fr.style.height = h + 'px';
+        } catch (e) {}
+    }
+
     function toggleSection(id) {
         document.getElementById(id).classList.toggle('hidden');
+        fitIframe();
+    }
+
+    function renderPhotoList() {
+        const list = document.getElementById('photo-list');
+        if (!list) return;
+        list.innerHTML = "";
+        uploadedImageUrls.forEach(function (url, i) {
+            const wrap = document.createElement('span');
+            wrap.className = 'photo-thumb';
+            const im = document.createElement('img');
+            im.src = url; im.alt = 'Photo ' + (i + 1);
+            const x = document.createElement('button');
+            x.type = 'button'; x.className = 'photo-remove'; x.textContent = '×';
+            x.setAttribute('aria-label', 'Remove photo ' + (i + 1));
+            x.onclick = function () {
+                uploadedImageUrls.splice(i, 1);
+                renderPhotoList();
+                const st = document.getElementById('upload-status');
+                if (st) {
+                    st.style.color = 'green';
+                    st.textContent = uploadedImageUrls.length ? (uploadedImageUrls.length + ' of ' + MAX_PHOTOS + ' photos uploaded.') : '';
+                }
+            };
+            wrap.appendChild(im); wrap.appendChild(x);
+            list.appendChild(wrap);
+        });
+        fitIframe();
     }
 
     async function uploadImage() {
         const fileInput = document.getElementById('file-input');
         const statusEl = document.getElementById('upload-status');
-        if (!fileInput.files.length) return;
+        const files = Array.from(fileInput.files || []);
+        if (!files.length) return;
 
-        statusEl.style.color = "orange";
-        statusEl.textContent = "Uploading asset...";
-
-        const fd = new FormData();
-        fd.append('file', fileInput.files[0]);
-        fd.append('upload_preset', UPLOAD_PRESET);
-
-        try {
-            const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
-                method: 'POST',
-                body: fd
-            });
-            if (!res.ok) throw new Error();
-            const data = await res.json();
-            uploadedImageUrl = data.secure_url;
-            statusEl.style.color = "green";
-            statusEl.textContent = "Upload Success!";
-        } catch (e) {
+        const room = MAX_PHOTOS - uploadedImageUrls.length;
+        if (room <= 0) {
             statusEl.style.color = "red";
-            statusEl.textContent = "Upload failed.";
+            statusEl.textContent = "You can upload up to 5 photos.";
             fileInput.value = "";
+            return;
+        }
+        const toUpload = files.slice(0, room);
+        statusEl.style.color = "orange";
+        statusEl.textContent = files.length > room
+            ? "Only the first " + room + " photo(s) were added (max 5)."
+            : "Uploading...";
+
+        for (const file of toUpload) {
+            const fd = new FormData();
+            fd.append('file', file);
+            fd.append('upload_preset', UPLOAD_PRESET);
+            try {
+                const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+                    method: 'POST',
+                    body: fd
+                });
+                if (!res.ok) throw new Error();
+                const data = await res.json();
+                uploadedImageUrls.push(data.secure_url);
+            } catch (e) {
+                statusEl.style.color = "red";
+                statusEl.textContent = "One photo failed to upload. Try again.";
+            }
+        }
+        fileInput.value = "";
+        renderPhotoList();
+        if (uploadedImageUrls.length) {
+            statusEl.style.color = "green";
+            statusEl.textContent = uploadedImageUrls.length + " of " + MAX_PHOTOS + " photos uploaded.";
         }
     }
 
@@ -213,9 +276,9 @@
         const textNote = document.getElementById('msg-input').value.trim();
         if(textNote) finalMessage += (finalMessage ? ` | Note: ${textNote}` : `Note: ${textNote}`);
 
-        if(uploadedImageUrl) {
-            finalMessage += (finalMessage ? ` | Pic: ${uploadedImageUrl}` : `Pic: ${uploadedImageUrl}`);
-        }
+        uploadedImageUrls.forEach(function (url) {
+            finalMessage += (finalMessage ? ` | Pic: ${url}` : `Pic: ${url}`);
+        });
 
         let totalAddonCost = 0;
         const optionMenus = document.querySelectorAll('.dynamic-option-menu');
@@ -265,7 +328,8 @@
             designInput.value = "";
             document.getElementById('msg-input').value = "";
             document.getElementById('file-input').value = "";
-            uploadedImageUrl = "";
+            uploadedImageUrls = [];
+            renderPhotoList();
             if(document.getElementById('upload-status')) document.getElementById('upload-status').textContent = "";
             
             optionMenus.forEach(menu => menu.selectedIndex = 0);
