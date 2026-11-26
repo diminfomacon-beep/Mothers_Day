@@ -279,7 +279,7 @@ function watchStock() {
             if (cartBtn) cartBtn.textContent = 'Add to Cart for Pre-order';
             enable(true);
           } else if (st <= 2) {
-            if (badge) { badge.className = 'stock-badge low'; badge.textContent = 'Only ' + st + ' left'; }
+            if (badge) { badge.className = 'stock-badge'; badge.textContent = ''; }
             if (cartBtn) cartBtn.textContent = 'Add to Cart';
             enable(true);
           } else {
