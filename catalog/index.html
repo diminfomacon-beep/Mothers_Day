@@ -272,15 +272,19 @@ function watchStock() {
           };
           if (st === null) {
             if (badge) { badge.className = 'stock-badge'; badge.textContent = ''; }
+            if (cartBtn) cartBtn.textContent = 'Add to Cart';
             enable(true);
           } else if (st <= 0) {
             if (badge) { badge.className = 'stock-badge out'; badge.textContent = 'Available for preorder'; }
+            if (cartBtn) cartBtn.textContent = 'Add to Cart for Pre-order';
             enable(true);
           } else if (st <= 2) {
             if (badge) { badge.className = 'stock-badge low'; badge.textContent = 'Only ' + st + ' left'; }
+            if (cartBtn) cartBtn.textContent = 'Add to Cart';
             enable(true);
           } else {
             if (badge) { badge.className = 'stock-badge'; badge.textContent = ''; }
+            if (cartBtn) cartBtn.textContent = 'Add to Cart';
             enable(true);
           }
         };
