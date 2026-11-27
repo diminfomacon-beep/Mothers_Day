@@ -68,10 +68,6 @@
 
 <div class="product-card">
     <div class="input-group">
-        <label class="label-text">Design Code (Optional):</label>
-        <input type="text" id="design-input" placeholder="e.g., FD-24" style="text-transform: uppercase;">
-        <div id="design-error" class="error-text">⚠️ Invalid Format! Use AA-00 (e.g., FD-24)</div>
-
         <div class="toggle-container">
             <button type="button" class="toggle-btn" onclick="toggleSection('note-wrap')">Add Note</button>
             <button type="button" class="toggle-btn" onclick="toggleSection('upload-wrap')">Upload Photo</button>
@@ -265,29 +261,7 @@
     }
 
     function addItem(targetPool) {
-        const designInput = document.getElementById('design-input');
-        const designError = document.getElementById('design-error');
-        const dCode = designInput.value.trim().toUpperCase();
-
-        // Reset previous validation styles
-        designInput.classList.remove('input-error');
-        designError.style.display = "none";
-
-        // --- VALIDATION LOGIC FOR AA-00 (OPTIONAL / CAN BE BLANK) ---
-        if (dCode !== "") {
-            // Regex details: 2 letters, 1 dash, 2 digits
-            const formatRegex = /^[A-Z]{2}-\d{2}$/; 
-            
-            if (!formatRegex.test(dCode)) {
-                designInput.classList.add('input-error');
-                designError.style.display = "block";
-                designInput.focus();
-                return; // Stop function execution immediately
-            }
-        }
-
         let finalMessage = "";
-        if(dCode) finalMessage += `Design: ${dCode}`;
 
         const textNote = document.getElementById('msg-input').value.trim();
         if(textNote) finalMessage += (finalMessage ? ` | Note: ${textNote}` : `Note: ${textNote}`);
@@ -341,7 +315,6 @@
             clickedBtn.style.opacity = "1";
             clickedBtn.disabled = false;
             
-            designInput.value = "";
             document.getElementById('msg-input').value = "";
             document.getElementById('file-input').value = "";
             uploadedImageUrls = [];
